@@ -1,0 +1,139 @@
+{
+  "jobs": [
+    {
+      "id": 1,
+      "title": "Frontend Developer",
+      "company": "Google",
+      "location": "Remote",
+      "salary": "$120,000 - $180,000",
+      "type": ["Full-time", "Remote"],
+      "category": "it",
+      "posted": "2 days ago",
+      "description": "We are looking for a skilled Frontend Developer to join our team and work on modern web applications.",
+      "requirements": [
+        "React",
+        "TypeScript",
+        "REST APIs",
+        "3+ years experience"
+      ],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png"
+    },
+    {
+      "id": 2,
+      "title": "Backend Developer",
+      "company": "Amazon",
+      "location": "Seattle, WA",
+      "salary": "$130,000 - $190,000",
+      "type": ["Full-time", "On-site"],
+      "category": "it",
+      "posted": "1 day ago",
+      "description": "Work on scalable backend systems powering millions of users globally.",
+      "requirements": ["Node.js", "AWS", "SQL", "API development"],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png"
+    },
+    {
+      "id": 3,
+      "title": "UI/UX Designer",
+      "company": "Figma",
+      "location": "Remote",
+      "salary": "$80,000 - $120,000",
+      "type": ["Remote", "Contract"],
+      "category": "design",
+      "posted": "4 days ago",
+      "description": "Create beautiful, intuitive UI/UX experiences for global users.",
+      "requirements": ["Figma", "Prototyping", "User Research"],
+      "logo": "https://cdn.worldvectorlogo.com/logos/figma-1.svg"
+    },
+    {
+      "id": 4,
+      "title": "Graphic Designer",
+      "company": "Canva",
+      "location": "Sydney, Australia",
+      "salary": "$60,000 - $90,000",
+      "type": ["Full-time"],
+      "category": "design",
+      "posted": "3 days ago",
+      "description": "Design templates, social media content, and branding materials.",
+      "requirements": ["Photoshop", "Illustrator", "Branding"],
+      "logo": "https://seeklogo.com/images/C/canva-logo-1B2F1D6BD0-seeklogo.com.png"
+    },
+    {
+      "id": 5,
+      "title": "Business Analyst",
+      "company": "IBM",
+      "location": "New York, USA",
+      "salary": "$75,000 - $110,000",
+      "type": ["Full-time", "Hybrid"],
+      "category": "business",
+      "posted": "5 days ago",
+      "description": "Analyze business needs and help companies make data-driven decisions.",
+      "requirements": ["Data Analysis", "Documentation", "Communication"],
+      "logo": "https://1000logos.net/wp-content/uploads/2016/10/IBM-Logo.png"
+    },
+    {
+      "id": 6,
+      "title": "Product Manager",
+      "company": "Meta",
+      "location": "California, USA",
+      "salary": "$150,000 - $210,000",
+      "type": ["Full-time"],
+      "category": "business",
+      "posted": "1 week ago",
+      "description": "Lead product strategy, work with engineering teams, and deliver user-focused solutions.",
+      "requirements": ["Leadership", "Scrum", "Strategic Planning"],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Facebook-Logo.png"
+    },
+    {
+      "id": 7,
+      "title": "Mobile Developer",
+      "company": "Spotify",
+      "location": "Remote",
+      "salary": "$110,000 - $150,000",
+      "type": ["Remote", "Full-time"],
+      "category": "it",
+      "posted": "3 days ago",
+      "description": "Build and maintain Spotify mobile apps using React Native.",
+      "requirements": ["React Native", "JavaScript", "REST APIs"],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/09/Spotify-Logo.png"
+    },
+    {
+      "id": 8,
+      "title": "Data Scientist",
+      "company": "Netflix",
+      "location": "California, USA",
+      "salary": "$160,000 - $230,000",
+      "type": ["Full-time"],
+      "category": "it",
+      "posted": "6 days ago",
+      "description": "Use data to improve recommendations and user engagement.",
+      "requirements": ["Python", "Machine Learning", "Statistics"],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Netflix-Logo.png"
+    },
+    {
+      "id": 9,
+      "title": "Marketing Specialist",
+      "company": "TikTok",
+      "location": "Singapore",
+      "salary": "$70,000 - $100,000",
+      "type": ["Full-time"],
+      "category": "business",
+      "posted": "2 weeks ago",
+      "description": "Plan and execute marketing campaigns for digital platforms.",
+      "requirements": ["SEO", "Content Creation", "Social Media"],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/TikTok-Logo.png"
+    },
+    {
+      "id": 10,
+      "title": "Motion Designer",
+      "company": "Adobe",
+      "location": "Remote",
+      "salary": "$90,000 - $130,000",
+      "type": ["Remote", "Full-time"],
+      "category": "design",
+      "posted": "1 week ago",
+      "description": "Create motion graphics and animations for Adobe products.",
+      "requirements": ["After Effects", "Animation", "Creativity"],
+      "logo": "https://logos-world.net/wp-content/uploads/2020/08/Adobe-Logo.png"
+    }
+  ]
+}

@@ -1,10 +1,63 @@
+import jsonData from "@/data/jobs.json";
+import HomeHeader from "@/components/HomeHeader";
+import HomeJobs from "@/components/HomeJobs";
+import SearchAndSort from "@/components/SearchAndSort";
+import { JobsData } from "@/types/job.types";
+import { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "react-native";
 
-import { View, Text } from "react-native";
+interface Category {
+  id: string;
+  name: string;
+}
+
+// Mapping for pretty display names (add more as needed; fallback to capitalize if missing)
+const categoryNames: { [key: string]: string } = {
+  it: "IT & Software",
+  design: "Design",
+  business: "Business",
+  construction: "Construction",
+  finance: "Finance",
+  healthcare: "Healthcare",
+  education: "Education",
+  sales: "Sales & Marketing",
+  hospitality: "Hospitality",
+  transport: "Transport",
+  creative: "Creative",
+  agriculture: "Agriculture",
+  security: "Security & Law",
+};
 
 export default function Home() {
+  const data = jsonData as JobsData;
+  const jobs = data.jobs; // Extract jobs array
+
+  // Compute unique categories dynamically from jobs data
+  const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
+  const categories: Category[] = [
+    { id: "all", name: "All" },
+    ...uniqueCategories.map((cat) => ({
+      id: cat,
+      name: categoryNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1), // Fallback to capitalized
+    })),
+  ];
+
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
   return (
-    <View className="flex justify-center items-center h-full">
-      <Text>Home screen </Text>
-    </View>
+    <SafeAreaView className="flex-1">
+      <HomeHeader />
+      <SearchAndSort
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        onSearchChange={setSearchQuery}
+        searchQuery={searchQuery}
+        categories={categories} // Pass dynamic categories
+      />
+      
+      <HomeJobs selectedCategory={selectedCategory} searchQuery={searchQuery} />
+    </SafeAreaView>
   );
 }
