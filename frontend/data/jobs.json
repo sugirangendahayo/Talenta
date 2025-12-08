@@ -16,7 +16,8 @@
         "REST APIs",
         "3+ years experience"
       ],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
+      "skills": ["React", "TypeScript", "REST APIs", "3+ years experience"]
     },
     {
       "id": 2,
@@ -29,7 +30,8 @@
       "posted": "1 day ago",
       "description": "Work on scalable backend systems powering millions of users globally.",
       "requirements": ["Node.js", "AWS", "SQL", "API development"],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png",
+      "skills": ["Node.js", "AWS", "SQL", "API development"]
     },
     {
       "id": 3,
@@ -42,7 +44,8 @@
       "posted": "4 days ago",
       "description": "Create beautiful, intuitive UI/UX experiences for global users.",
       "requirements": ["Figma", "Prototyping", "User Research"],
-      "logo": "https://cdn.worldvectorlogo.com/logos/figma-1.svg"
+      "logo": "https://cdn.worldvectorlogo.com/logos/figma-1.svg",
+      "skills": ["Figma", "Prototyping", "User Research"]
     },
     {
       "id": 4,
@@ -55,7 +58,8 @@
       "posted": "3 days ago",
       "description": "Design templates, social media content, and branding materials.",
       "requirements": ["Photoshop", "Illustrator", "Branding"],
-      "logo": "https://seeklogo.com/images/C/canva-logo-1B2F1D6BD0-seeklogo.com.png"
+      "logo": "https://seeklogo.com/images/C/canva-logo-1B2F1D6BD0-seeklogo.com.png",
+      "skills": ["Photoshop", "Illustrator", "Branding"]
     },
     {
       "id": 5,
@@ -68,7 +72,8 @@
       "posted": "5 days ago",
       "description": "Analyze business needs and help companies make data-driven decisions.",
       "requirements": ["Data Analysis", "Documentation", "Communication"],
-      "logo": "https://1000logos.net/wp-content/uploads/2016/10/IBM-Logo.png"
+      "logo": "https://1000logos.net/wp-content/uploads/2016/10/IBM-Logo.png",
+      "skills": ["Data Analysis", "Documentation", "Communication"]
     },
     {
       "id": 6,
@@ -81,7 +86,8 @@
       "posted": "1 week ago",
       "description": "Lead product strategy, work with engineering teams, and deliver user-focused solutions.",
       "requirements": ["Leadership", "Scrum", "Strategic Planning"],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Facebook-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Facebook-Logo.png",
+      "skills": ["Leadership", "Scrum", "Strategic Planning"]
     },
     {
       "id": 7,
@@ -94,7 +100,8 @@
       "posted": "3 days ago",
       "description": "Build and maintain Spotify mobile apps using React Native.",
       "requirements": ["React Native", "JavaScript", "REST APIs"],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/09/Spotify-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/09/Spotify-Logo.png",
+      "skills": ["React Native", "JavaScript", "REST APIs"]
     },
     {
       "id": 8,
@@ -107,7 +114,8 @@
       "posted": "6 days ago",
       "description": "Use data to improve recommendations and user engagement.",
       "requirements": ["Python", "Machine Learning", "Statistics"],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Netflix-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/Netflix-Logo.png",
+      "skills": ["Python", "Machine Learning", "Statistics"]
     },
     {
       "id": 9,
@@ -120,7 +128,8 @@
       "posted": "2 weeks ago",
       "description": "Plan and execute marketing campaigns for digital platforms.",
       "requirements": ["SEO", "Content Creation", "Social Media"],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/04/TikTok-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/04/TikTok-Logo.png",
+      "skills": ["SEO", "Content Creation", "Social Media"]
     },
     {
       "id": 10,
@@ -133,7 +142,8 @@
       "posted": "1 week ago",
       "description": "Create motion graphics and animations for Adobe products.",
       "requirements": ["After Effects", "Animation", "Creativity"],
-      "logo": "https://logos-world.net/wp-content/uploads/2020/08/Adobe-Logo.png"
+      "logo": "https://logos-world.net/wp-content/uploads/2020/08/Adobe-Logo.png",
+      "skills": ["After Effects", "Animation", "Creativity"]
     }
   ]
 }

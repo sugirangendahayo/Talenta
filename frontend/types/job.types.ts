@@ -10,6 +10,7 @@ export interface Job {
   description: string;
   requirements: string[];
   logo: string;
+  skills: string[];
 }
 
 export interface JobsData {
