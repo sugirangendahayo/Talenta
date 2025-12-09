@@ -17,7 +17,7 @@ export default function JobsHeader() {
             }}
           >
             <ImageBackground
-              source={require("../../frontend/assets/images/user_.png")}
+              source={require("@/assets/images/user_.png")}
               className="w-full h-full rounded-full object-cover"
             />
           </View>

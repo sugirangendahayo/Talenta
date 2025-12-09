@@ -1,8 +1,8 @@
 // jobseekers/jobs.tsx (assuming path based on your router; adjust if needed)
+import JobsHeader from "@/components/jobseeker/JobsHeader";
+import JobsList from "@/components/jobseeker/JobsList";
+import SearchAndSort from "@/components/jobseeker/SearchAndSort";
 import jsonData from "@/data/jobs.json";
-import JobsHeader from "@/components/JobsHeader";
-import JobsList from "@/components/JobsList";
-import SearchAndSort from "@/components/SearchAndSort";
 import { JobsData } from "@/types/job.types";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";

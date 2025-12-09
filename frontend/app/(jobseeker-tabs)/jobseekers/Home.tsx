@@ -1,11 +1,10 @@
+import HomeHeader from "@/components/jobseeker/HomeHeader";
+import HomeJobs from "@/components/jobseeker/HomeJobs";
+import SearchAndSort from "@/components/jobseeker/SearchAndSort";
 import jsonData from "@/data/jobs.json";
-import HomeHeader from "@/components/HomeHeader";
-import HomeJobs from "@/components/HomeJobs";
-import SearchAndSort from "@/components/SearchAndSort";
 import { JobsData } from "@/types/job.types";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Text } from "react-native";
 
 interface Category {
   id: string;
@@ -56,7 +55,7 @@ export default function Home() {
         searchQuery={searchQuery}
         categories={categories} // Pass dynamic categories
       />
-      
+
       <HomeJobs selectedCategory={selectedCategory} searchQuery={searchQuery} />
     </SafeAreaView>
   );
