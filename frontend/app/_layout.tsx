@@ -76,6 +76,7 @@ export default function RootLayout() {
         {/* Auth screens */}
         <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
         <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+        <Stack.Screen name="employer/post-job" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );
