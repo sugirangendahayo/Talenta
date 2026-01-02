@@ -9,7 +9,7 @@ export default function DashboardHeader() {
         {/* Left: Company Logo + Greeting */}
         <View className="flex flex-row items-center gap-3">
           <View
-            className="w-12 h-12 rounded-full border border-gray-200 bg-white overflow-hidden"
+            className="w-12 h-12 rounded-full border border-gray-200 bg-white overflow-hidden p-1"
             style={{
               shadowColor: "#000",
               shadowOffset: { width: 0, height: 2 },
@@ -21,8 +21,8 @@ export default function DashboardHeader() {
               source={{
                 uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
               }}
-              className="w-full h-full"
-              resizeMode="cover"
+              className="w-full h-full "
+              resizeMode="contain"
             />
           </View>
           <View>

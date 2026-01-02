@@ -1,15 +1,17 @@
 // import "react-native-reanimated";
-import "../global.css";
-import { Stack } from "expo-router";
-import { View, ActivityIndicator, Text as RNText } from "react-native";
 import {
-  useFonts,
   Quicksand_400Regular,
   Quicksand_500Medium,
   Quicksand_600SemiBold,
   Quicksand_700Bold,
+  useFonts,
 } from "@expo-google-fonts/quicksand";
+import { Stack } from "expo-router";
+import { ActivityIndicator, Text as RNText, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Toaster } from "sonner-native";
+import "../global.css";
 
 export const unstable_settings = { anchor: "jobseeker-tabs" };
 
@@ -34,50 +36,64 @@ export default function RootLayout() {
   (RNText as any).defaultProps.style = { fontFamily: "Quicksand_400Regular" };
 
   return (
-    <SafeAreaProvider>
-      <Stack>
-        {/* Welcome screens */}
-        <Stack.Screen name="welcome/Step1" options={{ headerShown: false }} />
-        <Stack.Screen name="welcome/Step2" options={{ headerShown: false }} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Stack>
+          {/* Welcome screens */}
+          <Stack.Screen name="welcome/Step1" options={{ headerShown: false }} />
+          <Stack.Screen name="welcome/Step2" options={{ headerShown: false }} />
 
-        {/* ------------------------------- */}
-        {/* JOB SEEKER TABS (commented for now) */}
-        {/* ------------------------------- */}
-        {/*
+          {/* ------------------------------- */}
+          {/* JOB SEEKER TABS (commented for now) */}
+          {/* ------------------------------- */}
+          {/*
         <Stack.Screen
-          name="(jobseeker-tabs)"
+        name="(jobseeker-tabs)"
           options={{ headerShown: false }}
+          />
+          */}
+
+          {/* ------------------------------- */}
+          {/* EMPLOYER TABS (active during design phase) */}
+          {/* ------------------------------- */}
+          <Stack.Screen
+            name="(employer-tabs)"
+            options={{ headerShown: false }}
+          />
+
+          {/* ------------------------------- */}
+          {/* Job seeker dynamic screens (commented until backend ready) */}
+          {/* ------------------------------- */}
+          {/*
+        <Stack.Screen
+        name="jobseekers/job-details/[id]"
+        options={{ headerShown: false }}
         />
         */}
 
-        {/* ------------------------------- */}
-        {/* EMPLOYER TABS (active during design phase) */}
-        {/* ------------------------------- */}
-        <Stack.Screen name="(employer-tabs)" options={{ headerShown: false }} />
-
-        {/* ------------------------------- */}
-        {/* Job seeker dynamic screens (commented until backend ready) */}
-        {/* ------------------------------- */}
-        {/*
-        <Stack.Screen
-          name="jobseekers/job-details/[id]"
-          options={{ headerShown: false }}
-        />
-        */}
-
-        {/* 
+          {/* 
         ❌ This was causing warnings. Route does NOT exist.
         <Stack.Screen
-          name="jobseekers/Applications"
-          options={{ headerShown: false }}
+        name="jobseekers/Applications"
+        options={{ headerShown: false }}
         />
         */}
 
-        {/* Auth screens */}
-        <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-        <Stack.Screen name="employer/post-job" options={{ headerShown: false }} />
-      </Stack>
-    </SafeAreaProvider>
+          {/* Auth screens */}
+          <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="employer/post-job"
+            options={{ headerShown: false }}
+          />
+        </Stack>
+        <Toaster
+          position="top-center"
+          duration={2000}
+          richColors
+          visibleToasts={2}
+        />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

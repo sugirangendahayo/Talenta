@@ -1,5 +1,6 @@
-import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Text, TouchableOpacity, View } from "react-native";
+import { toast } from "sonner-native";
 
 interface JobCardProps {
   title: string;
@@ -74,7 +75,10 @@ const JobCard = ({
           </Text>
         </View>
       </View>
-      <TouchableOpacity className="bg-gray-200 px-3 py-1.5 rounded-full flex flex-row items-center gap-1">
+      <TouchableOpacity
+        className="bg-gray-200 px-3 py-1.5 rounded-full flex flex-row items-center gap-1"
+        onPress={() => toast.success("Job paused")}
+      >
         <Ionicons name="pause" size={14} color="#6B7280" />
         <Text className="text-xs font-quicksandBold text-gray-700">Pause</Text>
       </TouchableOpacity>
@@ -108,7 +112,7 @@ export default function ActiveJobsSection() {
         {/* Header */}
         <View className="flex flex-row items-center justify-between mb-3">
           <View className="flex flex-row items-center gap-2">
-            <View className="w-8 h-8 bg-cyan-100 rounded-full items-center justify-center">
+            <View className="w-8 h-8 bg-cyan-100 rounded-full items-center justify-center flex">
               <Ionicons name="briefcase" size={18} color="#0E7490" />
             </View>
             <View>

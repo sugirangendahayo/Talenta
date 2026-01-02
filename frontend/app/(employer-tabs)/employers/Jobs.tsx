@@ -49,6 +49,7 @@ export default function Jobs() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <EmployerJobsHeader />
       <EmployerJobFilters
+        
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
         onSearchChange={setSearchQuery}

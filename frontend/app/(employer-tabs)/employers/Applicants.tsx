@@ -120,7 +120,7 @@ export default function Applicants() {
       <View className="bg-white px-6 pt-16 pb-6">
         <View className="flex flex-row items-center justify-between">
           <View>
-            <Text className="text-3xl font-quicksandBold text-gray-800">
+            <Text className="font-quicksandBold text-2xl text-gray-800">
               Applicants
             </Text>
             <Text className="text-gray-500 font-quicksandMedium mt-1">
@@ -183,7 +183,7 @@ export default function Applicants() {
                         <Image
                           source={{ uri: applicant.avatar }}
                           className="w-full h-full"
-                          resizeMode="cover"
+                          resizeMode="contain"
                         />
                       </View>
                       <View className="ml-4 flex-1">

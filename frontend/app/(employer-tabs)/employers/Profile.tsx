@@ -95,12 +95,12 @@ export default function EmployerProfile() {
         {/* Company Profile Card */}
         <View className="mx-6 my-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
           <View className="flex-row items-center">
-            <View className="relative">
+            <View className="relative bg-gray-100 rounded-full p-1 ">
               <Image
                 source={{
                   uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
                 }}
-                className="w-20 h-20 rounded-2xl bg-gray-100 p-2"
+                className="w-20 h-20 "
                 resizeMode="contain"
               />
               <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-2 border-2 border-white">

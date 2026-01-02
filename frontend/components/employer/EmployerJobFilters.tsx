@@ -40,7 +40,7 @@ const EmployerJobFilters: React.FC<EmployerJobFiltersProps> = ({
   ];
 
   return (
-    <View className="pb-3">
+    <View className="pb-3 bg-white">
       {/* Search Bar */}
       <View className="px-4 py-3">
         <View className="flex flex-row items-center bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
