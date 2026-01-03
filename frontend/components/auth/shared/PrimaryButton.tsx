@@ -4,6 +4,7 @@ interface PrimaryButtonProps {
   title: string;
   onPress: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function PrimaryButton({

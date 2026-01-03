@@ -1,8 +1,18 @@
-export const commonFieldsStep1 = [
+// =============================================
+// MINIMAL SIGNUP FIELDS - Exactly as specified
+// =============================================
+
+export const jobSeekerSignupFields = [
   {
-    key: "fullName",
-    label: "Full Name",
-    placeholder: "Enter your full name",
+    key: "firstName",
+    label: "First Name",
+    placeholder: "Enter your first name",
+    icon: "person",
+  },
+  {
+    key: "lastName",
+    label: "Last Name",
+    placeholder: "Enter your last name",
     icon: "person",
   },
   {
@@ -13,11 +23,29 @@ export const commonFieldsStep1 = [
     keyboardType: "email-address",
   },
   {
-    key: "phone",
-    label: "Phone Number",
-    placeholder: "Enter your phone number",
-    icon: "phone",
-    keyboardType: "phone-pad",
+    key: "password",
+    label: "Password",
+    placeholder: "Create a password ",
+    icon: "lock",
+    secureTextEntry: true,
+  },
+ 
+ 
+];
+
+export const employerSignupFields = [
+  {
+    key: "companyName",
+    label: "Company Name",
+    placeholder: "Enter your company name",
+    icon: "business",
+  },
+  {
+    key: "email",
+    label: "Email",
+    placeholder: "Enter company email",
+    icon: "email",
+    keyboardType: "email-address",
   },
   {
     key: "password",
@@ -26,25 +54,22 @@ export const commonFieldsStep1 = [
     icon: "lock",
     secureTextEntry: true,
   },
+ 
+  {
+    key: "website",
+    label: "Company Website (Optional)",
+    placeholder: "Enter company website",
+    icon: "language",
+    keyboardType: "url",
+  },
+
 ];
 
-export const commonFieldsStep2 = [
-  {
-    key: "country",
-    label: "Country",
-    placeholder: "Select your country",
-    icon: "location-on",
-    type: "dropdown",
-  },
-  {
-    key: "city",
-    label: "City",
-    placeholder: "Enter your city",
-    icon: "location-city",
-  },
-];
+// =============================================
+// KEEP THESE FOR LATER (Profile Completion)
+// =============================================
 
-export const jobSeekerStep1 = [
+export const jobSeekerProfileCompletionFields = [
   {
     key: "dateOfBirth",
     label: "Date of Birth",
@@ -59,9 +84,26 @@ export const jobSeekerStep1 = [
     icon: "person-outline",
     type: "dropdown",
   },
-];
-
-export const jobSeekerStep2 = [
+  {
+    key: "country",
+    label: "Country",
+    placeholder: "Select your country",
+    icon: "location-on",
+    type: "dropdown",
+  },
+  {
+    key: "city",
+    label: "City",
+    placeholder: "Enter your city",
+    icon: "location-city",
+  },
+  {
+    key: "phone",
+    label: "Phone Number (Optional)",
+    placeholder: "Enter your phone number",
+    icon: "phone",
+    keyboardType: "phone-pad",
+  },
   {
     key: "educationLevel",
     label: "Highest Education",
@@ -99,21 +141,26 @@ export const jobSeekerStep2 = [
   },
 ];
 
-export const employerStep1 = [
+export const employerProfileCompletionFields = [
   {
-    key: "companyName",
-    label: "Company Name",
-    placeholder: "Enter company name",
-    icon: "business",
+    key: "country",
+    label: "Country",
+    placeholder: "Select your country",
+    icon: "location-on",
+    type: "dropdown",
   },
-];
-
-export const employerStep2 = [
   {
-    key: "companyWebsite",
-    label: "Company Website",
-    placeholder: "Enter company website (optional)",
-    icon: "language",
+    key: "city",
+    label: "City",
+    placeholder: "Enter your city",
+    icon: "location-city",
+  },
+  {
+    key: "phone",
+    label: "Phone Number (Optional)",
+    placeholder: "Enter company phone",
+    icon: "phone",
+    keyboardType: "phone-pad",
   },
   {
     key: "companyAddress",

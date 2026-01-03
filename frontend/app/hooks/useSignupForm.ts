@@ -1,141 +1,219 @@
+import {
+  employerSignupFields,
+  jobSeekerSignupFields,
+} from "@/constants/signupFields";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
-import {
-  commonFieldsStep1,
-  commonFieldsStep2,
-  jobSeekerStep1,
-  jobSeekerStep2,
-  employerStep1,
-  employerStep2,
-} from "../../constants/signupFields";
-import {
-  countries,
-  educationLevels,
-  experienceLevels,
-  genders,
-  skillsList,
-} from "../../constants/dropdownData";
 
 export default function useSignupForm() {
-  const [step, setStep] = useState(1);
+  const router = useRouter();
   const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    // Common fields
-    fullName: "",
-    email: "",
-    phone: "",
-    password: "",
-    country: "",
-    city: "",
+    // Job Seeker fields
+    firstName: "",
+    lastName: "",
 
-    // Job Seeker specific
-    dateOfBirth: new Date(),
-    gender: "",
-    idDocument: null,
-    cvDocument: null,
-    educationLevel: "",
-    skills: [] as string[],
-    experienceLevel: "",
-
-    // Employer specific
+    // Employer fields
     companyName: "",
-    businessLicense: null,
-    companyWebsite: "",
-    companyAddress: "",
-    verificationDocument: null,
+    website: "",
+
+    // Common fields
+    email: "",
+
+    password: "",
   });
 
   const getCurrentStepFields = () => {
-    if (step === 1) {
-      return [
-        ...commonFieldsStep1,
-        ...(role === "jobseeker" ? jobSeekerStep1 : employerStep1),
-      ];
-    } else {
-      return [
-        ...commonFieldsStep2,
-        ...(role === "jobseeker" ? jobSeekerStep2 : employerStep2),
-      ];
-    }
+    return role === "jobseeker" ? jobSeekerSignupFields : employerSignupFields;
   };
 
   const handleInputChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toggleSkill = (skill: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter((s) => s !== skill)
-        : [...prev.skills, skill],
-    }));
+  // Password validation
+  const validatePassword = (
+    password: string
+  ): { valid: boolean; message: string } => {
+    if (password.length < 8) {
+      return {
+        valid: false,
+        message: "Password must be at least 8 characters long",
+      };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password must contain at least one uppercase letter",
+      };
+    }
+    if (!/[a-z]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password must contain at least one lowercase letter",
+      };
+    }
+    if (!/[0-9]/.test(password)) {
+      return {
+        valid: false,
+        message: "Password must contain at least one number",
+      };
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      return {
+        valid: false,
+        message:
+          "Password must contain at least one special character (!@#$%^&*)",
+      };
+    }
+    return { valid: true, message: "" };
   };
 
-  const handleFileUpload = (field: string) => {
-    Alert.alert("File Upload", `Would upload file for ${field}`);
-    // Implement actual file upload logic here
-  };
-
-  const handleNext = () => {
-    // Basic validation
+  const validateForm = (): { valid: boolean; message: string } => {
     const currentFields = getCurrentStepFields();
-    const requiredFields = currentFields.filter(
-      (field) => !field.placeholder?.includes("optional")
-    );
 
-    for (const field of requiredFields) {
-      if (!formData[field.key as keyof typeof formData]) {
-        Alert.alert("Missing Field", `Please fill in ${field.label}`);
-        return;
+    // Check required fields (non-optional)
+    for (const field of currentFields) {
+      if (!field.placeholder?.includes("Optional")) {
+        const value = formData[field.key as keyof typeof formData];
+        if (!value || value.toString().trim() === "") {
+          return { valid: false, message: `Please fill in ${field.label}` };
+        }
       }
     }
 
-    if (step === 1) {
-      setStep(2);
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return { valid: false, message: "Please enter a valid email address" };
+    }
+
+    // Password validation
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.valid) {
+      return { valid: false, message: passwordValidation.message };
+    }
+
+    // Role-specific validation
+    if (role === "jobseeker") {
+      if (!formData.firstName.trim() || !formData.lastName.trim()) {
+        return {
+          valid: false,
+          message: "Please provide both first and last name",
+        };
+      }
     } else {
-      handleSignup();
+      if (!formData.companyName.trim()) {
+        return { valid: false, message: "Please provide company name" };
+      }
     }
+
+    return { valid: true, message: "" };
   };
 
-  const handleBack = () => {
-    if (step === 2) {
-      setStep(1);
+  const handleSignup = async () => {
+    // Validate form
+    const validation = validateForm();
+    if (!validation.valid) {
+      Alert.alert("Validation Error", validation.message);
+      return;
     }
-  };
 
-  const handleSignup = () => {
-    Alert.alert("Success", "Account created successfully!");
-    console.log("Signup Data:", { role, ...formData });
-  };
+    setIsLoading(true);
 
-  const getDropdownData = (key: string) => {
-    switch (key) {
-      case "country":
-        return countries;
-      case "gender":
-        return genders;
-      case "educationLevel":
-        return educationLevels;
-      case "experienceLevel":
-        return experienceLevels;
-      default:
-        return [];
+    try {
+      // 1. Sign up user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            role: role, // This will be used by our trigger to create profile
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error("User creation failed");
+      }
+
+      // 2. Create role-specific profile
+      if (role === "jobseeker") {
+        const { error: profileError } = await supabase
+          .from("jobseeker_profiles")
+          .insert({
+            id: authData.user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+
+            profile_completed: false,
+          });
+
+        if (profileError) throw profileError;
+      } else {
+        const { error: profileError } = await supabase
+          .from("employer_profiles")
+          .insert({
+            id: authData.user.id,
+            company_name: formData.companyName,
+            email: formData.email,
+
+            company_website: formData.website || null,
+            profile_completed: false,
+            is_verified: false,
+          });
+
+        if (profileError) throw profileError;
+      }
+
+      // 3. Success!
+      Alert.alert(
+        "Success! 🎉",
+        "Your account has been created. Please check your email to verify your account.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate based on role
+              if (role === "jobseeker") {
+                router.replace("/(jobseeker-tabs)/jobseekers/Home");
+              } else {
+                router.replace("/(employer-tabs)/employers/Dashboard");
+              }
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.error("Signup error:", error);
+
+      let errorMessage = "An error occurred during signup";
+      if (error.message.includes("already registered")) {
+        errorMessage =
+          "This email is already registered. Please sign in instead!";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Signup Failed", errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
-    step,
     role,
     setRole,
     formData,
+    isLoading,
     getCurrentStepFields,
     handleInputChange,
-    toggleSkill,
-    handleFileUpload,
-    handleNext,
-    handleBack,
-    getDropdownData,
-    skillsList,
+    handleSignup,
   };
 }

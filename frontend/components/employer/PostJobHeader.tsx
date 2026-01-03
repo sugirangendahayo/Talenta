@@ -4,69 +4,50 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 interface PostJobHeaderProps {
   onSaveDraft?: () => void;
-  isDraftSaving?: boolean;
 }
 
-export default function PostJobHeader({
-  onSaveDraft,
-  isDraftSaving = false,
-}: PostJobHeaderProps) {
+export default function PostJobHeader({ onSaveDraft }: PostJobHeaderProps) {
   const router = useRouter();
 
   return (
-    <View className="px-5 py-4 bg-white border-b border-gray-100 shadow-sm">
-      <View className="flex flex-row items-center justify-between">
-        {/* Back Button - More accessible */}
+    <View className="bg-white">
+      {/* Top Section with Back and Save Draft */}
+      <View className="px-6 pt-16 pb-4 flex flex-row items-center justify-between">
+        {/* Back Button */}
         <TouchableOpacity
           onPress={() => router.back()}
-          className="flex flex-row items-center gap-2 active:opacity-70"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          className="bg-gray-100 p-2.5 rounded-xl"
         >
-          <View className="p-1.5 rounded-lg bg-cyan-50">
-            <Ionicons name="chevron-back" size={22} color="#0E7490" />
-          </View>
-         
+          <Ionicons name="arrow-back" size={22} color="#374151" />
         </TouchableOpacity>
 
-        {/* Title - Better hierarchy */}
-        <View className="flex-1 items-center ml-2">
-          <Text className="text-xl font-quicksandBold text-gray-900">
-            Post New Job
-          </Text>
-          <Text className="text-xs font-quicksandMedium text-gray-600 mt-0.5">
-            Fill in the details below
-          </Text>
-        </View>
-
-        {/* Save Draft Button - Better visual priority */}
+        {/* Save Draft Button */}
         <TouchableOpacity
           onPress={onSaveDraft}
-          disabled={isDraftSaving}
-          className={`px-4 py-2.5 rounded-xl border ${
-            isDraftSaving
-              ? "bg-gray-100 border-gray-200"
-              : "bg-cyan-50 border-cyan-100 active:bg-cyan-100"
-          }`}
-          activeOpacity={0.7}
+          className="bg-cyan-50 px-4 py-2.5 rounded-xl flex flex-row items-center gap-2 border border-cyan-200"
         >
-          {isDraftSaving ? (
-            <View className="flex-row items-center gap-2">
-              <Ionicons name="time-outline" size={16} color="#6B7280" />
-              <Text className="text-sm font-quicksandBold text-gray-600">
-                Saving...
-              </Text>
-            </View>
-          ) : (
-            <View className="flex-row items-center gap-2">
-              <Ionicons name="save-outline" size={16} color="#0E7490" />
-              <Text className="text-sm font-quicksandBold text-cyan-900">
-                Save Draft
-              </Text>
-            </View>
-          )}
+          <Ionicons name="bookmark-outline" size={18} color="#0E7490" />
+          <Text className="text-sm font-quicksandBold text-cyan-700">
+            Save Draft
+          </Text>
         </TouchableOpacity>
       </View>
 
+      {/* Title Section */}
+      <View className="px-6 pb-6">
+        <Text className="text-3xl font-quicksandBold text-gray-800">
+          Post New Job
+        </Text>
+        <View className="flex flex-row items-center mt-2">
+          <View className="w-1.5 h-1.5 rounded-full bg-cyan-600 mr-2" />
+          <Text className="text-sm font-quicksandMedium text-gray-500">
+            Fill in the details to find your perfect candidate
+          </Text>
+        </View>
+      </View>
+
+      {/* Bottom Border */}
+      <View className="h-px bg-gray-200" />
     </View>
   );
 }

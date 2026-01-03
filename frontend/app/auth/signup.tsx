@@ -1,5 +1,5 @@
-import { View } from "react-native";
 import { useRouter } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 
 // Shared Components
 import AuthContainer from "@/components/auth/shared/AuthContainer";
@@ -7,10 +7,9 @@ import AuthHeader from "@/components/auth/shared/AuthHeader";
 import AuthLink from "@/components/auth/shared/AuthLink";
 
 // Signup-Specific Components
-import RoleSelector from "@/components/auth/signup/RoleSelector";
-import ProgressBar from "@/components/auth/signup/ProgressBar";
+import PrimaryButton from "@/components/auth/shared/PrimaryButton";
 import FormSection from "@/components/auth/signup/FormSection";
-import SignupActions from "@/components/auth/signup/SignupActions";
+import RoleSelector from "@/components/auth/signup/RoleSelector";
 
 // Custom Hook
 import useSignupForm from "@/app/hooks/useSignupForm";
@@ -19,50 +18,51 @@ export default function Signup() {
   const router = useRouter();
 
   const {
-    step,
     role,
     setRole,
     formData,
+    isLoading,
     getCurrentStepFields,
     handleInputChange,
-    toggleSkill,
-    handleFileUpload,
-    handleNext,
-    handleBack,
-    getDropdownData,
-    skillsList,
+    handleSignup,
   } = useSignupForm();
 
   return (
-    <AuthContainer stickyHeaderIndices={step === 1 ? [1] : undefined}>
+    <AuthContainer stickyHeaderIndices={[1]}>
       {/* Header - Index 0 */}
       <AuthHeader
         icon="login"
         title="Create Account"
-        subtitle={`Step ${step} of 2 • ${role === "jobseeker" ? "Job Seeker" : "Employer"}`}
+        subtitle={`Join as ${role === "jobseeker" ? "Job Seeker" : "Employer"}`}
       />
 
-      {/* Role Selector - Index 1 (Sticky in step 1) */}
-      {step === 1 && <RoleSelector role={role} onRoleChange={setRole} />}
+      {/* Role Selector - Index 1 (Sticky) */}
+      <RoleSelector role={role} onRoleChange={setRole} />
 
       {/* Content - Index 2 */}
       <View className="px-6">
-        {/* Progress Bar */}
-        <ProgressBar step={step} totalSteps={2} />
-
         {/* Form Fields */}
         <FormSection
           fields={getCurrentStepFields()}
           formData={formData}
           onInputChange={handleInputChange}
-          onToggleSkill={toggleSkill}
-          onFileUpload={handleFileUpload}
-          getDropdownData={getDropdownData}
-          skillsList={skillsList}
+          onToggleSkill={() => {}} // Not needed for signup
+          onFileUpload={() => {}} // Not needed for signup
         />
 
-        {/* Action Buttons */}
-        <SignupActions step={step} onBack={handleBack} onNext={handleNext} />
+        {/* Create Account Button */}
+        <View className="my-8">
+          <PrimaryButton
+            title={isLoading ? "Creating Account..." : "Create Account"}
+            onPress={handleSignup}
+            disabled={isLoading}
+          />
+          {isLoading && (
+            <View className="absolute inset-0 items-center justify-center flex">
+              <ActivityIndicator size="small" color="#fff" />
+            </View>
+          )}
+        </View>
 
         {/* Login Link */}
         <AuthLink

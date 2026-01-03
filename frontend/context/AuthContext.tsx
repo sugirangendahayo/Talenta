@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase, Profile, UserRole } from "@/lib/supabase";
+import { supabase, Profile, Role } from "@/lib/supabase";
 import { Alert } from "react-native";
 
 interface AuthContextType {
@@ -11,7 +11,7 @@ interface AuthContextType {
   signUp: (
     email: string,
     password: string,
-    role: UserRole,
+    role: Role,
     metadata: any
   ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (
     email: string,
     password: string,
-    role: UserRole,
+    role: Role,
     metadata: any
   ) => {
     try {

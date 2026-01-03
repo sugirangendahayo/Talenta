@@ -19,30 +19,32 @@ export default function RoleSelector({
       }}
     >
       <View className="flex flex-row rounded-2xl bg-gray-100">
+        {/* Job Seeker Button */}
         <TouchableOpacity
           onPress={() => onRoleChange("jobseeker")}
-          className={`flex-1 flex flex-row justify-center items-center py-3 rounded-l-2xl${
-            role === "jobseeker" ? " border-r border-cyan-700" : ""
+          className={`flex-1 flex flex-row justify-center items-center py-3 rounded-l-2xl ${
+            role === "jobseeker" ? "bg-cyan-800" : ""
           }`}
         >
           <Text
             className={`font-quicksandBold ${
-              role === "jobseeker" ? "text-cyan-700" : "text-gray-700"
+              role === "jobseeker" ? "text-white" : "text-gray-700"
             }`}
           >
             Job Seeker
           </Text>
         </TouchableOpacity>
 
+        {/* Employer Button */}
         <TouchableOpacity
           onPress={() => onRoleChange("employer")}
-          className={`flex-1 flex flex-row justify-center items-center py-3 rounded-r-2xl${
-            role === "employer" ? "bg-white border-l-[1px] border-cyan-700" : ""
+          className={`flex-1 flex flex-row justify-center items-center py-3 rounded-r-2xl ${
+            role === "employer" ? "bg-cyan-800" : ""
           }`}
         >
           <Text
             className={`font-quicksandBold ${
-              role === "employer" ? "text-cyan-700" : "text-gray-700"
+              role === "employer" ? "text-white" : "text-gray-700"
             }`}
           >
             Employer

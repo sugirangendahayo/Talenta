@@ -4,6 +4,7 @@ import FieldWrapper from "../fields/FieldWrapper";
 import FileUploadField from "../fields/FileUploadField";
 import MultiSelectField from "../fields/MultiSelectField";
 import TextField from "../fields/TextField";
+import PasswordField from "../fields/PasswordField";
 
 interface FieldConfig {
   key: string;
@@ -20,8 +21,8 @@ interface FormSectionProps {
   fields: FieldConfig[];
   formData: any;
   onInputChange: (key: string, value: any) => void;
-  onToggleSkill: (skill: string) => void;
-  onFileUpload: (field: string) => void;
+  onToggleSkill?: (skill: string) => void;
+  onFileUpload?: (field: string) => void;
   getDropdownData?: (key: string) => any[];
   skillsList?: string[];
 }
@@ -43,7 +44,10 @@ export default function FormSection({
         return (
           <FieldWrapper
             label={field.label}
-            required={!field.placeholder?.includes("optional")}
+            required={
+              !field.placeholder?.includes("optional") &&
+              !field.placeholder?.includes("Optional")
+            }
             icon={field.icon}
             showIconInside={false}
           >
@@ -60,14 +64,17 @@ export default function FormSection({
         return (
           <FieldWrapper
             label={field.label}
-            required={!field.placeholder?.includes("optional")}
+            required={
+              !field.placeholder?.includes("optional") &&
+              !field.placeholder?.includes("Optional")
+            }
             icon={field.icon}
             showIconInside={false}
           >
             <MultiSelectField
               options={skillsList}
               selectedValues={formData.skills || []}
-              onToggle={onToggleSkill}
+              onToggle={onToggleSkill || (() => {})}
             />
           </FieldWrapper>
         );
@@ -76,23 +83,54 @@ export default function FormSection({
         return (
           <FieldWrapper
             label={field.label}
-            required={!field.placeholder?.includes("optional")}
+            required={
+              !field.placeholder?.includes("optional") &&
+              !field.placeholder?.includes("Optional")
+            }
             icon={field.icon}
             showIconInside={false}
           >
             <FileUploadField
               placeholder={field.placeholder}
               isUploaded={!!formData[field.key]}
-              onPress={() => onFileUpload(field.key)}
+              onPress={() => onFileUpload && onFileUpload(field.key)}
             />
           </FieldWrapper>
         );
 
       default:
+        // Password field with security indicator
+        if (field.secureTextEntry) {
+          return (
+            <FieldWrapper
+              label={field.label}
+              required={
+                !field.placeholder?.includes("optional") &&
+                !field.placeholder?.includes("Optional")
+              }
+              icon={field.icon}
+              showIconInside={true}
+            >
+              <PasswordField
+                hasIcon={hasIcon}
+                placeholder={field.placeholder}
+                value={formData[field.key]}
+                onChangeText={(value) => onInputChange(field.key, value)}
+                // Show strength indicator only for the main password field
+                showStrengthIndicator={field.key === "password"}
+              />
+            </FieldWrapper>
+          );
+        }
+
+        // Regular text field
         return (
           <FieldWrapper
             label={field.label}
-            required={!field.placeholder?.includes("optional")}
+            required={
+              !field.placeholder?.includes("optional") &&
+              !field.placeholder?.includes("Optional")
+            }
             icon={field.icon}
             showIconInside={true}
           >
@@ -101,7 +139,6 @@ export default function FormSection({
               placeholder={field.placeholder}
               value={formData[field.key]}
               onChangeText={(value) => onInputChange(field.key, value)}
-              secureTextEntry={field.secureTextEntry}
               keyboardType={field.keyboardType}
               multiline={field.multiline}
               numberOfLines={field.multiline ? 3 : 1}
