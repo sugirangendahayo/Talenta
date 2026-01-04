@@ -1,41 +1,35 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface AuthLinkProps {
   text?: string;
   linkText: string;
   onPress?: () => void;
-  align?: "left" | "center" | "right";
   className?: string;
+  align?: "left" | "center" | "right";
 }
 
 export default function AuthLink({
   text,
   linkText,
   onPress,
-  align = "center",
   className = "",
+  align = "center",
 }: AuthLinkProps) {
-  const alignClass =
-    align === "center"
-      ? "items-center"
+  const alignmentClass =
+    align === "left"
+      ? "items-start"
       : align === "right"
         ? "items-end"
-        : "items-start";
+        : "items-center";
 
   return (
-    <View className={`${alignClass} mb-8 ${className}`}>
-      {text ? (
-        <Text className="text-gray-600 font-quicksandMedium">
-          {text}{" "}
-          <Text className="text-cyan-700 font-quicksandBold" onPress={onPress}>
-            {linkText}
-          </Text>
-        </Text>
-      ) : (
-        <TouchableOpacity onPress={onPress}>
-          <Text className="text-cyan-700 font-quicksandBold">{linkText}</Text>
-        </TouchableOpacity>
+    <View className={`flex flex-row${alignmentClass} ${className}`}>
+      {text && (
+        <Text className="text-gray-600 font-quicksandMedium mr-1">{text}</Text>
       )}
+      <TouchableOpacity onPress={onPress}>
+        <Text className="text-cyan-700 font-quicksandBold">{linkText}</Text>
+      </TouchableOpacity>
     </View>
   );
 }

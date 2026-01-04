@@ -1,14 +1,14 @@
-import { View } from "react-native";
 import { useRouter } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 
 // Shared Components
+import FieldWrapper from "@/components/auth/fields/FieldWrapper";
+import PasswordField from "@/components/auth/fields/PasswordField";
+import TextField from "@/components/auth/fields/TextField";
 import AuthContainer from "@/components/auth/shared/AuthContainer";
 import AuthHeader from "@/components/auth/shared/AuthHeader";
 import AuthLink from "@/components/auth/shared/AuthLink";
 import PrimaryButton from "@/components/auth/shared/PrimaryButton";
-import FieldWrapper from "@/components/auth/fields/FieldWrapper";
-import TextField from "@/components/auth/fields/TextField";
-import PasswordField from "@/components/auth/fields/PasswordField";
 
 // Custom Hook
 import useSigninForm from "@/app/hooks/useSigninForm";
@@ -20,6 +20,7 @@ export default function Signin() {
     formData,
     showPassword,
     setShowPassword,
+    isLoading,
     handleInputChange,
     handleSignin,
   } = useSigninForm();
@@ -47,6 +48,7 @@ export default function Signin() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              editable={!isLoading}
             />
           </FieldWrapper>
 
@@ -58,19 +60,34 @@ export default function Signin() {
               onChangeText={(value) => handleInputChange("password", value)}
               showPassword={showPassword}
               onTogglePassword={() => setShowPassword(!showPassword)}
+              editable={!isLoading}
             />
           </FieldWrapper>
 
           {/* Forgot Password Link */}
-          <AuthLink linkText="Forgot Password?" align="right" />
+          <AuthLink
+            linkText="Forgot Password?"
+            align="right"
+            onPress={() => {
+              // TODO: Implement forgot password
+              // router.push("/auth/forgot-password");
+            }}
+          />
         </View>
 
         {/* Sign In Button */}
-        <PrimaryButton
-          title="Sign In"
-          onPress={handleSignin}
-          className="mt-8"
-        />
+        <View className="mt-8">
+          <PrimaryButton
+            title={isLoading ? "Signing In..." : "Sign In"}
+            onPress={handleSignin}
+            disabled={isLoading}
+          />
+          {isLoading && (
+            <View className="absolute inset-0 items-center justify-center flex">
+              <ActivityIndicator size="small" color="#fff" />
+            </View>
+          )}
+        </View>
 
         {/* Sign Up Link */}
         <AuthLink

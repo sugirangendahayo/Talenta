@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-// import { Alert } from "react-native";
-
+import { Alert } from "react-native";
+import { supabase } from "@/lib/supabase";
 
 export default function useSigninForm() {
   const router = useRouter();
@@ -10,37 +10,107 @@ export default function useSigninForm() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSignin = () => {
+  const validateForm = (): { valid: boolean; message: string } => {
+    // Check if fields are empty
+    if (!formData.email.trim() || !formData.password.trim()) {
+      return { valid: false, message: "Please fill in all fields" };
+    }
 
-    // Basic validation
-    // if (!formData.email || !formData.password) {
-    //   Alert.alert("Missing Fields", "Please fill in all fields");
-    //   return;
-    // }
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      return { valid: false, message: "Please enter a valid email address" };
+    }
 
-    // // Email validation
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    // if (!emailRegex.test(formData.email)) {
-    //   Alert.alert("Invalid Email", "Please enter a valid email address");
-    //   return;
-    // }
+    return { valid: true, message: "" };
+  };
 
-    // // Here you would typically send the data to your backend
-    // Alert.alert("Success", "Signed in successfully!");
-    // console.log("Signin Data:", formData);
-    router.push("/(employer-tabs)/employers/Dashboard")
+  const handleSignin = async () => {
+    // Validate form
+    const validation = validateForm();
+    if (!validation.valid) {
+      Alert.alert("Validation Error", validation.message);
+      return;
+    }
 
+    setIsLoading(true);
+
+    try {
+      // 1. Sign in with Supabase
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error("Sign in failed");
+      }
+
+      // 2. Get user's role from profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", authData.user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      if (!profileData) {
+        throw new Error("Profile not found");
+      }
+
+      // 3. Navigate based on role
+      const role = profileData.role;
+
+      Alert.alert("Success! 🎉", "Signed in successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            if (role === "jobseeker") {
+              router.replace("/(jobseeker-tabs)/jobseekers/Home");
+            } else if (role === "employer") {
+              router.replace("/(employer-tabs)/employers/Dashboard");
+            } else {
+              // Admin or unknown role - handle as needed
+              Alert.alert("Error", "Invalid user role");
+            }
+          },
+        },
+      ]);
+    } catch (error: any) {
+      console.error("Signin error:", error);
+
+      let errorMessage = "An error occurred during sign in";
+
+      // Handle specific error cases
+      if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Please confirm your email before signing in.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Sign In Failed", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return {
     formData,
     showPassword,
     setShowPassword,
+    isLoading,
     handleInputChange,
     handleSignin,
   };

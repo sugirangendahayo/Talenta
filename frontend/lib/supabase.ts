@@ -16,7 +16,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Type definitions for our database
+// Type definitions for our databasea
 export type Role = "jobseeker" | "employer" | "admin";
 
 export interface Profile {

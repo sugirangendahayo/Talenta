@@ -11,11 +11,15 @@ export default function PrimaryButton({
   title,
   onPress,
   className = "",
+  disabled = false,
 }: PrimaryButtonProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`bg-cyan-700 rounded-2xl py-4 items-center ${className}`}
+      disabled={disabled}
+      className={`rounded-2xl py-4 items-center ${
+        disabled ? "bg-gray-400" : "bg-cyan-700"
+      } ${className}`}
     >
       <Text className="text-white font-quicksandBold text-base">{title}</Text>
     </TouchableOpacity>

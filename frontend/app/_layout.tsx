@@ -43,41 +43,25 @@ export default function RootLayout() {
           <Stack.Screen name="welcome/Step1" options={{ headerShown: false }} />
           <Stack.Screen name="welcome/Step2" options={{ headerShown: false }} />
 
-          {/* ------------------------------- */}
-          {/* JOB SEEKER TABS (commented for now) */}
-          {/* ------------------------------- */}
-          {/*
-        <Stack.Screen
-        name="(jobseeker-tabs)"
-          options={{ headerShown: false }}
+          <Stack.Screen
+            name="(jobseeker-tabs)"
+            options={{ headerShown: false }}
           />
-          */}
 
-          {/* ------------------------------- */}
-          {/* EMPLOYER TABS (active during design phase) */}
-          {/* ------------------------------- */}
           <Stack.Screen
             name="(employer-tabs)"
             options={{ headerShown: false }}
           />
 
-          {/* ------------------------------- */}
-          {/* Job seeker dynamic screens (commented until backend ready) */}
-          {/* ------------------------------- */}
-          {/*
-        <Stack.Screen
-        name="jobseekers/job-details/[id]"
-        options={{ headerShown: false }}
-        />
-        */}
+          <Stack.Screen
+            name="jobseekers/job-details/[id]"
+            options={{ headerShown: false }}
+          />
 
-          {/* 
-        ❌ This was causing warnings. Route does NOT exist.
         <Stack.Screen
-        name="jobseekers/Applications"
-        options={{ headerShown: false }}
-        />
-        */}
+            name="jobseekers/Applications"
+            options={{ headerShown: false }}
+          />
 
           {/* Auth screens */}
           <Stack.Screen name="auth/signin" options={{ headerShown: false }} />

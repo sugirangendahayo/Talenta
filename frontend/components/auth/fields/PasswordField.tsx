@@ -11,16 +11,28 @@ import { useState, useEffect } from "react";
 interface PasswordFieldProps extends Omit<TextInputProps, "secureTextEntry"> {
   hasIcon?: boolean;
   showStrengthIndicator?: boolean;
+  showPassword?: boolean;
+  onTogglePassword?: () => void;
 }
 
 export default function PasswordField({
   hasIcon = true,
   showStrengthIndicator = false,
+  showPassword: externalShowPassword,
+  onTogglePassword,
   value,
   onChangeText,
   ...props
 }: PasswordFieldProps) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [internalShowPassword, setInternalShowPassword] = useState(false);
+
+  // Use external state if provided, otherwise use internal state
+  const showPassword =
+    externalShowPassword !== undefined
+      ? externalShowPassword
+      : internalShowPassword;
+  const togglePassword =
+    onTogglePassword || (() => setInternalShowPassword(!internalShowPassword));
   const [strength, setStrength] = useState<{
     score: number;
     label: string;
@@ -97,7 +109,7 @@ export default function PasswordField({
           {...props}
         />
         <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
+          onPress={togglePassword}
           style={{
             position: "absolute",
             right: 12,
