@@ -3,14 +3,22 @@ import { Pressable, Text, View, ScrollView } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Step2() {
-  const router = useRouter();
+   const router = useRouter();
 
-  const handleGetStarted = () => {
-    // Navigate to your main app or login screen
-   router.push("/auth/signin");
-  };
+   const handleGetStarted = async () => {
+     try {
+       // Mark onboarding as seen
+       await AsyncStorage.setItem("hasSeenOnboarding", "true");
+       // Navigate to signin
+       router.replace("/auth/signin");
+     } catch (error) {
+       console.error("Error setting onboarding flag:", error);
+       router.replace("/auth/signin");
+     }
+   };
 
   const features = [
     {
