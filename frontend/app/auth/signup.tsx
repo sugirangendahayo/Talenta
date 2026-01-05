@@ -51,7 +51,7 @@ export default function Signup() {
         />
 
         {/* Create Account Button */}
-        <View className="my-8">
+        <View className="mt-8 flex justify-between items-center gap-2">
           <PrimaryButton
             title={isLoading ? "Creating Account..." : "Create Account"}
             onPress={handleSignup}

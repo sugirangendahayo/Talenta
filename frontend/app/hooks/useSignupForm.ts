@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
+import { toast } from "sonner-native";
 
 export default function useSignupForm() {
   const router = useRouter();
@@ -173,23 +174,19 @@ export default function useSignupForm() {
       }
 
       // 3. Success!
-      Alert.alert(
-        "Success! 🎉",
-        "Your account has been created. Please check your email to verify your account.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              // Navigate based on role
-              if (role === "jobseeker") {
-                router.replace("/(jobseeker-tabs)/jobseekers/Home");
-              } else {
-                router.replace("/(employer-tabs)/employers/Dashboard");
-              }
-            },
-          },
-        ]
-      );
+      
+      
+      // Show success message
+      toast.success("Account created successfully!", {
+        duration: 2000,
+      });
+      
+      // Navigate based on role
+      if (role === "jobseeker") {
+        router.replace("/(jobseeker-tabs)/jobseekers/Home");
+      } else {
+        router.replace("/(employer-tabs)/employers/Dashboard");
+      }
     } catch (error: any) {
       console.error("Signup error:", error);
 
@@ -201,7 +198,10 @@ export default function useSignupForm() {
         errorMessage = error.message;
       }
 
-      Alert.alert("Signup Failed", errorMessage);
+      toast.error(errorMessage, {
+        duration: 3000,
+      });
+      console.error("Signup error:", error);
     } finally {
       setIsLoading(false);
     }

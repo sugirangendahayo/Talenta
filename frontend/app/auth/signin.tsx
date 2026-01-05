@@ -76,7 +76,7 @@ export default function Signin() {
         </View>
 
         {/* Sign In Button */}
-        <View className="mt-8">
+        <View className="mt-8 flex justify-between items-center gap-2">
           <PrimaryButton
             title={isLoading ? "Signing In..." : "Sign In"}
             onPress={handleSignin}
