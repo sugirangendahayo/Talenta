@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View , Text} from "react-native";
 
 // Shared Components
 import FieldWrapper from "@/components/auth/fields/FieldWrapper";
@@ -76,17 +76,18 @@ export default function Signin() {
         </View>
 
         {/* Sign In Button */}
-        <View className="mt-8 flex justify-between items-center gap-2">
-          <PrimaryButton
-            title={isLoading ? "Signing In..." : "Sign In"}
-            onPress={handleSignin}
-            disabled={isLoading}
-          />
-          {isLoading && (
-            <View className="absolute inset-0 items-center justify-center flex">
-              <ActivityIndicator size="small" color="#fff" />
+        <View className="mt-8">
+          <PrimaryButton onPress={handleSignin} disabled={isLoading}>
+            <View className="flex flex-row items-center justify-center">
+              <Text className="text-white font-quicksandBold text-base">
+                {isLoading ? "Signing In..." : "Sign In"}
+              </Text>
+
+              {isLoading && (
+                <ActivityIndicator className="ml-2" size="small" color="#fff" />
+              )}
             </View>
-          )}
+          </PrimaryButton>
         </View>
 
         {/* Sign Up Link */}

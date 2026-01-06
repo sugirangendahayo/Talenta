@@ -7,7 +7,6 @@ import {
 } from "@/lib/supabase";
 import { Session, User } from "@supabase/supabase-js";
 
-
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -53,26 +52,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from("jobseeker_profiles")
           .select("*")
           .eq("id", userId)
-          .single();
+          .maybeSingle(); // Returns null if not found (no error)
 
-        if (error) throw error;
-        setProfile(data);
+        if (error) {
+          console.error("Error fetching jobseeker profile:", error);
+          return false;
+        }
+
+        if (data) {
+          setProfile(data);
+          return true;
+        } else {
+          console.warn("Jobseeker profile not found");
+          return false;
+        }
       } else if (userRole === "employer") {
         const { data, error } = await supabase
           .from("employer_profiles")
           .select("*")
           .eq("id", userId)
-          .single();
+          .maybeSingle();
 
-        if (error) throw error;
-        setProfile(data);
+        if (error) {
+          console.error("Error fetching employer profile:", error);
+          return false;
+        }
+
+        if (data) {
+          setProfile(data);
+          return true;
+        } else {
+          console.warn("Employer profile not found");
+          return false;
+        }
       }
+      return false;
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Unexpected error fetching profile:", error);
+      return false;
     }
   };
 
-  // Refresh profile data
+  // Refresh profile data (call this manually after signup/profile updates)
   const refreshProfile = async () => {
     if (user && role) {
       await fetchProfile(user.id, role);
@@ -107,7 +128,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event:", event);
+
       setSession(session);
       setUser(session?.user ?? null);
 

@@ -1,14 +1,17 @@
-import { TouchableOpacity, Text } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 
 interface PrimaryButtonProps {
-  title: string;
+  title?: string;
   onPress: () => void;
   className?: string;
   disabled?: boolean;
+
+  children?: React.ReactNode;
 }
 
 export default function PrimaryButton({
   title,
+  children,
   onPress,
   className = "",
   disabled = false,
@@ -17,11 +20,15 @@ export default function PrimaryButton({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className={`rounded-2xl py-4 items-center ${
+      className={`rounded-2xl py-4 items-center justify-center flex flex-row ${
         disabled ? "bg-gray-400" : "bg-cyan-700"
       } ${className}`}
     >
-      <Text className="text-white font-quicksandBold text-base">{title}</Text>
+      {children ? (
+        children
+      ) : (
+        <Text className="text-white font-quicksandBold text-base">{title}</Text>
+      )}
     </TouchableOpacity>
   );
 }

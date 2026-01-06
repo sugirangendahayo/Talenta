@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View , Text} from "react-native";
 
 // Shared Components
 import AuthContainer from "@/components/auth/shared/AuthContainer";
@@ -51,17 +51,18 @@ export default function Signup() {
         />
 
         {/* Create Account Button */}
-        <View className="mt-8 flex justify-between items-center gap-2">
-          <PrimaryButton
-            title={isLoading ? "Creating Account..." : "Create Account"}
-            onPress={handleSignup}
-            disabled={isLoading}
-          />
-          {isLoading && (
-            <View className="absolute inset-0 items-center justify-center flex">
-              <ActivityIndicator size="small" color="#fff" />
+        <View className="my-8">
+          <PrimaryButton onPress={handleSignup} disabled={isLoading}>
+            {/* Inline content inside the button */}
+            <View className="flex flex-row items-center justify-center">
+              <Text className="text-white font-bold">
+                {isLoading ? "Creating Account..." : "Create Account"}
+              </Text>
+              {isLoading && (
+                <ActivityIndicator className="ml-2" size="small" color="#fff" />
+              )}
             </View>
-          )}
+          </PrimaryButton>
         </View>
 
         {/* Login Link */}

@@ -2,9 +2,11 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function useSigninForm() {
   const router = useRouter();
+  const { refreshProfile } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -68,9 +70,15 @@ export default function useSigninForm() {
         throw new Error("Profile not found");
       }
 
-      // 3. Navigate based on role
+      // 3. Wait a bit for auth state to sync
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // 4. Manually refresh profile
+      await refreshProfile();
+
       const role = profileData.role;
 
+      // 5. Navigate based on role
       Alert.alert("Success! 🎉", "Signed in successfully!", [
         {
           text: "OK",
