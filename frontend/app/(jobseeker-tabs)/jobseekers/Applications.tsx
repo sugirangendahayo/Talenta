@@ -1,9 +1,20 @@
-import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import {
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Applications() {
   const [activeFilter, setActiveFilter] = useState("all");
+  const { setIsVisible } = useTabBarVisibility();
+  const lastScrollY = useRef(0);
 
   const filters = [
     { id: "all", label: "All" },
@@ -100,11 +111,25 @@ export default function Applications() {
       ? applications
       : applications.filter((app) => app.status === activeFilter);
 
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
+
+    if (scrollDirection === "down" && currentScrollY > 50) {
+      setIsVisible(false);
+    } else if (scrollDirection === "up") {
+      setIsVisible(true);
+    }
+
+    lastScrollY.current = currentScrollY;
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="bg-white px-6 pt-16 pb-6">
-        <View className="flex-row items-center justify-between">
+        <View className="flex flex-row items-center justify-between">
           <View>
             <Text className="text-3xl font-quicksandBold text-gray-800">
               Applications
@@ -120,16 +145,16 @@ export default function Applications() {
       </View>
 
       {/* Filter Tabs */}
-      <View className="px-6 py-4 bg-white border-b border-gray-200 ">
-        <View className="flex-row justify-between">
+      <View className="px-6 py-4 bg-white border-b border-gray-200">
+        <View className="flex flex-row justify-between">
           {filters.map((filter) => (
             <TouchableOpacity
               key={filter.id}
               onPress={() => setActiveFilter(filter.id)}
               className={`px-4 py-2 rounded-full border ${
                 activeFilter === filter.id
-                  ? "bg-cyan-700 border-cyan-700"
-                  : "bg-white border-gray-300"
+                  ? "bg-cyan-700 border-cyan-700 border"
+                  : "bg-white border-gray-300 border"
               }`}
             >
               <Text
@@ -153,7 +178,12 @@ export default function Applications() {
       </View>
 
       {/* Applications List */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {filteredApplications.length > 0 ? (
           <View className="p-4">
             {filteredApplications.map((application) => {
@@ -163,8 +193,8 @@ export default function Applications() {
                   key={application.id}
                   className="bg-white rounded-3xl p-5 mb-4 shadow-sm border border-gray-200"
                 >
-                  <View className="flex-row items-start justify-between mb-4">
-                    <View className="flex-row items-center flex-1">
+                  <View className="flex flex-row items-start justify-between mb-4">
+                    <View className="flex flex-row items-center flex-1">
                       <View className="w-14 h-14 rounded-2xl border border-gray-200 bg-white overflow-hidden p-2">
                         <Image
                           source={{ uri: application.logo }}
@@ -176,7 +206,7 @@ export default function Applications() {
                         <Text className="text-lg font-quicksandBold text-gray-800">
                           {application.position}
                         </Text>
-                        <View className="flex-row items-center mt-1">
+                        <View className="flex flex-row items-center mt-1">
                           <Text className="text-gray-600 font-quicksandMedium">
                             {application.company}
                           </Text>
@@ -198,11 +228,11 @@ export default function Applications() {
                     </View>
                   </View>
 
-                  {/* Job Details Section - Redesigned */}
+                  {/* Job Details Section */}
                   <View className="space-y-3">
                     {/* Location & Salary Row */}
-                    <View className="flex-row items-center ">
-                      <View className="flex-1 flex-row items-center bg-gray-50 px-3 py-2 rounded-xl mr-2">
+                    <View className="flex flex-row items-center">
+                      <View className="flex-1 flex flex-row items-center bg-gray-50 px-3 py-2 rounded-xl mr-2">
                         <View className="bg-cyan-100 p-1.5 rounded-lg">
                           <Ionicons name="location" size={14} color="#0E7490" />
                         </View>
@@ -214,7 +244,7 @@ export default function Applications() {
                         </Text>
                       </View>
 
-                      <View className="flex-1 flex-row items-center bg-green-50 px-3 py-2 rounded-xl ml-2">
+                      <View className="flex-1 flex flex-row items-center bg-green-50 px-3 py-2 rounded-xl ml-2">
                         <View className="bg-green-100 p-1.5 rounded-lg">
                           <Ionicons name="cash" size={14} color="#059669" />
                         </View>
@@ -228,7 +258,7 @@ export default function Applications() {
                     </View>
 
                     {/* Date Posted */}
-                    <View className="flex-row items-center bg-gray-50 px-3 py-2 rounded-xl mt-2">
+                    <View className="flex flex-row items-center bg-gray-50 px-3 py-2 rounded-xl mt-2">
                       <View className="bg-purple-100 p-1.5 rounded-lg">
                         <MaterialIcons
                           name={getStatusIcon(application.status)}
@@ -243,8 +273,8 @@ export default function Applications() {
                   </View>
 
                   {/* Action Buttons */}
-                  <View className="flex-row space-x-3 mt-4 gap-2">
-                    <TouchableOpacity className="flex-1 bg-gray-100 py-2 rounded-2xl flex-row items-center justify-center">
+                  <View className="flex flex-row space-x-3 mt-4 gap-2">
+                    <TouchableOpacity className="flex-1 bg-gray-100 py-2 rounded-2xl flex flex-row items-center justify-center">
                       <Ionicons
                         name="document-text-outline"
                         size={16}
@@ -254,7 +284,7 @@ export default function Applications() {
                         View Details
                       </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity className="flex-1 bg-cyan-700 py-2 rounded-2xl flex-row items-center justify-center">
+                    <TouchableOpacity className="flex-1 bg-cyan-700 py-2 rounded-2xl flex flex-row items-center justify-center">
                       <Ionicons
                         name="chatbubble-outline"
                         size={16}
@@ -271,7 +301,7 @@ export default function Applications() {
           </View>
         ) : (
           // Empty State
-          <View className="flex-1 items-center justify-center py-20 px-8">
+          <View className="flex-1 items-center justify-center flex py-20 px-8">
             <Ionicons name="document-outline" size={80} color="#D1D5DB" />
             <Text className="text-2xl font-quicksandBold text-gray-800 mt-6 text-center">
               No applications found

@@ -5,93 +5,165 @@ import {
   TouchableOpacity,
   Switch,
   Image,
+  Alert,
+  ActivityIndicator,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "expo-router";
+import { JobseekerProfile as JobseekerProfileType } from "@/lib/supabase";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 
-export default function Profile() {
+export default function JobseekerProfile() {
+  const { profile, role, signOut, loading } = useAuth();
+  const { setIsVisible } = useTabBarVisibility();
+  const router = useRouter();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  const [emailUpdates, setEmailUpdates] = useState(true);
+  const [jobAlerts, setJobAlerts] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const lastScrollY = useRef(0);
+
+  // Get jobseeker profile data
+  const jobseekerData =
+    role === "jobseeker" && profile ? (profile as JobseekerProfileType) : null;
+
+  const handleLogout = () => {
+    Alert.alert("Log Out", "Are you sure you want to log out?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          setIsLoggingOut(true);
+          try {
+            await signOut();
+            router.replace("/auth/signin");
+          } catch (error) {
+            console.error("Logout error:", error);
+            Alert.alert("Error", "Failed to log out. Please try again.");
+          } finally {
+            setIsLoggingOut(false);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
+
+    if (scrollDirection === "down" && currentScrollY > 50) {
+      setIsVisible(false); // Hide tab bar
+    } else if (scrollDirection === "up") {
+      setIsVisible(true); // Show tab bar
+    }
+
+    lastScrollY.current = currentScrollY;
+  };
 
   const settingsSections = [
     {
-      title: "Account",
+      title: "Personal Account",
       icon: "person-outline",
       items: [
         { icon: "edit", label: "Edit Profile", type: "link" },
+        { icon: "school", label: "Education & Skills", type: "link" },
+        {
+          icon: "verified-user",
+          label: "Profile Completion",
+          value: jobseekerData?.profile_completed ? "Complete" : "Incomplete",
+          type: "link",
+        },
         { icon: "lock", label: "Privacy & Security", type: "link" },
-        { icon: "language", label: "Language", value: "English", type: "link" },
+      ],
+    },
+    {
+      title: "Job Preferences",
+      icon: "settings-outline",
+      items: [
         {
           icon: "notifications",
-          label: "Notifications",
+          label: "Job Alerts",
+          type: "toggle",
+          value: jobAlerts,
+          onValueChange: setJobAlerts,
+        },
+        {
+          icon: "email",
+          label: "Email Notifications",
           type: "toggle",
           value: notifications,
           onValueChange: setNotifications,
         },
+        { icon: "work", label: "Job Preferences", type: "link" },
+        { icon: "location-on", label: "Location Settings", type: "link" },
       ],
     },
     {
-      title: "Preferences",
-      icon: "settings-outline",
+      title: "Documents",
+      icon: "folder-outline",
       items: [
-        {
-          icon: "dark-mode",
-          label: "Dark Mode",
-          type: "toggle",
-          value: darkMode,
-          onValueChange: setDarkMode,
-        },
-        {
-          icon: "email",
-          label: "Email Updates",
-          type: "toggle",
-          value: emailUpdates,
-          onValueChange: setEmailUpdates,
-        },
-        { icon: "visibility", label: "Appearance", type: "link" },
-        {
-          icon: "storage",
-          label: "Storage",
-          value: "2.3 GB used",
-          type: "link",
-        },
+        { icon: "description", label: "Resume/CV", type: "link" },
+        { icon: "badge", label: "ID Documents", type: "link" },
+        { icon: "card-membership", label: "Certifications", type: "link" },
+        { icon: "attach-file", label: "Portfolio", type: "link" },
       ],
     },
     {
-      title: "Support",
+      title: "Support & Resources",
       icon: "help-outline",
       items: [
-        { icon: "help-center", label: "Help & Support", type: "link" },
+        { icon: "support-agent", label: "Contact Support", type: "link" },
+        { icon: "tips-and-updates", label: "Job Search Tips", type: "link" },
         { icon: "description", label: "Terms & Conditions", type: "link" },
         { icon: "privacy-tip", label: "Privacy Policy", type: "link" },
-        { icon: "info", label: "About", type: "link" },
       ],
     },
   ];
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-gray-50 items-center justify-center">
+        <ActivityIndicator size="large" color="#0E7490" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="bg-white px-6 pt-16 pb-6">
         <Text className="text-3xl font-quicksandBold text-gray-800">
-          Settings
+          My Profile
         </Text>
         <Text className="text-gray-500 font-quicksandMedium mt-1">
-          Manage your account preferences
+          Manage your account and preferences
         </Text>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {/* Profile Card */}
         <View className="mx-6 my-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
           <View className="flex-row items-center">
             <View className="relative">
               <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-                }}
+                source={require("@/assets/images/user_.png")}
                 className="w-20 h-20 rounded-full"
+                resizeMode="cover"
               />
               <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-2 border-2 border-white">
                 <Feather name="camera" size={14} color="white" />
@@ -99,22 +171,70 @@ export default function Profile() {
             </View>
             <View className="ml-4 flex-1">
               <Text className="text-xl font-quicksandBold text-gray-800">
-                John Doe
+                {jobseekerData?.first_name && jobseekerData?.last_name
+                  ? `${jobseekerData.first_name} ${jobseekerData.last_name}`
+                  : "Your Name"}
               </Text>
               <Text className="text-gray-500 font-quicksandMedium mt-1">
-                john.doe@example.com
+                {jobseekerData?.email || "email@example.com"}
               </Text>
-              <View className="flex-row items-center mt-2">
-                <View className="bg-green-100 px-3 py-1 rounded-full">
-                  <Text className="text-green-700 text-xs font-quicksandBold">
-                    Premium Member
+              <View className="flex-row items-center gap-2 mt-2 flex-wrap">
+                <View className="bg-cyan-100 px-3 py-1 rounded-full flex-row items-center gap-1">
+                  <MaterialIcons
+                    name={
+                      jobseekerData?.profile_completed ? "verified" : "pending"
+                    }
+                    size={14}
+                    color="#0E7490"
+                  />
+                  <Text className="text-cyan-700 text-xs font-quicksandBold">
+                    {jobseekerData?.profile_completed
+                      ? "Verified"
+                      : "Incomplete"}
                   </Text>
                 </View>
+                {jobseekerData?.experience_level && (
+                  <View className="bg-purple-100 px-3 py-1 rounded-full">
+                    <Text className="text-purple-700 text-xs font-quicksandBold">
+                      {jobseekerData.experience_level}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
             <TouchableOpacity className="bg-gray-100 p-3 rounded-2xl">
               <Ionicons name="qr-code-outline" size={20} color="#6B7280" />
             </TouchableOpacity>
+          </View>
+
+          {/* Profile Stats */}
+          <View className="flex-row mt-6 pt-6 border-t border-gray-100">
+            <View className="flex-1 items-center">
+              <Text className="text-2xl font-quicksandBold text-gray-800">
+                8
+              </Text>
+              <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
+                Applications
+              </Text>
+            </View>
+            <View className="w-px bg-gray-200" />
+            <View className="flex-1 items-center">
+              <Text className="text-2xl font-quicksandBold text-gray-800">
+                3
+              </Text>
+              <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
+                Interviews
+              </Text>
+            </View>
+            <View className="w-px bg-gray-200" />
+            <View className="flex-1 items-center">
+              <Text className="text-2xl font-quicksandBold text-gray-800">
+                {jobseekerData?.profile_completed ? "100" : "65"}%
+              </Text>
+              <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
+                Profile
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -126,7 +246,7 @@ export default function Profile() {
           >
             {/* Section Header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
-              <Ionicons name={section.icon} size={20} color="#0E7490" />
+              <Ionicons name={section.icon as any} size={20} color="#0E7490" />
               <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
                 {section.title}
               </Text>
@@ -144,7 +264,11 @@ export default function Profile() {
                 onPress={item.type === "link" ? () => {} : undefined}
               >
                 <View className="flex-row items-center flex-1">
-                  <MaterialIcons name={item.icon} size={22} color="#6B7280" />
+                  <MaterialIcons
+                    name={item.icon as any}
+                    size={22}
+                    color="#6B7280"
+                  />
                   <View className="ml-4 flex-1">
                     <Text className="text-gray-800 font-quicksandMedium">
                       {item.label}
@@ -159,7 +283,7 @@ export default function Profile() {
 
                 {item.type === "toggle" ? (
                   <Switch
-                    value={item.value}
+                    value={item.value as boolean}
                     onValueChange={item.onValueChange}
                     trackColor={{ false: "#D1D5DB", true: "#0E7490" }}
                     thumbColor="#FFFFFF"
@@ -194,41 +318,55 @@ export default function Profile() {
           <View className="flex-row p-4">
             <TouchableOpacity className="flex-1 items-center p-4">
               <View className="bg-cyan-100 p-3 rounded-2xl mb-2">
-                <Ionicons
-                  name="document-text-outline"
-                  size={24}
-                  color="#0E7490"
-                />
+                <Ionicons name="search-outline" size={24} color="#0E7490" />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                My Resume
+                Find Jobs
               </Text>
             </TouchableOpacity>
             <TouchableOpacity className="flex-1 items-center p-4">
               <View className="bg-green-100 p-3 rounded-2xl mb-2">
-                <Ionicons name="briefcase-outline" size={24} color="#059669" />
+                <Ionicons
+                  name="document-text-outline"
+                  size={24}
+                  color="#059669"
+                />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                Applications
+                Update CV
               </Text>
             </TouchableOpacity>
             <TouchableOpacity className="flex-1 items-center p-4">
               <View className="bg-purple-100 p-3 rounded-2xl mb-2">
-                <Ionicons name="heart-outline" size={24} color="#7C3AED" />
+                <Ionicons
+                  name="stats-chart-outline"
+                  size={24}
+                  color="#7C3AED"
+                />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                Saved Jobs
+                My Stats
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity className="mx-6 mb-8 bg-red-50 rounded-2xl p-4 flex-row items-center justify-center border border-red-200">
-          <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-          <Text className="text-red-600 font-quicksandBold text-lg ml-2">
-            Log Out
-          </Text>
+        <TouchableOpacity
+          className="mx-6 mb-8 bg-red-50 rounded-2xl p-4 flex-row items-center justify-center border border-red-200"
+          onPress={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? (
+            <ActivityIndicator size="small" color="#DC2626" />
+          ) : (
+            <>
+              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+              <Text className="text-red-600 font-quicksandBold text-lg ml-2">
+                Log Out
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* App Version */}

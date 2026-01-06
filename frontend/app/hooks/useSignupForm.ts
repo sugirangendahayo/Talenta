@@ -23,6 +23,7 @@ export default function useSignupForm() {
 
     // Common fields
     email: "",
+
     password: "",
   });
 
@@ -142,41 +143,45 @@ export default function useSignupForm() {
         throw new Error("User creation failed");
       }
 
-      // 2. Create role-specific profile using RPC function (atomic operation)
+      // 2. Create role-specific profile
       if (role === "jobseeker") {
-        const { data: profileData, error: profileError } = await supabase.rpc(
-          "create_jobseeker_profile",
-          {
-            user_id: authData.user.id,
-            p_first_name: formData.firstName,
-            p_last_name: formData.lastName,
-            p_email: formData.email,
-          }
-        );
+        const { error: profileError } = await supabase
+          .from("jobseeker_profiles")
+          .insert({
+            id: authData.user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+
+            profile_completed: false,
+          });
 
         if (profileError) throw profileError;
-        console.log("Profile created:", profileData);
       } else {
-        const { data: profileData, error: profileError } = await supabase.rpc(
-          "create_employer_profile",
-          {
-            user_id: authData.user.id,
-            p_company_name: formData.companyName,
-            p_email: formData.email,
-            p_website: formData.website || null,
-          }
-        );
+        const { error: profileError } = await supabase
+          .from("employer_profiles")
+          .insert({
+            id: authData.user.id,
+            company_name: formData.companyName,
+            email: formData.email,
+
+            company_website: formData.website || null,
+            profile_completed: false,
+            is_verified: false,
+          });
 
         if (profileError) throw profileError;
-        console.log("Profile created:", profileData);
       }
 
-      // 3. Show success message
+      // 3. Success!
+      
+      
+      // Show success message
       toast.success("Account created successfully!", {
         duration: 2000,
       });
-
-      // 4. Navigate based on role (auth state will update automatically)
+      
+      // Navigate based on role
       if (role === "jobseeker") {
         router.replace("/(jobseeker-tabs)/jobseekers/Home");
       } else {
@@ -196,6 +201,7 @@ export default function useSignupForm() {
       toast.error(errorMessage, {
         duration: 3000,
       });
+      console.error("Signup error:", error);
     } finally {
       setIsLoading(false);
     }

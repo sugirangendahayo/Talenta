@@ -1,9 +1,11 @@
 import HomeHeader from "@/components/jobseeker/HomeHeader";
 import HomeJobs from "@/components/jobseeker/HomeJobs";
 import SearchAndSort from "@/components/jobseeker/SearchAndSort";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import jsonData from "@/data/jobs.json";
 import { JobsData } from "@/types/job.types";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { View, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Category {
@@ -11,7 +13,7 @@ interface Category {
   name: string;
 }
 
-// Mapping for pretty display names (add more as needed; fallback to capitalize if missing)
+// Mapping for pretty display names
 const categoryNames: { [key: string]: string } = {
   it: "IT & Software",
   design: "Design",
@@ -30,33 +32,53 @@ const categoryNames: { [key: string]: string } = {
 
 export default function Home() {
   const data = jsonData as JobsData;
-  const jobs = data.jobs; // Extract jobs array
+  const jobs = data.jobs;
+  const { setIsVisible } = useTabBarVisibility();
+  const lastScrollY = useRef(0);
 
-  // Compute unique categories dynamically from jobs data
   const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
   const categories: Category[] = [
     { id: "all", name: "All" },
     ...uniqueCategories.map((cat) => ({
       id: cat,
-      name: categoryNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1), // Fallback to capitalized
+      name: categoryNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
     })),
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
+
+    if (scrollDirection === "down" && currentScrollY > 50) {
+      setIsVisible(false);
+    } else if (scrollDirection === "up") {
+      setIsVisible(true);
+    }
+
+    lastScrollY.current = currentScrollY;
+  };
+
   return (
     <SafeAreaView className="flex-1">
-      <HomeHeader />
-      <SearchAndSort
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        onSearchChange={setSearchQuery}
-        searchQuery={searchQuery}
-        categories={categories} // Pass dynamic categories
-      />
-
-      <HomeJobs selectedCategory={selectedCategory} searchQuery={searchQuery} />
+      <View className="flex-1">
+        <HomeHeader />
+        <SearchAndSort
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          onSearchChange={setSearchQuery}
+          searchQuery={searchQuery}
+          categories={categories}
+        />
+        <HomeJobs
+          selectedCategory={selectedCategory}
+          searchQuery={searchQuery}
+          onScroll={handleScroll}
+        />
+      </View>
     </SafeAreaView>
   );
 }

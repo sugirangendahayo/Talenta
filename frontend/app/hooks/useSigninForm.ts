@@ -1,12 +1,10 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert } from "react-native";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner-native";
 
 export default function useSigninForm() {
   const router = useRouter();
-  const { refreshProfile } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,7 +35,8 @@ export default function useSigninForm() {
     // Validate form
     const validation = validateForm();
     if (!validation.valid) {
-      Alert.alert("Validation Error", validation.message);
+      
+      toast.error(validation.message);
       return;
     }
 
@@ -70,32 +69,25 @@ export default function useSigninForm() {
         throw new Error("Profile not found");
       }
 
-      // 3. Wait a bit for auth state to sync
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // 4. Manually refresh profile
-      await refreshProfile();
-
+      // 3. Navigate based on role
       const role = profileData.role;
 
-      // 5. Navigate based on role
-      Alert.alert("Success! 🎉", "Signed in successfully!", [
-        {
-          text: "OK",
-          onPress: () => {
-            if (role === "jobseeker") {
-              router.replace("/(jobseeker-tabs)/jobseekers/Home");
-            } else if (role === "employer") {
-              router.replace("/(employer-tabs)/employers/Dashboard");
-            } else {
-              // Admin or unknown role - handle as needed
-              Alert.alert("Error", "Invalid user role");
-            }
-          },
-        },
-      ]);
+         toast.success("Signed in successfully!", {
+               duration: 2000,
+             });
+      
+        if (role === "jobseeker") {
+          router.replace("/(jobseeker-tabs)/jobseekers/Home");
+        } else if (role === "employer") {
+          router.replace("/(employer-tabs)/employers/Dashboard");
+        } else {
+          // Admin or unknown role - handle as needed
+          toast.error("Invalid user role");
+        }
+  
     } catch (error: any) {
       console.error("Signin error:", error);
+      // ... rest of the error handling
 
       let errorMessage = "An error occurred during sign in";
 
@@ -108,7 +100,10 @@ export default function useSigninForm() {
         errorMessage = error.message;
       }
 
-      Alert.alert("Sign In Failed", errorMessage);
+      
+        toast.error(errorMessage, {
+          duration: 3000,
+        });
     } finally {
       setIsLoading(false);
     }

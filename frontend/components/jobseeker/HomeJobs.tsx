@@ -2,7 +2,7 @@ import data from "@/data/jobs.json"; // Import JSON here too (or pass as prop if
 import { Job } from "@/types/job.types"; // Assuming this exists
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useMemo } from "react";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, NativeScrollEvent, NativeSyntheticEvent, Text, TouchableOpacity, View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 
@@ -10,11 +10,15 @@ import { useRouter } from "expo-router";
 interface HomeJobsProps {
   selectedCategory: string;
   searchQuery: string;
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void; 
+  
 }
 
 const HomeJobs: React.FC<HomeJobsProps> = ({
   selectedCategory,
   searchQuery,
+  onScroll,
+   
 }) => {
   const router = useRouter();
   const jobs: Job[] = data.jobs;
@@ -165,6 +169,8 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
   return (
     <View className="flex-1 bg-gray-50">
       <FlatList
+      onScroll={onScroll}
+      scrollEventThrottle={16}
         data={filteredJobs}
         ListHeaderComponent={
           <Text className="text-2xl font-quicksandBold text-gray-800 p-4 ">

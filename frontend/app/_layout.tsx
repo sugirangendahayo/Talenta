@@ -53,12 +53,12 @@ function RootLayoutNav() {
     const inJobseekerTabs = segments[0] === "(jobseeker-tabs)";
     const inEmployerTabs = segments[0] === "(employer-tabs)";
 
-    console.log("Navigation check:", {
-      hasSeenOnboarding,
-      user: !!user,
-      role,
-      segments,
-    });
+    // console.log("Navigation check:", {
+    //   hasSeenOnboarding,
+    //   user: !!user,
+    //   role,
+    //   segments,
+    // });
 
     // PRIORITY 1: Show onboarding if user hasn't seen it (regardless of auth status)
     if (hasSeenOnboarding === false && !inWelcomeGroup) {

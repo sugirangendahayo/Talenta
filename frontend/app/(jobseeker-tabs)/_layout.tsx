@@ -1,20 +1,35 @@
-// app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Animated } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+  TabBarVisibilityProvider,
+  useTabBarVisibility,
+} from "@/contexts/TabBarVisibilityContext";
 
 // Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }: any) {
+  const { isVisible } = useTabBarVisibility();
+  const translateY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(translateY, {
+      toValue: isVisible ? 0 : 150, // Slide down 150px to hide
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [isVisible]);
+
   return (
-    <View
+    <Animated.View
       style={{
         flexDirection: "row",
         position: "absolute",
         bottom: 50,
         backgroundColor: "white",
-        marginHorizontal: 40, // Reduced margin to give more width
+        marginHorizontal: 40,
         borderRadius: 50,
-        paddingHorizontal: 5, // Reduced padding
+        paddingHorizontal: 5,
         paddingVertical: 8,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -22,6 +37,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         shadowRadius: 8,
         elevation: 3,
         minHeight: 60,
+        transform: [{ translateY }],
       }}
     >
       {state.routes.map((route: any, index: number) => {
@@ -57,12 +73,12 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             onPress={onPress}
             onLongPress={onLongPress}
             style={{
-              flex: isFocused ? 3 : 1, // Give active tab even more space
+              flex: isFocused ? 3 : 1,
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
               paddingVertical: 8,
-              paddingHorizontal: 4, // Reduced padding
+              paddingHorizontal: 4,
               borderRadius: 25,
               backgroundColor: isFocused ? "#0E7490" : "transparent",
               minWidth: 40,
@@ -77,13 +93,12 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <Text
                 numberOfLines={1}
                 style={{
-                  marginLeft: 4, // Reduced margin
-                  fontSize: 11, // Slightly smaller font
-                  
+                  marginLeft: 4,
+                  fontSize: 11,
                   color: "#fff",
-                  includeFontPadding: false, // Remove extra font padding
-                  textAlignVertical: "center", // Better vertical alignment
-                  fontFamily: "Quicksand_700Bold", // Add your font family here
+                  includeFontPadding: false,
+                  textAlignVertical: "center",
+                  fontFamily: "Quicksand_700Bold",
                 }}
               >
                 {options.title}
@@ -92,11 +107,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           </TouchableOpacity>
         );
       })}
-    </View>
+    </Animated.View>
   );
 }
 
-export default function TabLayout() {
+function TabsContent() {
   return (
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
@@ -125,7 +140,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="jobseekers/Applications"
         options={{
-          title: "Applications", // You can use the full title now
+          title: "Applications",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="file-tray-full-outline" size={size} color={color} />
           ),
@@ -141,5 +156,13 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+  );
+}
+
+export default function TabLayout() {
+  return (
+    <TabBarVisibilityProvider>
+      <TabsContent />
+    </TabBarVisibilityProvider>
   );
 }

@@ -7,6 +7,7 @@ import {
 } from "@/lib/supabase";
 import { Session, User } from "@supabase/supabase-js";
 
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -52,20 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from("jobseeker_profiles")
           .select("*")
           .eq("id", userId)
-          .maybeSingle(); // Returns null if not found (no error)
+          .maybeSingle();
 
-        if (error) {
-          console.error("Error fetching jobseeker profile:", error);
-          return false;
-        }
-
-        if (data) {
-          setProfile(data);
-          return true;
-        } else {
-          console.warn("Jobseeker profile not found");
-          return false;
-        }
+        if (error) throw error;
+        setProfile(data);
       } else if (userRole === "employer") {
         const { data, error } = await supabase
           .from("employer_profiles")
@@ -73,27 +64,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq("id", userId)
           .maybeSingle();
 
-        if (error) {
-          console.error("Error fetching employer profile:", error);
-          return false;
-        }
-
-        if (data) {
-          setProfile(data);
-          return true;
-        } else {
-          console.warn("Employer profile not found");
-          return false;
-        }
+        if (error) throw error;
+        setProfile(data);
       }
-      return false;
     } catch (error) {
-      console.error("Unexpected error fetching profile:", error);
-      return false;
+      console.error("Error fetching profile:", error);
     }
   };
 
-  // Refresh profile data (call this manually after signup/profile updates)
+  // Refresh profile data
   const refreshProfile = async () => {
     if (user && role) {
       await fetchProfile(user.id, role);
@@ -113,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (!error && profileData) {
           const userRole = profileData.role as Role;
@@ -128,9 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth event:", event);
-
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -140,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .from("profiles")
           .select("role")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
         if (!error && profileData) {
           const userRole = profileData.role as Role;

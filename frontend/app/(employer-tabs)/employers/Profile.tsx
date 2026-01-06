@@ -5,14 +5,50 @@ import {
   TouchableOpacity,
   Switch,
   Image,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "expo-router";
+import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
 
 export default function EmployerProfile() {
+  const { profile, role, signOut, loading } = useAuth();
+  const router = useRouter();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [emailUpdates, setEmailUpdates] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Get employer profile data
+  const employerData =
+    role === "employer" && profile ? (profile as EmployerProfileType) : null;
+
+  const handleLogout = () => {
+    Alert.alert("Log Out", "Are you sure you want to log out?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          setIsLoggingOut(true);
+          try {
+            await signOut();
+            router.replace("/auth/signin");
+          } catch (error) {
+            console.error("Logout error:", error);
+            Alert.alert("Error", "Failed to log out. Please try again.");
+          } finally {
+            setIsLoggingOut(false);
+          }
+        },
+      },
+    ]);
+  };
 
   const settingsSections = [
     {
@@ -24,7 +60,7 @@ export default function EmployerProfile() {
         {
           icon: "verified-user",
           label: "Verification Status",
-          value: "Verified",
+          value: employerData?.is_verified ? "Verified" : "Pending",
           type: "link",
         },
         { icon: "lock", label: "Privacy & Security", type: "link" },
@@ -79,6 +115,14 @@ export default function EmployerProfile() {
     },
   ];
 
+  if (loading) {
+    return (
+      <View className="flex-1 bg-gray-50 items-center justify-center">
+        <ActivityIndicator size="large" color="#0E7490" />
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
@@ -95,12 +139,12 @@ export default function EmployerProfile() {
         {/* Company Profile Card */}
         <View className="mx-6 my-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
           <View className="flex-row items-center">
-            <View className="relative bg-gray-100 rounded-full p-1 ">
+            <View className="relative bg-gray-100 rounded-full p-1">
               <Image
                 source={{
                   uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
                 }}
-                className="w-20 h-20 "
+                className="w-20 h-20"
                 resizeMode="contain"
               />
               <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-2 border-2 border-white">
@@ -109,16 +153,20 @@ export default function EmployerProfile() {
             </View>
             <View className="ml-4 flex-1">
               <Text className="text-xl font-quicksandBold text-gray-800">
-                TechCorp Inc.
+                {employerData?.company_name || "Company Name"}
               </Text>
               <Text className="text-gray-500 font-quicksandMedium mt-1">
-                hr@techcorp.com
+                {employerData?.email || "email@company.com"}
               </Text>
               <View className="flex-row items-center gap-2 mt-2 flex-wrap">
                 <View className="bg-cyan-100 px-3 py-1 rounded-full flex-row items-center gap-1">
-                  <MaterialIcons name="verified" size={14} color="#0E7490" />
+                  <MaterialIcons
+                    name={employerData?.is_verified ? "verified" : "pending"}
+                    size={14}
+                    color="#0E7490"
+                  />
                   <Text className="text-cyan-700 text-xs font-quicksandBold">
-                    Verified
+                    {employerData?.is_verified ? "Verified" : "Pending"}
                   </Text>
                 </View>
                 <View className="bg-purple-100 px-3 py-1 rounded-full">
@@ -172,7 +220,7 @@ export default function EmployerProfile() {
           >
             {/* Section Header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
-              <Ionicons name={section.icon} size={20} color="#0E7490" />
+              <Ionicons name={section.icon as any} size={20} color="#0E7490" />
               <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
                 {section.title}
               </Text>
@@ -190,7 +238,11 @@ export default function EmployerProfile() {
                 onPress={item.type === "link" ? () => {} : undefined}
               >
                 <View className="flex-row items-center flex-1">
-                  <MaterialIcons name={item.icon} size={22} color="#6B7280" />
+                  <MaterialIcons
+                    name={item.icon as any}
+                    size={22}
+                    color="#6B7280"
+                  />
                   <View className="ml-4 flex-1">
                     <Text className="text-gray-800 font-quicksandMedium">
                       {item.label}
@@ -205,7 +257,7 @@ export default function EmployerProfile() {
 
                 {item.type === "toggle" ? (
                   <Switch
-                    value={item.value}
+                    value={item.value as boolean}
                     onValueChange={item.onValueChange}
                     trackColor={{ false: "#D1D5DB", true: "#0E7490" }}
                     thumbColor="#FFFFFF"
@@ -270,11 +322,21 @@ export default function EmployerProfile() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity className="mx-6 mb-8 bg-red-50 rounded-2xl p-4 flex-row items-center justify-center border border-red-200">
-          <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-          <Text className="text-red-600 font-quicksandBold text-lg ml-2">
-            Log Out
-          </Text>
+        <TouchableOpacity
+          className="mx-6 mb-8 bg-red-50 rounded-2xl p-4 flex-row items-center justify-center border border-red-200"
+          onPress={handleLogout}
+          disabled={isLoggingOut}
+        >
+          {isLoggingOut ? (
+            <ActivityIndicator size="small" color="#DC2626" />
+          ) : (
+            <>
+              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+              <Text className="text-red-600 font-quicksandBold text-lg ml-2">
+                Log Out
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
 
         {/* App Version */}

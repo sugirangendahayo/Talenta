@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   TextInputProps,
 } from "react-native";
-import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 
 interface PasswordFieldProps extends Omit<TextInputProps, "secureTextEntry"> {
@@ -25,6 +25,7 @@ export default function PasswordField({
   ...props
 }: PasswordFieldProps) {
   const [internalShowPassword, setInternalShowPassword] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Use external state if provided, otherwise use internal state
   const showPassword =
@@ -33,6 +34,7 @@ export default function PasswordField({
       : internalShowPassword;
   const togglePassword =
     onTogglePassword || (() => setInternalShowPassword(!internalShowPassword));
+
   const [strength, setStrength] = useState<{
     score: number;
     label: string;
@@ -94,105 +96,136 @@ export default function PasswordField({
     }
   }, [value, showStrengthIndicator]);
 
+  // Determine which requirements are missing (for compact display)
+  const missingRequirements = [];
+  if (value && showStrengthIndicator) {
+    if (!strength.checks.length) missingRequirements.push("8+ chars");
+    if (!strength.checks.uppercase) missingRequirements.push("A-Z");
+    if (!strength.checks.lowercase) missingRequirements.push("a-z");
+    if (!strength.checks.number) missingRequirements.push("0-9");
+    if (!strength.checks.special) missingRequirements.push("!@#");
+  }
+
   return (
     <View>
-      {/* Password Input */}
-      <View className="relative">
-        <TextInput
-          className={`rounded-2xl px-4 py-3 pr-12 font-quicksandMedium bg-white ${
-            hasIcon ? "pl-10" : ""
-          }`}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          value={value}
-          onChangeText={onChangeText}
-          {...props}
-        />
-        <TouchableOpacity
-          onPress={togglePassword}
-          style={{
-            position: "absolute",
-            right: 12,
-            top: 12,
-            zIndex: 1,
-          }}
+      {/* Main Input Container with Integrated Feedback */}
+      <View className="bg-white rounded-2xl">
+        {/* Input Row */}
+        <View
+          className={`flex-row items-center px-4 border ${
+            showStrengthIndicator && value && value.toString().length > 0
+              ? "rounded-t-2xl border-b-0"
+              : "rounded-2xl border-gray-200"
+          } ${isFocused ? "border-gray-200" : "border-gray-200"}`}
         >
-          <MaterialIcons
-            name={showPassword ? "visibility" : "visibility-off"}
-            size={20}
-            color="#6B7280"
-          />
-        </TouchableOpacity>
-      </View>
+          {/* Lock Icon */}
+          {hasIcon && (
+            <MaterialIcons
+              name="lock-outline"
+              size={20}
+              color={isFocused ? "#3B82F6" : "#6B7280"}
+              className="mr-2"
+            />
+          )}
 
-      {/* Password Strength Indicator */}
-      {showStrengthIndicator && value && value.toString().length > 0 && (
-        <View className="mt-3">
-          {/* Strength Bar */}
-          <View className="flex-row items-center gap-2 mb-2">
-            <View className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <View
-                className="h-full rounded-full transition-all"
-                style={{
-                  width: `${(strength.score / 5) * 100}%`,
-                  backgroundColor: strength.color,
-                }}
-              />
+          {/* Text Input */}
+          <TextInput
+            className={`flex-1 py-3 font-quicksandMedium ${hasIcon ? "" : ""}`}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            value={value}
+            onChangeText={onChangeText}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholderTextColor="#9CA3AF"
+            {...props}
+          />
+
+          {/* Strength Status Icon (Compact) */}
+          {showStrengthIndicator && value && value.toString().length > 0 && (
+            <View className="mx-2">
+              {strength.score >= 4 ? (
+                <MaterialIcons name="check-circle" size={18} color="#10B981" />
+              ) : strength.score >= 2 ? (
+                <MaterialIcons name="info" size={18} color="#F59E0B" />
+              ) : (
+                <MaterialIcons name="warning" size={18} color="#EF4444" />
+              )}
             </View>
-            {strength.label && (
+          )}
+
+          {/* Show/Hide Password Toggle */}
+          <TouchableOpacity onPress={togglePassword}>
+            <MaterialIcons
+              name={showPassword ? "visibility" : "visibility-off"}
+              size={20}
+              color="#6B7280"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Strength Feedback Section (Only shows when typing) */}
+        {showStrengthIndicator && value && value.toString().length > 0 && (
+          <View
+            className={`px-4 border border-t-0 rounded-b-2xl ${
+              isFocused ? "border-gray-200 border-t-0" : "border-gray-200"
+            }`}
+          >
+            {/* Strength Bar with Label */}
+            <View className="flex-row items-center py-2">
+              <View className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <View
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${(strength.score / 5) * 100}%`,
+                    backgroundColor: strength.color,
+                  }}
+                />
+              </View>
               <Text
-                className="text-xs font-quicksandBold"
+                className="text-xs font-quicksandBold ml-2"
                 style={{ color: strength.color }}
               >
                 {strength.label}
               </Text>
+            </View>
+
+            {/* Compact Missing Requirements (only show if password is weak) */}
+            {strength.score < 3 && missingRequirements.length > 0 && (
+              <View className="pb-2">
+                <Text className="text-xs text-gray-600 mb-1">
+                  Add: {missingRequirements.join(", ")}
+                </Text>
+
+                {/* Visual Progress Dots */}
+                <View className="flex-row space-x-1 mt-1">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <View
+                      key={index}
+                      className={`flex-1 h-1 rounded-full ${
+                        index < strength.score
+                          ? index < 2
+                            ? "bg-red-500"
+                            : index < 3
+                              ? "bg-yellow-500"
+                              : index < 4
+                                ? "bg-blue-500"
+                                : "bg-green-500"
+                          : "bg-gray-200"
+                      }`}
+                    />
+                  ))}
+                </View>
+              </View>
             )}
           </View>
+        )}
+      </View>
 
-          {/* Requirements Checklist */}
-          <View className="space-y-1">
-            <RequirementItem
-              label="At least 8 characters"
-              met={strength.checks.length}
-            />
-            <RequirementItem
-              label="Uppercase letter (A-Z)"
-              met={strength.checks.uppercase}
-            />
-            <RequirementItem
-              label="Lowercase letter (a-z)"
-              met={strength.checks.lowercase}
-            />
-            <RequirementItem
-              label="Number (0-9)"
-              met={strength.checks.number}
-            />
-            <RequirementItem
-              label="Special character (!@#$%^&*)"
-              met={strength.checks.special}
-            />
-          </View>
-        </View>
-      )}
+
+   
     </View>
   );
 }
 
-function RequirementItem({ label, met }: { label: string; met: boolean }) {
-  return (
-    <View className="flex-row items-center gap-2">
-      <Ionicons
-        name={met ? "checkmark-circle" : "ellipse-outline"}
-        size={16}
-        color={met ? "#10B981" : "#9CA3AF"}
-      />
-      <Text
-        className={`text-xs font-quicksandMedium ${
-          met ? "text-green-700" : "text-gray-500"
-        }`}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
+
