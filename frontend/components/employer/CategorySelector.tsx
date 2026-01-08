@@ -18,10 +18,20 @@ export default function CategorySelector({
     { id: "it", name: "IT & Software", icon: "laptop-outline" },
     { id: "design", name: "Design", icon: "color-palette-outline" },
     { id: "business", name: "Business", icon: "briefcase-outline" },
+    { id: "construction", name: "Construction", icon: "hammer-outline" },
     { id: "finance", name: "Finance", icon: "cash-outline" },
     { id: "healthcare", name: "Healthcare", icon: "medical-outline" },
     { id: "education", name: "Education", icon: "school-outline" },
-    { id: "sales", name: "Sales", icon: "trending-up-outline" },
+    { id: "sales", name: "Sales & Marketing", icon: "trending-up-outline" },
+    { id: "hospitality", name: "Hospitality", icon: "restaurant-outline" },
+    { id: "transport", name: "Transport", icon: "car-outline" },
+    { id: "creative", name: "Creative", icon: "bulb-outline" },
+    { id: "agriculture", name: "Agriculture", icon: "leaf-outline" },
+    {
+      id: "security",
+      name: "Security & Law",
+      icon: "shield-checkmark-outline",
+    },
   ];
 
   return (

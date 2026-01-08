@@ -12,7 +12,7 @@ export default function PostJobHeader({ onSaveDraft }: PostJobHeaderProps) {
   return (
     <View className="bg-white">
       {/* Top Section with Back and Save Draft */}
-      <View className="px-6 pt-16 pb-4 flex flex-row items-center justify-between">
+      <View className="p-6  pb-4 flex flex-row items-center justify-between">
         {/* Back Button */}
         <TouchableOpacity
           onPress={() => router.back()}
