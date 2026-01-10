@@ -82,7 +82,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
 
     return (
       <TouchableOpacity
-        className="bg-whit mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
+        className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
         onPress={() => handleJobPress(item.id)}
       >
         <View className="flex-1">
