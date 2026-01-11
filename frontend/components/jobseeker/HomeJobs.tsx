@@ -44,6 +44,8 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
     searchQuery: searchQuery,
     pageSize: 10,
   });
+  
+  
 
   const handleJobPress = (jobId: string) => {
     router.push({

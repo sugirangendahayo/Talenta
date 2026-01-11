@@ -140,6 +140,8 @@ export function useJobs(options: UseJobsOptions = {}) {
         .select("id", { count: "exact", head: true })
         .eq("status", "active")
         .gt("created_at", lastFetchedAt.current);
+        
+        
 
       // Apply same filters
       if (category && category !== "all") {
