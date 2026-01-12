@@ -71,7 +71,7 @@ export default function JobDetailsScreen() {
 
       setJob(data);
     } catch (err: any) {
-      console.error("Error fetching job:", err);
+      console.error("Error fetching job...:", err);
       setError(err.message || "Failed to load job details");
     } finally {
       setLoading(false);
