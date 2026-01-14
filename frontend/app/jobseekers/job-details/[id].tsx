@@ -9,7 +9,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Modal,
+  TextInput,
 } from "react-native";
+import { useApplyJob } from "@/app/hooks/useApplyJob";
 
 interface Job {
   id: string;
@@ -38,8 +41,25 @@ export default function JobDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Application modal state
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [coverLetter, setCoverLetter] = useState("");
+
+  // Use the apply job hook
+  const {
+    applying,
+    checkingRequirements,
+    hasApplied,
+    profile,
+    checkRequirements,
+    applyForJob,
+  } = useApplyJob();
+
   useEffect(() => {
     fetchJobDetails();
+    if (id) {
+      checkRequirements(id as string);
+    }
   }, [id]);
 
   const fetchJobDetails = async () => {
@@ -75,6 +95,42 @@ export default function JobDetailsScreen() {
       setError(err.message || "Failed to load job details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApplyClick = async () => {
+    if (!id) return;
+
+    // Check requirements before showing modal
+    const requirements = await checkRequirements(id as string);
+
+    if (!requirements.hasProfile) {
+      alert("Profile Not Found\n\nPlease create your jobseeker profile first.");
+      return;
+    }
+
+    if (requirements.missingFields.length > 0) {
+      alert(
+        `Profile Incomplete\n\nPlease complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`
+      );
+      return;
+    }
+
+    // All requirements met, show apply modal
+    setShowApplyModal(true);
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!id) return;
+
+    const success = await applyForJob({
+      jobId: id as string,
+      coverLetter,
+    });
+
+    if (success) {
+      setShowApplyModal(false);
+      setCoverLetter("");
     }
   };
 
@@ -179,7 +235,6 @@ export default function JobDetailsScreen() {
           <View className="flex flex-row items-start justify-between mb-4">
             <View className="flex flex-row items-center flex-1 mr-3">
               <View className="w-20 h-20 rounded-full border border-gray-200 bg-white items-center justify-center flex">
-                {/* Company Logo Placeholder */}
                 <Text className="text-3xl font-quicksandBold text-cyan-600">
                   {companyName.charAt(0).toUpperCase()}
                 </Text>
@@ -335,19 +390,143 @@ export default function JobDetailsScreen() {
           </View>
         </View>
 
-        {/* Spacer for bottom button */}
         <View className="h-24" />
       </ScrollView>
 
       {/* Apply Button */}
       <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4">
-        <TouchableOpacity className="bg-cyan-700 rounded-2xl py-4 flex flex-row justify-center items-center">
-          <Text className="text-white font-quicksandBold text-lg mr-2">
-            Apply Now
-          </Text>
-          <MaterialIcons name="arrow-outward" size={20} color="white" />
-        </TouchableOpacity>
+        {hasApplied ? (
+          <View className="bg-green-100 rounded-2xl py-4 flex flex-row justify-center items-center">
+            <Ionicons name="checkmark-circle" size={20} color="#059669" />
+            <Text className="text-green-700 font-quicksandBold text-lg ml-2">
+              Already Applied
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={handleApplyClick}
+            disabled={checkingRequirements}
+            className="bg-cyan-700 rounded-2xl py-4 flex flex-row justify-center items-center"
+          >
+            {checkingRequirements ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Text className="text-white font-quicksandBold text-lg mr-2">
+                  Apply Now
+                </Text>
+                <MaterialIcons name="arrow-outward" size={20} color="white" />
+              </>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* Application Modal */}
+      <Modal
+        visible={showApplyModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowApplyModal(false)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl p-6 max-h-[80%]">
+            <View className="flex flex-row justify-between items-center mb-6">
+              <Text className="text-2xl font-quicksandBold text-gray-800">
+                Apply for this job
+              </Text>
+              <TouchableOpacity onPress={() => setShowApplyModal(false)}>
+                <Ionicons name="close-circle" size={28} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Job Summary */}
+              <View className="bg-cyan-50 p-4 rounded-2xl mb-4">
+                <Text className="text-lg font-quicksandBold text-gray-800 mb-1">
+                  {job.title}
+                </Text>
+                <Text className="text-gray-600 font-quicksandMedium">
+                  {companyName}
+                </Text>
+                <Text className="text-cyan-700 font-quicksandSemibold mt-2">
+                  {salary}
+                </Text>
+              </View>
+
+              {/* Profile Status */}
+              {profile && (
+                <View className="bg-green-50 p-4 rounded-2xl mb-4 border border-green-200">
+                  <View className="flex flex-row items-center gap-2 mb-2">
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color="#059669"
+                    />
+                    <Text className="text-green-800 font-quicksandBold">
+                      Profile Complete
+                    </Text>
+                  </View>
+                  <Text className="text-green-700 font-quicksandMedium text-sm">
+                    {profile.first_name} {profile.last_name}
+                  </Text>
+                  <Text className="text-green-700 font-quicksandMedium text-sm">
+                    {profile.email}
+                  </Text>
+                </View>
+              )}
+
+              {/* Cover Letter */}
+              <View className="mb-6">
+                <View className="flex flex-row justify-between items-center mb-2">
+                  <Text className="text-base font-quicksandSemibold text-gray-800">
+                    Cover Letter
+                  </Text>
+                  <Text className="text-gray-500 font-quicksandMedium text-sm">
+                    Optional
+                  </Text>
+                </View>
+                <TextInput
+                  value={coverLetter}
+                  onChangeText={setCoverLetter}
+                  placeholder="Tell the employer why you're a great fit for this role..."
+                  placeholderTextColor="#9CA3AF"
+                  multiline
+                  numberOfLines={6}
+                  textAlignVertical="top"
+                  className="bg-gray-50 rounded-2xl p-4 font-quicksandMedium text-gray-800 min-h-[150px]"
+                  style={{ fontSize: 15 }}
+                />
+                <Text className="text-gray-500 font-quicksandMedium text-sm mt-2">
+                  {coverLetter.length} characters
+                </Text>
+              </View>
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                onPress={handleSubmitApplication}
+                disabled={applying}
+                className="bg-cyan-700 rounded-2xl py-4 flex flex-row justify-center items-center mb-4"
+              >
+                {applying ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <Text className="text-white font-quicksandBold text-lg mr-2">
+                      Submit Application
+                    </Text>
+                    <Ionicons name="send" size={18} color="white" />
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <Text className="text-center text-gray-500 font-quicksandMedium text-sm">
+                Your application will be sent to {companyName}
+              </Text>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

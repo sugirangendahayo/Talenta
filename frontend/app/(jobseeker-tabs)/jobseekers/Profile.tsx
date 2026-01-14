@@ -11,11 +11,12 @@ import {
   NativeSyntheticEvent,
 } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { JobseekerProfile as JobseekerProfileType } from "@/lib/supabase";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { supabase } from "@/lib/supabase";
 
 export default function JobseekerProfile() {
   const { profile, role, signOut, loading } = useAuth();
@@ -24,12 +25,62 @@ export default function JobseekerProfile() {
   const [notifications, setNotifications] = useState(true);
   const [jobAlerts, setJobAlerts] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [applicationCount, setApplicationCount] = useState(0);
 
   const lastScrollY = useRef(0);
 
   // Get jobseeker profile data
   const jobseekerData =
     role === "jobseeker" && profile ? (profile as JobseekerProfileType) : null;
+
+  // Calculate profile completion percentage
+  useEffect(() => {
+    if (jobseekerData) {
+      calculateCompletion();
+      fetchApplicationCount();
+    }
+  }, [jobseekerData]);
+
+  const calculateCompletion = () => {
+    if (!jobseekerData) return;
+
+    const fields = [
+      jobseekerData.first_name,
+      jobseekerData.last_name,
+      jobseekerData.email,
+      jobseekerData.phone,
+      jobseekerData.date_of_birth,
+      jobseekerData.gender,
+      jobseekerData.country,
+      jobseekerData.city,
+      jobseekerData.education_level,
+      jobseekerData.experience_level,
+      jobseekerData.skills && jobseekerData.skills.length > 0,
+      jobseekerData.cv_document_url,
+    ];
+
+    const filledFields = fields.filter((field) => field).length;
+    const percentage = Math.round((filledFields / fields.length) * 100);
+    setCompletionPercentage(percentage);
+  };
+
+  const fetchApplicationCount = async () => {
+    if (!jobseekerData?.id) return;
+
+    try {
+      const { count, error } = await supabase
+        .from("job_applications")
+        .select("*", { count: "exact", head: true })
+        .eq("jobseeker_id", jobseekerData.id);
+
+      if (!error && count !== null) {
+        setApplicationCount(count);
+      }
+    } catch (err) {
+      console.error("Error fetching application count:", err);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert("Log Out", "Are you sure you want to log out?", [
@@ -62,9 +113,9 @@ export default function JobseekerProfile() {
       currentScrollY > lastScrollY.current ? "down" : "up";
 
     if (scrollDirection === "down" && currentScrollY > 50) {
-      setIsVisible(false); // Hide tab bar
+      setIsVisible(false);
     } else if (scrollDirection === "up") {
-      setIsVisible(true); // Show tab bar
+      setIsVisible(true);
     }
 
     lastScrollY.current = currentScrollY;
@@ -75,13 +126,19 @@ export default function JobseekerProfile() {
       title: "Personal Account",
       icon: "person-outline",
       items: [
-        { icon: "edit", label: "Edit Profile", type: "link" },
+        {
+          icon: "edit",
+          label: "Edit Profile",
+          type: "link",
+          onPress: () => router.push("/jobseekers/complete-profile"),
+        },
         { icon: "school", label: "Education & Skills", type: "link" },
         {
           icon: "verified-user",
           label: "Profile Completion",
           value: jobseekerData?.profile_completed ? "Complete" : "Incomplete",
           type: "link",
+          onPress: () => router.push("/jobseekers/complete-profile"),
         },
         { icon: "lock", label: "Privacy & Security", type: "link" },
       ],
@@ -211,7 +268,7 @@ export default function JobseekerProfile() {
           <View className="flex-row mt-6 pt-6 border-t border-gray-100">
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                8
+                {applicationCount}
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 Applications
@@ -220,7 +277,7 @@ export default function JobseekerProfile() {
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                3
+                0
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 Interviews
@@ -229,7 +286,7 @@ export default function JobseekerProfile() {
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                {jobseekerData?.profile_completed ? "100" : "65"}%
+                {completionPercentage}%
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 Profile
@@ -244,7 +301,6 @@ export default function JobseekerProfile() {
             key={sectionIndex}
             className="mx-6 mb-6 bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden"
           >
-            {/* Section Header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
               <Ionicons name={section.icon as any} size={20} color="#0E7490" />
               <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
@@ -252,7 +308,6 @@ export default function JobseekerProfile() {
               </Text>
             </View>
 
-            {/* Section Items */}
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
@@ -261,7 +316,9 @@ export default function JobseekerProfile() {
                     ? "border-b border-gray-100"
                     : ""
                 }`}
-                onPress={item.type === "link" ? () => {} : undefined}
+                onPress={
+                  item.type === "link" ? item.onPress || (() => {}) : undefined
+                }
               >
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons
