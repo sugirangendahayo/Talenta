@@ -9,7 +9,7 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { useProfileCompletion } from "@/hooks/useProfileCompletion";
+import { useProfileCompletion } from "@/app/hooks/useProfileCompletion";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Platform } from "react-native";
 
@@ -363,7 +363,7 @@ export default function CompleteProfileScreen() {
           {/* Skills List */}
           {formData.skills.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">
-              {formData.skills.map((skill, index) => (
+              {formData.skills.map((skill: any, index: any) => (
                 <View
                   key={index}
                   className="bg-cyan-50 px-3 py-2 rounded-full border border-cyan-200 flex-row items-center gap-2"

@@ -1,22 +1,24 @@
+import { useAuth } from "@/contexts/AuthContext";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Image,
-  Alert,
+  JobseekerProfile as JobseekerProfileType,
+  supabase,
+} from "@/lib/supabase";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
   ActivityIndicator,
+  Alert,
+  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState, useRef, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "expo-router";
-import { JobseekerProfile as JobseekerProfileType } from "@/lib/supabase";
-import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import { supabase } from "@/lib/supabase";
 
 export default function JobseekerProfile() {
   const { profile, role, signOut, loading } = useAuth();
@@ -317,8 +319,9 @@ export default function JobseekerProfile() {
                     : ""
                 }`}
                 onPress={
-                  item.type === "link" ? item.onPress || (() => {}) : undefined
+                  item.type === "link" ? (item as any).onPress : undefined
                 }
+                disabled={item.type !== "link"}
               >
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons
@@ -341,12 +344,17 @@ export default function JobseekerProfile() {
                 {item.type === "toggle" ? (
                   <Switch
                     value={item.value as boolean}
-                    onValueChange={item.onValueChange}
+                    onValueChange={(item as any).onValueChange}
                     trackColor={{ false: "#D1D5DB", true: "#0E7490" }}
                     thumbColor="#FFFFFF"
                   />
                 ) : (
                   <View className="flex-row items-center">
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#9CA3AF"
+                    />
                     {item.value && (
                       <Text className="text-gray-500 font-quicksandMedium mr-2">
                         {item.value}

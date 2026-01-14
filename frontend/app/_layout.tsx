@@ -135,6 +135,10 @@ function RootLayoutNav() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="jobseekers/complete-profile"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="jobseekers/Applications"
         options={{ headerShown: false }}
       />
