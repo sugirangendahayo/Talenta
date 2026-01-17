@@ -32,7 +32,7 @@ const JobSearch: React.FC<JobSearchProps> = ({
         <View className="flex flex-row items-center bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
           <Ionicons name="search" size={20} color="#6B7280" />
           <TextInput
-            placeholder="Search jobs, companies..."
+            placeholder="Search jobs, companies...."
             placeholderTextColor="#9CA3AF"
             className="flex-1 ml-3 text-gray-800 font-quicksandMedium text-base"
             onChangeText={onSearchChange}
