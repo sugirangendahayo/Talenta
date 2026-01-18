@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import {
   supabase,
   Role,
@@ -6,7 +13,6 @@ import {
   EmployerProfile,
 } from "@/lib/supabase";
 import { Session, User } from "@supabase/supabase-js";
-
 
 interface AuthContextType {
   session: Session | null;
@@ -45,106 +51,178 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   >(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user profile based on role
-  const fetchProfile = async (userId: string, userRole: Role) => {
-    try {
-      if (userRole === "jobseeker") {
-        const { data, error } = await supabase
-          .from("jobseeker_profiles")
-          .select("*")
-          .eq("id", userId)
-          .maybeSingle();
+  // Use ref to prevent race conditions
+  const isMounted = useRef(true);
+  const fetchingProfile = useRef(false);
 
-        if (error) throw error;
-        setProfile(data);
-      } else if (userRole === "employer") {
-        const { data, error } = await supabase
-          .from("employer_profiles")
-          .select("*")
-          .eq("id", userId)
-          .maybeSingle();
-
-        if (error) throw error;
-        setProfile(data);
+  // Fetch user profile based on role (memoized)
+  const fetchProfile = useCallback(
+    async (userId: string, userRole: Role): Promise<void> => {
+      // Prevent duplicate fetches
+      if (fetchingProfile.current) {
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
 
-  // Refresh profile data
-  const refreshProfile = async () => {
+      fetchingProfile.current = true;
+
+      try {
+        if (userRole === "jobseeker") {
+          const { data, error } = await supabase
+            .from("jobseeker_profiles")
+            .select("*")
+            .eq("id", userId)
+            .single();
+
+          if (error) {
+            // Profile might not exist for new users - this is OK
+            if (error.code === "PGRST116") {
+              console.log("Jobseeker profile not found - new user");
+              if (isMounted.current) setProfile(null);
+              return;
+            }
+            throw error;
+          }
+
+          if (isMounted.current) {
+            setProfile(data);
+          }
+        } else if (userRole === "employer") {
+          const { data, error } = await supabase
+            .from("employer_profiles")
+            .select("*")
+            .eq("id", userId)
+            .single();
+
+          if (error) {
+            if (error.code === "PGRST116") {
+              console.log("Employer profile not found - new user");
+              if (isMounted.current) setProfile(null);
+              return;
+            }
+            throw error;
+          }
+
+          if (isMounted.current) {
+            setProfile(data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        if (isMounted.current) {
+          setProfile(null);
+        }
+      } finally {
+        fetchingProfile.current = false;
+      }
+    },
+    []
+  );
+
+  // Refresh profile data (exposed to components)
+  const refreshProfile = useCallback(async () => {
     if (user && role) {
       await fetchProfile(user.id, role);
     }
-  };
+  }, [user, role, fetchProfile]);
 
   // Initialize auth state
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    isMounted.current = true;
 
-      if (session?.user) {
-        // Fetch role from profiles table
-        const { data: profileData, error } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .maybeSingle();
+    const initAuth = async () => {
+      try {
+        // Get initial session
+        const {
+          data: { session: initialSession },
+        } = await supabase.auth.getSession();
 
-        if (!error && profileData) {
-          const userRole = profileData.role as Role;
-          setRole(userRole);
-          await fetchProfile(session.user.id, userRole);
+        if (!isMounted.current) return;
+
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+
+        if (initialSession?.user) {
+          // Fetch role from profiles table
+          const { data: profileData, error } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", initialSession.user.id)
+            .single();
+
+          if (!isMounted.current) return;
+
+          if (!error && profileData) {
+            const userRole = profileData.role as Role;
+            setRole(userRole);
+            await fetchProfile(initialSession.user.id, userRole);
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+      } finally {
+        if (isMounted.current) {
+          setLoading(false);
         }
       }
+    };
 
-      setLoading(false);
-    });
+    initAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!isMounted.current) return;
 
-      if (session?.user) {
+      console.log("Auth state changed:", event);
+
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+
+      if (newSession?.user) {
         // Fetch role and profile
         const { data: profileData, error } = await supabase
           .from("profiles")
           .select("role")
-          .eq("id", session.user.id)
-          .maybeSingle();
+          .eq("id", newSession.user.id)
+          .single();
+
+        if (!isMounted.current) return;
 
         if (!error && profileData) {
           const userRole = profileData.role as Role;
           setRole(userRole);
-          await fetchProfile(session.user.id, userRole);
+          await fetchProfile(newSession.user.id, userRole);
         }
       } else {
         setRole(null);
         setProfile(null);
       }
 
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     });
 
     return () => {
+      isMounted.current = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
-  // Sign out function
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setRole(null);
-    setProfile(null);
-  };
+  // Sign out function (memoized)
+  const signOut = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setRole(null);
+      setProfile(null);
+    } catch (error) {
+      console.error("Error signing out:", error);
+      throw error;
+    }
+  }, []);
 
   const value = {
     session,

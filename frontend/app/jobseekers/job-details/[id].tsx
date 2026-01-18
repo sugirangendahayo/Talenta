@@ -1,3 +1,5 @@
+import { useApplyJob } from "@/app/hooks/useApplyJob";
+import InfoAlertModal from "@/components/modal/InfoAlertModal";
 import { supabase } from "@/lib/supabase";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -5,14 +7,13 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  Modal,
-  TextInput,
 } from "react-native";
-import { useApplyJob } from "@/app/hooks/useApplyJob";
 
 interface Job {
   id: string;
@@ -35,6 +36,9 @@ interface Job {
 }
 
 export default function JobDetailsScreen() {
+  const [showInfoAlert, setShowInfoAlert] = useState(false);
+  const [infoAlertTitle, setInfoAlertTitle] = useState("");
+  const [infoAlertMessage, setInfoAlertMessage] = useState("");
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [job, setJob] = useState<Job | null>(null);
@@ -105,14 +109,18 @@ export default function JobDetailsScreen() {
     const requirements = await checkRequirements(id as string);
 
     if (!requirements.hasProfile) {
-      alert("Profile Not Found\n\nPlease create your jobseeker profile first.");
+      setInfoAlertTitle("Profile Not Found");
+      setInfoAlertMessage("Please create your jobseeker profile first.");
+      setShowInfoAlert(true);
       return;
     }
 
     if (requirements.missingFields.length > 0) {
-      alert(
-        `Profile Incomplete\n\nPlease complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`
+      setInfoAlertTitle("Profile Incomplete");
+      setInfoAlertMessage(
+        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`
       );
+      setShowInfoAlert(true);
       return;
     }
 
@@ -206,6 +214,9 @@ export default function JobDetailsScreen() {
     );
   }
 
+  // State hooks must be called at the top level
+
+  // Derived state can come after hooks
   const companyName = job.employer_profiles?.company_name || "Company";
   const salary = formatSalary(job.salary_min, job.salary_max);
   const timeAgo = getTimeAgo(job.created_at);
@@ -527,6 +538,16 @@ export default function JobDetailsScreen() {
           </View>
         </View>
       </Modal>
+      <InfoAlertModal
+        visible={showInfoAlert}
+        title={infoAlertTitle}
+        message={infoAlertMessage}
+        buttonText="Go to profile"
+        onClose={() => {
+          setShowInfoAlert(false);
+          router.push("/(jobseeker-tabs)/jobseekers/Profile");
+        }}
+      />
     </View>
   );
 }
