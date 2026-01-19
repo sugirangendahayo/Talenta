@@ -63,22 +63,47 @@ class EncryptedStorage {
     }
   }
 
-  // Simple XOR encryption (fast and sufficient for this use case)
-  // For even stronger encryption, you could use expo-crypto's AES
+  // XOR encryption (React Native compatible)
   private async encrypt(data: string): Promise<string> {
     const key = await this.getEncryptionKey();
-    const encrypted = Buffer.from(data)
-      .map((byte, i) => byte ^ key.charCodeAt(i % key.length)) 
-      .toString("base64");
-    return encrypted;
+
+    // Convert string to bytes
+    const encoder = new TextEncoder();
+    const dataBytes = encoder.encode(data);
+
+    // XOR each byte with key
+    const encrypted = new Uint8Array(dataBytes.length);
+    for (let i = 0; i < dataBytes.length; i++) {
+      encrypted[i] = dataBytes[i] ^ key.charCodeAt(i % key.length);
+    }
+
+    // Convert to base64
+    let binary = "";
+    encrypted.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
   }
 
   private async decrypt(encrypted: string): Promise<string> {
     const key = await this.getEncryptionKey();
-    const data = Buffer.from(encrypted, "base64")
-      .map((byte, i) => byte ^ key.charCodeAt(i % key.length))
-      .toString("utf-8");
-    return data;
+
+    // Decode base64
+    const binary = atob(encrypted);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    // XOR decrypt
+    const decrypted = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) {
+      decrypted[i] = bytes[i] ^ key.charCodeAt(i % key.length);
+    }
+
+    // Convert back to string
+    const decoder = new TextDecoder();
+    return decoder.decode(decrypted);
   }
 
   async getItem(key: string): Promise<string | null> {
