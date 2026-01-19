@@ -171,7 +171,7 @@ export default function JobseekerProfile() {
       title: "Documents",
       icon: "folder-outline",
       items: [
-        { icon: "description", label: "Resume/CV", type: "link" },
+        { icon: "description", label: "Resume/CV", type: "link", onPress: () => router.push("/jobseekers/upload-cv") },
         { icon: "badge", label: "ID Documents", type: "link" },
         { icon: "card-membership", label: "Certifications", type: "link" },
         { icon: "attach-file", label: "Portfolio", type: "link" },

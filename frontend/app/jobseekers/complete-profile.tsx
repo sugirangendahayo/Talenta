@@ -8,10 +8,11 @@ import {
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useProfileCompletion } from "@/app/hooks/useProfileCompletion";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Platform } from "react-native";
+import PhoneInput from "react-native-phone-number-input";
 
 export default function CompleteProfileScreen() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function CompleteProfileScreen() {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newSkill, setNewSkill] = useState("");
+  const phoneInput = useRef<PhoneInput>(null);
 
   const genderOptions = ["Male", "Female", "Other", "Prefer not to say"];
   const educationLevels = [
@@ -149,19 +151,48 @@ export default function CompleteProfileScreen() {
             />
           </View>
 
-          {/* Phone */}
+          {/* Phone Number with Country Picker */}
           <View className="mb-4">
             <Text className="text-gray-700 font-quicksandSemibold mb-2">
               Phone Number *
             </Text>
-            <TextInput
-              value={formData.phone}
-              onChangeText={(text) => updateField("phone", text)}
-              placeholder="+250 XXX XXX XXX"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="phone-pad"
-              className="bg-gray-50 rounded-2xl px-4 py-3 font-quicksandMedium text-gray-800"
-            />
+            <View className="bg-gray-50 rounded-2xl overflow-hidden">
+              <PhoneInput
+                ref={phoneInput}
+                defaultValue={formData.phone}
+                defaultCode="RW"
+                layout="first"
+                onChangeFormattedText={(text) => {
+                  updateField("phone", text);
+                }}
+                containerStyle={{
+                  backgroundColor: "#F9FAFB",
+                  width: "100%",
+                  borderRadius: 16,
+                }}
+                textContainerStyle={{
+                  backgroundColor: "#F9FAFB",
+                  paddingVertical: 0,
+                }}
+                textInputStyle={{
+                  fontFamily: "Quicksand-Medium",
+                  fontSize: 15,
+                  color: "#1F2937",
+                  paddingVertical: 12,
+                }}
+                codeTextStyle={{
+                  fontFamily: "Quicksand-SemiBold",
+                  fontSize: 15,
+                  color: "#1F2937",
+                }}
+                flagButtonStyle={{
+                  paddingHorizontal: 12,
+                }}
+                countryPickerButtonStyle={{
+                  paddingHorizontal: 12,
+                }}
+              />
+            </View>
           </View>
 
           {/* Date of Birth */}
@@ -363,7 +394,7 @@ export default function CompleteProfileScreen() {
           {/* Skills List */}
           {formData.skills.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">
-              {formData.skills.map((skill: any, index: any) => (
+              {formData.skills.map((skill, index) => (
                 <View
                   key={index}
                   className="bg-cyan-50 px-3 py-2 rounded-full border border-cyan-200 flex-row items-center gap-2"
@@ -393,8 +424,8 @@ export default function CompleteProfileScreen() {
                 CV/Resume Required
               </Text>
               <Text className="text-amber-700 font-quicksandMedium text-sm">
-                You&apos;ll need to upload your CV before applying for jobs. You can
-                do this from your Profile → Documents section.
+                You&apos;ll need to upload your CV before applying for jobs. You
+                can do this from your Profile → Documents section.
               </Text>
             </View>
           </View>
@@ -428,7 +459,7 @@ export default function CompleteProfileScreen() {
                 </Text>
               </View>
               <Text className="text-green-700 font-quicksandMedium text-sm mt-1">
-                You&apos;re all set to apply for jobs!
+                You&apos;re all set to apply for jobs!!
               </Text>
             </View>
           )}

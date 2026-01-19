@@ -74,7 +74,7 @@ function RootLayoutNav() {
       !inAuthGroup &&
       !inWelcomeGroup
     ) {
-      console.log("→ Redirecting to signin (not logged in)");
+      console.log(" Redirecting to signin (not logged in)");
       router.replace("/auth/signin");
       return;
     }
@@ -136,6 +136,10 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="jobseekers/complete-profile"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="jobseekers/upload-cv"
         options={{ headerShown: false }}
       />
       <Stack.Screen

@@ -69,7 +69,7 @@ const SecureStorageAdapter = {
           await SecureStore.setItemAsync(key, value);
         } else {
           console.warn(
-            `Skipping SecureStore for large value (${sizeInBytes} bytes)`
+            `Skipping SecureStore for large value (${sizeInBytes} bytes)`,
           );
         }
       }

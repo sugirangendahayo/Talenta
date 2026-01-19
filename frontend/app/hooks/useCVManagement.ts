@@ -1,8 +1,8 @@
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner-native";
+import * as DocumentPicker from "expo-document-picker";
+import { File } from "expo-file-system";
 
 export interface CVInfo {
   url: string | null;
@@ -86,10 +86,10 @@ export function useCVManagement() {
         return false;
       }
 
-      const file = result.assets[0];
+      const pickedFile = result.assets[0];
 
       // Validate file size (max 5MB)
-      if (file.size && file.size > 5 * 1024 * 1024) {
+      if (pickedFile.size && pickedFile.size > 5 * 1024 * 1024) {
         toast.error("File too large. Maximum size is 5MB");
         return false;
       }
@@ -104,20 +104,14 @@ export function useCVManagement() {
         throw new Error("Not authenticated");
       }
 
-      // Read file as base64
-      const base64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: "base64",
-      });
+      // Create File instance from URI using the new API
+      const file = new File(pickedFile.uri);
 
-      // Convert base64 to ArrayBuffer
-      const binaryString = atob(base64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+      // Read file as bytes (Uint8Array)
+      const bytes = await file.bytes();
 
       // Create unique filename
-      const fileExt = file.name.split(".").pop();
+      const fileExt = pickedFile.name.split(".").pop();
       const timestamp = Date.now();
       const fileName = `${user.id}_cv_${timestamp}.${fileExt}`;
       const filePath = `cvs/${fileName}`;
@@ -130,10 +124,10 @@ export function useCVManagement() {
         }
       }
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage using the bytes directly
       const { error: uploadError } = await supabase.storage
         .from("documents")
-        .upload(filePath, bytes.buffer, {
+        .upload(filePath, bytes, {
           contentType: "application/pdf",
           upsert: false,
         });
