@@ -1,25 +1,29 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   RefreshControl,
   Text,
   TouchableOpacity,
   View,
-  Animated,
 } from "react-native";
 import { useJobs } from "@/app/hooks/useJobs";
+import { supabase } from "@/lib/supabase";
 
 interface HomeJobsProps {
   selectedCategory: string;
   searchQuery: string;
   onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+}
+
+interface UserProfile {
+  skills?: string[];
+  experience_level?: string;
 }
 
 const HomeJobs: React.FC<HomeJobsProps> = ({
@@ -28,6 +32,41 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
   onScroll,
 }) => {
   const router = useRouter();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // Fetch user profile on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from("jobseeker_profiles")
+            .select("skills, experience_level")
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            setUserProfile({
+              skills: profile.skills || [],
+              experience_level: profile.experience_level || "",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   const {
     jobs,
     loading,
@@ -43,9 +82,9 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
     category: selectedCategory,
     searchQuery: searchQuery,
     pageSize: 10,
+    recommended: true, // Enable recommendations
+    userProfile: userProfile || undefined, // Pass user profile
   });
-  
-  
 
   const handleJobPress = (jobId: string) => {
     router.push({
@@ -99,7 +138,6 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
                   shadowRadius: 3,
                 }}
               >
-                {/* Placeholder logo - you can fetch actual logos later */}
                 <Text className="text-2xl font-quicksandBold text-cyan-600">
                   {companyName.charAt(0).toUpperCase()}
                 </Text>
@@ -160,27 +198,44 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
     );
   };
 
-  const renderHeader = () => (
-    <>
-      {/* New Jobs Banner (Twitter-style) */}
-      {newJobsCount > 0 && (
-        <TouchableOpacity
-          className="mx-4 mb-3 bg-cyan-600 p-3 rounded-2xl flex flex-row items-center justify-center"
-          onPress={loadNewJobs}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="arrow-up" size={16} color="white" />
-          <Text className="text-white font-quicksandBold text-sm ml-2">
-            {newJobsCount} new {newJobsCount === 1 ? "job" : "jobs"} available
-          </Text>
-        </TouchableOpacity>
-      )}
+  const renderHeader = () => {
+    // Show recommendation badge only when conditions are met
+    const isRecommending =
+      userProfile &&
+      !searchQuery &&
+      selectedCategory === "all" &&
+      userProfile.skills &&
+      userProfile.skills.length > 0;
 
-      <Text className="text-2xl font-quicksandBold text-gray-800 px-4 pb-2">
-        Recommended for you!
-      </Text>
-    </>
-  );
+    return (
+      <>
+        {/* New Jobs Banner (Twitter-style) */}
+        {newJobsCount > 0 && (
+          <TouchableOpacity
+            className="mx-4 mb-3 bg-cyan-600 p-3 rounded-2xl flex flex-row items-center justify-center"
+            onPress={loadNewJobs}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="arrow-up" size={16} color="white" />
+            <Text className="text-white font-quicksandBold text-sm ml-2">
+              {newJobsCount} new {newJobsCount === 1 ? "job" : "jobs"} available
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <View className="px-4 pb-2">
+          <Text className="text-2xl font-quicksandBold text-gray-800">
+            {isRecommending ? "Recommended for you!" : "Available Jobs"}
+          </Text>
+          {isRecommending && (
+            <Text className="text-sm font-quicksandMedium text-gray-500 mt-1">
+              Based on your skills and experience
+            </Text>
+          )}
+        </View>
+      </>
+    );
+  };
 
   const renderFooter = () => {
     if (!loadingMore) return null;
@@ -193,7 +248,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
   };
 
   const renderEmptyState = () => {
-    if (loading) return null;
+    if (loading || profileLoading) return null;
 
     return (
       <View className="flex-1 items-center justify-center flex py-20 px-8">
@@ -208,7 +263,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
     );
   };
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50">
         <ActivityIndicator size="large" color="#0E7490" />

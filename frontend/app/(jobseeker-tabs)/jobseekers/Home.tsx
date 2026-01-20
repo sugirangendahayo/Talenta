@@ -1,9 +1,8 @@
+// app/(jobseeker-tabs)/jobseekers/Home.tsx
 import HomeHeader from "@/components/jobseeker/HomeHeader";
 import HomeJobs from "@/components/jobseeker/HomeJobs";
 import SearchAndSort from "@/components/jobseeker/SearchAndSort";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import jsonData from "@/data/jobs.json";
-import { JobsData } from "@/types/job.types";
 import { useState, useRef } from "react";
 import { View, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,7 +12,6 @@ interface Category {
   name: string;
 }
 
-// Mapping for pretty display names
 const categoryNames: { [key: string]: string } = {
   it: "IT & Software",
   design: "Design",
@@ -31,18 +29,12 @@ const categoryNames: { [key: string]: string } = {
 };
 
 export default function Home() {
-  const data = jsonData as JobsData;
-  const jobs = data.jobs;
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
 
-  const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
   const categories: Category[] = [
     { id: "all", name: "All" },
-    ...uniqueCategories.map((cat) => ({
-      id: cat,
-      name: categoryNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
-    })),
+    ...Object.entries(categoryNames).map(([id, name]) => ({ id, name })),
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -53,7 +45,7 @@ export default function Home() {
     const scrollDirection =
       currentScrollY > lastScrollY.current ? "down" : "up";
 
-    if (scrollDirection === "down" && currentScrollY > 50) {
+    if (scrollDirection === "down" && currentScrollY > 0) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
       setIsVisible(true);

@@ -17,7 +17,6 @@ export interface Job {
   status: string;
   created_at: string;
   updated_at: string;
-  // Joined data from employer_profiles
   employer_profiles?: {
     company_name: string;
     email: string;
@@ -28,10 +27,21 @@ interface UseJobsOptions {
   category?: string;
   searchQuery?: string;
   pageSize?: number;
+  recommended?: boolean; // NEW: For personalized recommendations
+  userProfile?: {
+    skills?: string[];
+    experience_level?: string;
+  };
 }
 
 export function useJobs(options: UseJobsOptions = {}) {
-  const { category = "all", searchQuery = "", pageSize = 10 } = options;
+  const {
+    category = "all",
+    searchQuery = "",
+    pageSize = 10,
+    recommended = false,
+    userProfile,
+  } = options;
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +51,60 @@ export function useJobs(options: UseJobsOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [newJobsCount, setNewJobsCount] = useState(0);
   const lastFetchedAt = useRef<string | null>(null);
+
+  // Smart recommendation algorithm
+  const recommendJobs = useCallback(
+    (jobs: Job[], profile: typeof userProfile) => {
+      if (!profile) return jobs;
+
+      const scoredJobs = jobs.map((job) => {
+        let score = 0;
+
+        // Score based on matching skills (highest priority)
+        if (
+          profile.skills &&
+          profile.skills.length > 0 &&
+          job.skills_required
+        ) {
+          const userSkillsLower = profile.skills.map((s) => s.toLowerCase());
+          const jobSkillsLower = job.skills_required.map((s) =>
+            s.toLowerCase(),
+          );
+
+          const matchingSkills = userSkillsLower.filter((skill) =>
+            jobSkillsLower.some((jobSkill) => jobSkill.includes(skill)),
+          );
+
+          score += matchingSkills.length * 10; // 10 points per matching skill
+        }
+
+        // Score based on experience level match
+        if (
+          profile.experience_level &&
+          job.experience_level &&
+          profile.experience_level.toLowerCase() ===
+            job.experience_level.toLowerCase()
+        ) {
+          score += 5; // 5 points for matching experience
+        }
+
+        return { ...job, _score: score };
+      });
+
+      // Sort by score (highest first), then by created_at
+      return scoredJobs
+        .sort((a, b) => {
+          if (b._score !== a._score) {
+            return b._score - a._score;
+          }
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        })
+        .map(({ _score, ...job }) => job); // Remove score from final result
+    },
+    [],
+  );
 
   // Fetch jobs with cursor pagination
   const fetchJobs = useCallback(
@@ -56,7 +120,7 @@ export function useJobs(options: UseJobsOptions = {}) {
           setError(null);
         }
 
-        // Build base query with JOIN
+        // Build base query
         let query = supabase
           .from("jobs")
           .select(
@@ -67,7 +131,7 @@ export function useJobs(options: UseJobsOptions = {}) {
               email
             )
           `,
-            { count: "exact" }
+            { count: "exact" },
           )
           .eq("status", "active")
           .order("created_at", { ascending: false })
@@ -78,15 +142,15 @@ export function useJobs(options: UseJobsOptions = {}) {
           query = query.eq("category", category);
         }
 
-        // Apply search filter (searches in title, location, company name)
+        // Apply search filter
         if (searchQuery.trim()) {
           const searchLower = searchQuery.toLowerCase();
           query = query.or(
-            `title.ilike.%${searchLower}%,location.ilike.%${searchLower}%`
+            `title.ilike.%${searchLower}%,location.ilike.%${searchLower}%`,
           );
         }
 
-        // Cursor pagination: fetch jobs created BEFORE the cursor timestamp
+        // Cursor pagination
         if (cursor) {
           query = query.lt("created_at", cursor);
         }
@@ -95,28 +159,28 @@ export function useJobs(options: UseJobsOptions = {}) {
 
         if (fetchError) throw fetchError;
 
-        const fetchedJobs = data || [];
+        let fetchedJobs = data || [];
+
+        // Apply recommendation logic if enabled
+        if (recommended && userProfile && !searchQuery && category === "all") {
+          fetchedJobs = recommendJobs(fetchedJobs, userProfile);
+        }
 
         if (isRefresh) {
           setJobs(fetchedJobs);
-          // Reset "new jobs" count after refresh
           setNewJobsCount(0);
-          // Update last fetched timestamp
           if (fetchedJobs.length > 0) {
             lastFetchedAt.current = fetchedJobs[0].created_at;
           }
         } else if (cursor) {
-          // Append for infinite scroll
           setJobs((prev) => [...prev, ...fetchedJobs]);
         } else {
           setJobs(fetchedJobs);
-          // Set initial timestamp
           if (fetchedJobs.length > 0) {
             lastFetchedAt.current = fetchedJobs[0].created_at;
           }
         }
 
-        // Check if there are more jobs to load
         setHasMore(fetchedJobs.length === pageSize);
       } catch (err: any) {
         console.error("Error fetching jobs:", err);
@@ -127,10 +191,10 @@ export function useJobs(options: UseJobsOptions = {}) {
         setLoadingMore(false);
       }
     },
-    [category, searchQuery, pageSize]
+    [category, searchQuery, pageSize, recommended, userProfile, recommendJobs],
   );
 
-  // Check for new jobs (called on pull-down or focus)
+  // Check for new jobs
   const checkForNewJobs = useCallback(async () => {
     if (!lastFetchedAt.current) return;
 
@@ -140,10 +204,7 @@ export function useJobs(options: UseJobsOptions = {}) {
         .select("id", { count: "exact", head: true })
         .eq("status", "active")
         .gt("created_at", lastFetchedAt.current);
-        
-        
 
-      // Apply same filters
       if (category && category !== "all") {
         query = query.eq("category", category);
       }
@@ -160,7 +221,7 @@ export function useJobs(options: UseJobsOptions = {}) {
     }
   }, [category]);
 
-  // Load more (infinite scroll)
+  // Load more
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore || jobs.length === 0) return;
 
@@ -168,13 +229,13 @@ export function useJobs(options: UseJobsOptions = {}) {
     fetchJobs(lastJob.created_at);
   }, [jobs, loadingMore, hasMore, fetchJobs]);
 
-  // Refresh (pull-to-refresh)
+  // Refresh
   const refresh = useCallback(() => {
     setNewJobsCount(0);
     fetchJobs(undefined, true);
   }, [fetchJobs]);
 
-  // Load new jobs (when banner is clicked)
+  // Load new jobs
   const loadNewJobs = useCallback(() => {
     setNewJobsCount(0);
     fetchJobs(undefined, true);
@@ -191,7 +252,7 @@ export function useJobs(options: UseJobsOptions = {}) {
       if (jobs.length > 0) {
         checkForNewJobs();
       }
-    }, [checkForNewJobs, jobs.length])
+    }, [checkForNewJobs, jobs.length]),
   );
 
   return {
