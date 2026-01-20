@@ -1,3 +1,4 @@
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import {
   Quicksand_400Regular,
   Quicksand_500Medium,
@@ -5,17 +6,16 @@ import {
   Quicksand_700Bold,
   useFonts,
 } from "@expo-google-fonts/quicksand";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Text as RNText, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import "../global.css";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const unstable_settings = { anchor: "jobseeker-tabs" };
+export const unstable_settings = { anchor: "(jobseeker-tabs)" };
 
 // Navigation logic component
 function RootLayoutNav() {
@@ -23,7 +23,7 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
-    null
+    null,
   );
   const [isReady, setIsReady] = useState(false);
 
