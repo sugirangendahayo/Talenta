@@ -1,24 +1,28 @@
+// Step2.tsx (Updated)
 import { useRouter } from "expo-router";
 import { Pressable, Text, View, ScrollView } from "react-native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/contexts/AuthContext"; // NEW: Import useAuth
 
 export default function Step2() {
-   const router = useRouter();
+  const router = useRouter();
+  const { setHasSeenOnboarding } = useAuth(); // NEW: Destructure from context
 
-   const handleGetStarted = async () => {
-     try {
-       // Mark onboarding as seen
-       await AsyncStorage.setItem("hasSeenOnboarding", "true");
-       // Navigate to signin
-       router.replace("/auth/signin");
-     } catch (error) {
-       console.error("Error setting onboarding flag:", error);
-       router.replace("/auth/signin");
-     }
-   };
+  const handleGetStarted = async () => {
+    try {
+      // Mark onboarding as seen
+      await AsyncStorage.setItem("hasSeenOnboarding", "true");
+      setHasSeenOnboarding(true); // NEW: Update context state immediately
+      // Navigate to signin
+      router.replace("/auth/signin");
+    } catch (error) {
+      console.error("Error setting onboarding flag:", error);
+      router.replace("/auth/signin");
+    }
+  };
 
   const features = [
     {

@@ -1,3 +1,4 @@
+// _layout.tsx (Updated)
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import {
   Quicksand_400Regular,
@@ -6,7 +7,7 @@ import {
   Quicksand_700Bold,
   useFonts,
 } from "@expo-google-fonts/quicksand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// REMOVED: AsyncStorage import (no longer needed here)
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text as RNText, View } from "react-native";
@@ -19,29 +20,18 @@ export const unstable_settings = { anchor: "(jobseeker-tabs)" };
 
 // Navigation logic component
 function RootLayoutNav() {
-  const { user, role, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading, hasSeenOnboarding } = useAuth(); // UPDATED: Add hasSeenOnboarding from context
   const segments = useSegments();
   const router = useRouter();
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
-    null,
-  );
+  // REMOVED: Local hasSeenOnboarding state
   const [isReady, setIsReady] = useState(false);
 
-  // Check if user has seen onboarding on mount
+  // UPDATED: New useEffect to set isReady when hasSeenOnboarding is loaded (not null)
   useEffect(() => {
-    const checkOnboarding = async () => {
-      try {
-        const value = await AsyncStorage.getItem("hasSeenOnboarding");
-        setHasSeenOnboarding(value === "true");
-      } catch (error) {
-        console.error("Error checking onboarding:", error);
-        setHasSeenOnboarding(false);
-      } finally {
-        setIsReady(true);
-      }
-    };
-    checkOnboarding();
-  }, []);
+    if (hasSeenOnboarding !== null) {
+      setIsReady(true);
+    }
+  }, [hasSeenOnboarding]);
 
   // Navigation logic
   useEffect(() => {
@@ -104,7 +94,8 @@ function RootLayoutNav() {
   }, [user, role, authLoading, segments, hasSeenOnboarding, isReady]);
 
   // Show loading screen while checking initial state
-  if (!isReady || authLoading) {
+  if (!isReady || authLoading || hasSeenOnboarding === null) {
+    // UPDATED: Add check for hasSeenOnboarding === null
     return (
       <View
         style={{

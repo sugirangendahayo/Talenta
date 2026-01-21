@@ -13,6 +13,7 @@ import {
   EmployerProfile,
 } from "@/lib/supabase";
 import { Session, User } from "@supabase/supabase-js";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // NEW: Import for onboarding storage
 
 interface AuthContextType {
   session: Session | null;
@@ -22,6 +23,9 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  // NEW: Add onboarding state
+  hasSeenOnboarding: boolean | null;
+  setHasSeenOnboarding: (value: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -32,6 +36,9 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
+  // NEW: Defaults for onboarding
+  hasSeenOnboarding: null,
+  setHasSeenOnboarding: () => {},
 });
 
 export const useAuth = () => {
@@ -50,10 +57,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     JobseekerProfile | EmployerProfile | null
   >(null);
   const [loading, setLoading] = useState(true);
+  // NEW: State for onboarding
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
+    null,
+  );
 
   // Use ref to prevent race conditions
   const isMounted = useRef(true);
   const fetchingProfile = useRef(false);
+
+  // NEW: Load onboarding status on mount
+  useEffect(() => {
+    const loadOnboardingStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem("hasSeenOnboarding");
+        setHasSeenOnboarding(value === "true");
+      } catch (error) {
+        console.error("Error loading onboarding status:", error);
+        setHasSeenOnboarding(false); // Default to false on error
+      }
+    };
+    loadOnboardingStatus();
+  }, []);
 
   // Fetch user profile based on role (memoized)
   const fetchProfile = useCallback(
@@ -115,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchingProfile.current = false;
       }
     },
-    []
+    [],
   );
 
   // Refresh profile data (exposed to components)
@@ -218,6 +243,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setRole(null);
       setProfile(null);
+      // NEW: Optionally reset onboarding on sign out (if desired; otherwise omit)
+      // setHasSeenOnboarding(false);
     } catch (error) {
       console.error("Error signing out:", error);
       throw error;
@@ -232,6 +259,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signOut,
     refreshProfile,
+    // NEW: Include in context value
+    hasSeenOnboarding,
+    setHasSeenOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
