@@ -1,7 +1,8 @@
-// app/(employer)/applicants.tsx - Complete Example
+// app/(employer)/applicants.tsx - FIXED VERSION with Type Transform
 import ApplicantCard from "@/components/employer/ApplicantCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { Applicant } from "@/types/job.types";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -15,13 +16,17 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface Applicant {
+type FilterStatus = "all" | "pending" | "shortlisted" | "hired" | "rejected";
+
+// Supabase returns arrays for relationships, so we define the raw type
+type RawApplication = {
   id: string;
   job_id: string;
   jobseeker_id: string;
   status: "pending" | "shortlisted" | "hired" | "rejected";
-  created_at: string;
   cover_letter?: string;
+  created_at: string;
+  updated_at: string;
   jobseeker_profiles: {
     first_name: string;
     last_name: string;
@@ -35,10 +40,7 @@ interface Applicant {
     title: string;
     employer_id: string;
   };
-}
-
-type FilterStatus = "all" | "pending" | "shortlisted" | "hired" | "rejected";
-
+};
 export default function ApplicantsScreen() {
   const { user } = useAuth();
   const params = useLocalSearchParams();
@@ -52,20 +54,48 @@ export default function ApplicantsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>("all");
   const [jobTitle, setJobTitle] = useState<string>("");
 
+  // Transform raw Supabase data to match Applicant type
+const transformApplications = (rawApps: RawApplication[]): Applicant[] => {
+  return rawApps
+    .filter((app) => app.jobseeker_profiles && app.jobs)
+    .map((app) => ({
+      id: app.id,
+      job_id: app.job_id,
+      jobseeker_id: app.jobseeker_id,
+      status: app.status,
+      cover_letter: app.cover_letter,
+      created_at: app.created_at,
+      jobseeker_profiles: app.jobseeker_profiles,
+      jobs: app.jobs,
+    }));
+};
+
   // Fetch applicants
   const fetchApplicants = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user found");
+      return;
+    }
 
     try {
       setIsLoading(true);
       setError(null);
 
+      console.log("Fetching applicants for employer:", user.id);
+
+      // Query with explicit foreign key relationships
       let query = supabase
         .from("job_applications")
         .select(
           `
-          *,
-          jobseeker_profiles!inner(
+          id,
+          job_id,
+          jobseeker_id,
+          status,
+          cover_letter,
+          created_at,
+          updated_at,
+          jobseeker_profiles!job_applications_jobseeker_id_fkey (
             first_name,
             last_name,
             email,
@@ -74,7 +104,7 @@ export default function ApplicantsScreen() {
             skills,
             cv_document_url
           ),
-          jobs!inner(
+          jobs!job_applications_job_id_fkey (
             title,
             employer_id
           )
@@ -85,6 +115,7 @@ export default function ApplicantsScreen() {
 
       // Filter by specific job if jobId provided
       if (jobId) {
+        console.log("Filtering by job ID:", jobId);
         query = query.eq("job_id", jobId);
 
         // Get job title
@@ -99,10 +130,21 @@ export default function ApplicantsScreen() {
 
       const { data, error: fetchError } = await query;
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error("Fetch error:", fetchError);
+        throw fetchError;
+      }
 
-      setApplicants(data || []);
-      applyFilter(data || [], selectedFilter);
+      console.log("Fetched applications:", data?.length || 0);
+      console.log("Sample raw data:", data?.[0]);
+
+    const transformedData = transformApplications(
+      (data || []) as unknown as RawApplication[],
+    );
+      console.log("Transformed data:", transformedData[0]);
+
+      setApplicants(transformedData);
+      applyFilter(transformedData, selectedFilter);
     } catch (err) {
       console.error("Error fetching applicants:", err);
       setError(
@@ -162,10 +204,10 @@ export default function ApplicantsScreen() {
   }) => (
     <TouchableOpacity
       onPress={() => handleFilterChange(status)}
-      className={`px-4 py-2 rounded-full bg-cyan-700 border-cyan-700 border border ${
+      className={`px-4 py-2 rounded-full border ${
         selectedFilter === status
-          ? "bg-cyan-700 border-cyan-700 border"
-          : "bg-white border-gray-300 border"
+          ? "bg-cyan-700 border-cyan-700"
+          : "bg-white border-gray-300"
       }`}
     >
       <Text
@@ -180,9 +222,9 @@ export default function ApplicantsScreen() {
 
   // Empty state
   const renderEmptyState = () => (
-    <View className="w-24 h-24 rounded-full bg-gray-100 items-center justify-center flex mb-6">
+    <View className="flex-1 items-center justify-center px-6 py-20">
       <View
-        className="w-24 h-24 rounded-full bg-gray-100 items-center justify-center flex mb-6"
+        className="w-24 h-24 rounded-full bg-gray-100 items-center justify-center mb-6"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
@@ -230,7 +272,7 @@ export default function ApplicantsScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="bg-white border-b border-gray-200 px-4 py-4">
-        <View className="flex flex-row items-center mb-3">
+        <View className="flex-row items-center mb-3">
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
             <Ionicons name="arrow-back" size={24} color="#111827" />
           </TouchableOpacity>
@@ -250,8 +292,9 @@ export default function ApplicantsScreen() {
             </Text>
           </View>
         </View>
+
         {/* Filters */}
-        <View className="flex flex-row gap-2 flex-wrap">
+        <View className="flex-row gap-2 flex-wrap">
           <FilterButton status="all" label="All" count={counts.all} />
           <FilterButton
             status="pending"
@@ -274,7 +317,7 @@ export default function ApplicantsScreen() {
 
       {/* Applicants List */}
       {isLoading && applicants.length === 0 ? (
-        <View className="flex-1 items-center justify-center flex">
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="font-quicksandMedium text-gray-500 mt-4">
             Loading applicants...

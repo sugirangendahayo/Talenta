@@ -1,4 +1,4 @@
-// components/ApplicantCard.tsx
+// components/employer/ApplicantCard.tsx - Using shared types
 import React, { useState } from "react";
 import {
   View,
@@ -12,27 +12,7 @@ import InterviewDetailsModal, {
   InterviewDetails,
 } from "@/components/modal/InterviewDetailsModal";
 import { useApplicationStatus } from "@/hooks/useApplicationStatus";
-
-interface Applicant {
-  id: string;
-  job_id: string;
-  jobseeker_id: string;
-  status: "pending" | "shortlisted" | "hired" | "rejected";
-  created_at: string;
-  cover_letter?: string;
-  jobseeker_profiles: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone?: string;
-    experience_level?: string;
-    skills?: string[];
-    cv_document_url?: string;
-  };
-  jobs: {
-    title: string;
-  };
-}
+import { Applicant } from "@/types/job.types";
 
 interface ApplicantCardProps {
   applicant: Applicant;

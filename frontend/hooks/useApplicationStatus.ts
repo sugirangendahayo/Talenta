@@ -1,10 +1,9 @@
 // hooks/useApplicationStatus.ts
-// Updated to use Supabase Edge Functions (no separate backend needed!)
+// Updated to use Supabase Edge Functions + shared types
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { InterviewDetails } from "@/components/modal/InterviewDetailsModal";
-
-type ApplicationStatus = "pending" | "shortlisted" | "hired" | "rejected";
+import { ApplicationStatus } from "@/types/job.types";
 
 interface UpdateStatusParams {
   applicationId: string;
@@ -44,7 +43,7 @@ export function useApplicationStatus() {
             employer_id,
             title
           )
-        `,
+        `
         )
         .eq("id", applicationId)
         .single();
@@ -176,7 +175,7 @@ export function useApplicationStatus() {
 
   const shortlistWithInterview = async (
     applicationId: string,
-    interviewDetails: InterviewDetails,
+    interviewDetails: InterviewDetails
   ) => {
     return updateApplicationStatus({
       applicationId,
