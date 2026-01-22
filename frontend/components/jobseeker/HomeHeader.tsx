@@ -1,10 +1,14 @@
-import Octicons from "@expo/vector-icons/Octicons";
-import { ImageBackground, Text, TouchableOpacity, View } from "react-native";
+// components/HomeHeader.tsx (Updated with Notifications)
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import { JobseekerProfile } from "@/lib/supabase";
+import Octicons from "@expo/vector-icons/Octicons";
+import { router } from "expo-router";
+import { ImageBackground, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeHeader() {
   const { profile, role } = useAuth();
+  const { unreadCount } = useNotifications();
 
   // Get first name from profile
   const getFirstName = () => {
@@ -16,6 +20,10 @@ export default function HomeHeader() {
   };
 
   const firstName = getFirstName();
+
+  const handleNotificationsPress = () => {
+    router.push("/jobseekers/notifications");
+  };
 
   return (
     <View className="my-2">
@@ -41,8 +49,8 @@ export default function HomeHeader() {
             </Text>
           </View>
         </View>
-        <View className="p-3 rounded-full bg-white">
-          <TouchableOpacity>
+        <View className="p-3 rounded-full bg-white relative">
+          <TouchableOpacity onPress={handleNotificationsPress}>
             {/* Inner shadow */}
             <View
               className="absolute inset-0 rounded-full"
@@ -53,7 +61,14 @@ export default function HomeHeader() {
                 shadowRadius: 3,
               }}
             />
-            <View className="w-2 h-2 bg-red-500 rounded-full absolute right-0 top-[-10%]" />
+            {/* Badge for unread count */}
+            {unreadCount > 0 && (
+              <View className="absolute -right-1 -top-1 bg-red-500 rounded-full min-w-[20px] h-5 items-center justify-center flex px-1 z-10">
+                <Text className="text-white font-quicksandBold text-xs">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            )}
             <Octicons name="bell" size={24} color="#0E7490" />
           </TouchableOpacity>
         </View>

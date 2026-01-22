@@ -1,4 +1,5 @@
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useApplications } from "@/hooks/useApplications";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
@@ -13,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useApplications } from "@/app/hooks/useApplications";
 
 export default function Applications() {
   const router = useRouter();
@@ -110,7 +110,7 @@ export default function Applications() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -221,7 +221,7 @@ export default function Applications() {
                 const status = getStatusColor(application.status);
                 const salary = formatSalary(
                   application.jobs.salary_min,
-                  application.jobs.salary_max
+                  application.jobs.salary_max,
                 );
                 const timeAgo = getTimeAgo(application.created_at);
                 const companyName =
@@ -335,7 +335,7 @@ export default function Applications() {
                           onPress={() =>
                             handleWithdraw(
                               application.id,
-                              application.jobs.title
+                              application.jobs.title,
                             )
                           }
                           className="flex-1 bg-red-50 py-2 rounded-2xl flex flex-row items-center justify-center"

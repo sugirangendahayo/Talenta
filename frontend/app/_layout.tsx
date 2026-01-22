@@ -137,6 +137,10 @@ function RootLayoutNav() {
         name="jobseekers/Applications"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="jobseekers/notifications"
+        options={{ headerShown: false }}
+      />
 
       {/* Auth screens */}
       <Stack.Screen name="auth/signin" options={{ headerShown: false }} />

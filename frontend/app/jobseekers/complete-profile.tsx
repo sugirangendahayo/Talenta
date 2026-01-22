@@ -1,17 +1,17 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-} from "react-native";
+import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState, useRef } from "react";
-import { useProfileCompletion } from "@/app/hooks/useProfileCompletion";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Platform } from "react-native";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import PhoneInput from "react-native-phone-number-input";
 
 export default function CompleteProfileScreen() {

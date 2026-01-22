@@ -1,3 +1,5 @@
+import { useJobs } from "@/hooks/useJobs";
+import { supabase } from "@/lib/supabase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
@@ -12,8 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useJobs } from "@/app/hooks/useJobs";
-import { supabase } from "@/lib/supabase";
 
 interface HomeJobsProps {
   selectedCategory: string;

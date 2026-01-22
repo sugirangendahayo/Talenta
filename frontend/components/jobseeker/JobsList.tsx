@@ -1,5 +1,5 @@
 // components/jobseeker/JobsList.tsx
-import { useJobs } from "@/app/hooks/useJobs";
+import { useJobs } from "@/hooks/useJobs";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";

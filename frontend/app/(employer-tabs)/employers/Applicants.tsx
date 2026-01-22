@@ -1,340 +1,309 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+// app/(employer)/applicants.tsx - Complete Example
+import ApplicantCard from "@/components/employer/ApplicantCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Applicants() {
-  const [activeFilter, setActiveFilter] = useState("all");
+interface Applicant {
+  id: string;
+  job_id: string;
+  jobseeker_id: string;
+  status: "pending" | "shortlisted" | "hired" | "rejected";
+  created_at: string;
+  cover_letter?: string;
+  jobseeker_profiles: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    experience_level?: string;
+    skills?: string[];
+    cv_document_url?: string;
+  };
+  jobs: {
+    title: string;
+    employer_id: string;
+  };
+}
 
-  const filters = [
-    { id: "all", label: "All" },
-    { id: "pending", label: "Pending" },
-    { id: "shortlisted", label: "Shortlisted" },
-    { id: "rejected", label: "Rejected" },
-  ];
+type FilterStatus = "all" | "pending" | "shortlisted" | "hired" | "rejected";
 
-  const applicants = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      position: "Frontend Developer",
-      status: "pending",
-      appliedDate: "2 hours ago",
-      experience: "5 years",
-      location: "New York, NY",
-      matchScore: 95,
-      skills: ["React", "TypeScript", "Tailwind"],
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      avatar: "https://i.pravatar.cc/150?img=12",
-      position: "Full Stack Engineer",
-      status: "shortlisted",
-      appliedDate: "1 day ago",
-      experience: "7 years",
-      location: "San Francisco, CA",
-      matchScore: 92,
-      skills: ["Node.js", "React", "MongoDB"],
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      avatar: "https://i.pravatar.cc/150?img=5",
-      position: "Frontend Developer",
-      status: "rejected",
-      appliedDate: "3 days ago",
-      experience: "3 years",
-      location: "Austin, TX",
-      matchScore: 78,
-      skills: ["Vue.js", "JavaScript", "CSS"],
-    },
-    {
-      id: 4,
-      name: "David Kim",
-      avatar: "https://i.pravatar.cc/150?img=14",
-      position: "DevOps Engineer",
-      status: "pending",
-      appliedDate: "1 week ago",
-      experience: "6 years",
-      location: "Seattle, WA",
-      matchScore: 88,
-      skills: ["AWS", "Docker", "Kubernetes"],
-    },
-    {
-      id: 5,
-      name: "Jessica Williams",
-      avatar: "https://i.pravatar.cc/150?img=9",
-      position: "Backend Developer",
-      status: "shortlisted",
-      appliedDate: "2 weeks ago",
-      experience: "4 years",
-      location: "Boston, MA",
-      matchScore: 90,
-      skills: ["Python", "Django", "PostgreSQL"],
-    },
-  ];
+export default function ApplicantsScreen() {
+  const { user } = useAuth();
+  const params = useLocalSearchParams();
+  const jobId = params.jobId as string | undefined;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return {
-          bg: "bg-yellow-100",
-          text: "text-yellow-700",
-          label: "Pending",
-        };
-      case "shortlisted":
-        return {
-          bg: "bg-green-100",
-          text: "text-green-700",
-          label: "Shortlisted",
-        };
-      case "rejected":
-        return { bg: "bg-red-100", text: "text-red-700", label: "Rejected" };
-      default:
-        return { bg: "bg-gray-100", text: "text-gray-700", label: "Unknown" };
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [filteredApplicants, setFilteredApplicants] = useState<Applicant[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<FilterStatus>("all");
+  const [jobTitle, setJobTitle] = useState<string>("");
+
+  // Fetch applicants
+  const fetchApplicants = async () => {
+    if (!user) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      let query = supabase
+        .from("job_applications")
+        .select(
+          `
+          *,
+          jobseeker_profiles!inner(
+            first_name,
+            last_name,
+            email,
+            phone,
+            experience_level,
+            skills,
+            cv_document_url
+          ),
+          jobs!inner(
+            title,
+            employer_id
+          )
+        `,
+        )
+        .eq("jobs.employer_id", user.id)
+        .order("created_at", { ascending: false });
+
+      // Filter by specific job if jobId provided
+      if (jobId) {
+        query = query.eq("job_id", jobId);
+
+        // Get job title
+        const { data: job } = await supabase
+          .from("jobs")
+          .select("title")
+          .eq("id", jobId)
+          .single();
+
+        if (job) setJobTitle(job.title);
+      }
+
+      const { data, error: fetchError } = await query;
+
+      if (fetchError) throw fetchError;
+
+      setApplicants(data || []);
+      applyFilter(data || [], selectedFilter);
+    } catch (err) {
+      console.error("Error fetching applicants:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load applicants",
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "hourglass-empty";
-      case "shortlisted":
-        return "check-circle";
-      case "rejected":
-        return "cancel";
-      default:
-        return "help";
+  // Apply filter
+  const applyFilter = (data: Applicant[], filter: FilterStatus) => {
+    if (filter === "all") {
+      setFilteredApplicants(data);
+    } else {
+      setFilteredApplicants(data.filter((app) => app.status === filter));
     }
   };
 
-  const filteredApplicants =
-    activeFilter === "all"
-      ? applicants
-      : applicants.filter((app) => app.status === activeFilter);
+  // Handle filter change
+  const handleFilterChange = (filter: FilterStatus) => {
+    setSelectedFilter(filter);
+    applyFilter(applicants, filter);
+  };
 
-  return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-white px-6 pt-16 pb-6">
-        <View className="flex flex-row items-center justify-between">
-          <View>
-            <Text className="font-quicksandBold text-2xl text-gray-800">
-              Applicants
-            </Text>
-            <Text className="text-gray-500 font-quicksandMedium mt-1">
-              Manage your job applicants
-            </Text>
-          </View>
-          <TouchableOpacity className="bg-cyan-100 p-3 rounded-2xl">
-            <Ionicons name="filter" size={20} color="#0E7490" />
+  // Refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchApplicants();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    fetchApplicants();
+  }, [user, jobId]);
+
+  // Get counts for each status
+  const getCounts = () => ({
+    all: applicants.length,
+    pending: applicants.filter((a) => a.status === "pending").length,
+    shortlisted: applicants.filter((a) => a.status === "shortlisted").length,
+    hired: applicants.filter((a) => a.status === "hired").length,
+    rejected: applicants.filter((a) => a.status === "rejected").length,
+  });
+
+  const counts = getCounts();
+
+  // Filter button component
+  const FilterButton = ({
+    status,
+    label,
+    count,
+  }: {
+    status: FilterStatus;
+    label: string;
+    count: number;
+  }) => (
+    <TouchableOpacity
+      onPress={() => handleFilterChange(status)}
+      className={`px-4 py-2 rounded-full bg-cyan-700 border-cyan-700 border border ${
+        selectedFilter === status
+          ? "bg-cyan-700 border-cyan-700 border"
+          : "bg-white border-gray-300 border"
+      }`}
+    >
+      <Text
+        className={`font-quicksandBold text-sm ${
+          selectedFilter === status ? "text-white" : "text-gray-700"
+        }`}
+      >
+        {label} ({count})
+      </Text>
+    </TouchableOpacity>
+  );
+
+  // Empty state
+  const renderEmptyState = () => (
+    <View className="w-24 h-24 rounded-full bg-gray-100 items-center justify-center flex mb-6">
+      <View
+        className="w-24 h-24 rounded-full bg-gray-100 items-center justify-center flex mb-6"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        }}
+      >
+        <Ionicons name="people-outline" size={48} color="#9CA3AF" />
+      </View>
+      <Text className="font-quicksandBold text-xl text-gray-900 mb-2">
+        No {selectedFilter !== "all" ? selectedFilter : ""} Applicants
+      </Text>
+      <Text className="font-quicksandMedium text-sm text-gray-500 text-center">
+        {selectedFilter === "all"
+          ? "Applications will appear here when candidates apply to your jobs."
+          : `No ${selectedFilter} applications at the moment.`}
+      </Text>
+    </View>
+  );
+
+  // Error state
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center px-6">
+          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+          <Text className="font-quicksandBold text-xl text-gray-900 mt-4 mb-2">
+            Something Went Wrong
+          </Text>
+          <Text className="font-quicksandMedium text-sm text-gray-500 text-center mb-6">
+            {error}
+          </Text>
+          <TouchableOpacity
+            onPress={fetchApplicants}
+            className="px-6 py-3 bg-cyan-700 rounded-xl"
+          >
+            <Text className="font-quicksandBold text-white">Try Again</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
+    );
+  }
 
-      {/* Filter Tabs */}
-      <View className="px-6 py-4 bg-white border-b border-gray-200">
-        <View className="flex flex-row justify-between">
-          {filters.map((filter) => (
-            <TouchableOpacity
-              key={filter.id}
-              onPress={() => setActiveFilter(filter.id)}
-              className={`px-4 py-2 rounded-full border ${
-                activeFilter === filter.id
-                  ? "bg-cyan-700 border-cyan-700 border"
-                  : "bg-white border-gray-300 border"
-              }`}
-            >
-              <Text
-                className={`font-quicksandMedium text-sm ${
-                  activeFilter === filter.id ? "text-white" : "text-gray-700"
-                }`}
-              >
-                {filter.label}
+  return (
+    <SafeAreaView className="flex-1 bg-gray-50">
+      {/* Header */}
+      <View className="bg-white border-b border-gray-200 px-4 py-4">
+        <View className="flex flex-row items-center mb-3">
+          <TouchableOpacity onPress={() => router.back()} className="mr-3">
+            <Ionicons name="arrow-back" size={24} color="#111827" />
+          </TouchableOpacity>
+          <View className="flex-1">
+            <Text className="font-quicksandBold text-2xl text-gray-900">
+              Applicants
+            </Text>
+            {jobTitle && (
+              <Text className="font-quicksandMedium text-sm text-gray-500">
+                {jobTitle}
               </Text>
-            </TouchableOpacity>
-          ))}
+            )}
+          </View>
+          <View className="bg-cyan-100 px-3 py-1 rounded-full">
+            <Text className="font-quicksandBold text-cyan-700">
+              {filteredApplicants.length}
+            </Text>
+          </View>
         </View>
-      </View>
-
-      {/* Applicants Count */}
-      <View className="px-6 py-4 bg-white border-b border-gray-200">
-        <Text className="text-gray-600 font-quicksandMedium">
-          Showing {filteredApplicants.length} applicant
-          {filteredApplicants.length !== 1 ? "s" : ""}
-        </Text>
+        {/* Filters */}
+        <View className="flex flex-row gap-2 flex-wrap">
+          <FilterButton status="all" label="All" count={counts.all} />
+          <FilterButton
+            status="pending"
+            label="Pending"
+            count={counts.pending}
+          />
+          <FilterButton
+            status="shortlisted"
+            label="Shortlisted"
+            count={counts.shortlisted}
+          />
+          <FilterButton status="hired" label="Hired" count={counts.hired} />
+          <FilterButton
+            status="rejected"
+            label="Rejected"
+            count={counts.rejected}
+          />
+        </View>
       </View>
 
       {/* Applicants List */}
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {filteredApplicants.length > 0 ? (
-          <View className="p-4">
-            {filteredApplicants.map((applicant) => {
-              const status = getStatusColor(applicant.status);
-              return (
-                <TouchableOpacity
-                  key={applicant.id}
-                  className="bg-white rounded-3xl p-5 mb-4 shadow-sm border border-gray-200"
-                >
-                  <View className="flex flex-row items-start justify-between mb-4">
-                    <View className="flex flex-row items-center flex-1">
-                      <View className="w-14 h-14 rounded-full border-2 border-cyan-200 overflow-hidden">
-                        <Image
-                          source={{ uri: applicant.avatar }}
-                          className="w-full h-full"
-                          resizeMode="contain"
-                        />
-                      </View>
-                      <View className="ml-4 flex-1">
-                        <Text className="text-lg font-quicksandBold text-gray-800">
-                          {applicant.name}
-                        </Text>
-                        <View className="flex flex-row items-center mt-1">
-                          <Text className="text-gray-600 font-quicksandMedium">
-                            {applicant.position}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <View className={`${status.bg} px-3 py-1 rounded-full`}>
-                      <Text
-                        className={`${status.text} text-xs font-quicksandBold`}
-                      >
-                        {status.label}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Match Score */}
-                  <View className="bg-gradient-to-r from-cyan-50 to-blue-50 p-3 rounded-xl mb-3">
-                    <View className="flex flex-row items-center justify-between">
-                      <Text className="text-gray-700 font-quicksandSemibold text-sm">
-                        Match Score
-                      </Text>
-                      <View className="flex flex-row items-center">
-                        <View className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden mr-2">
-                          <View
-                            className="h-full bg-cyan-600 rounded-full"
-                            style={{ width: `${applicant.matchScore}%` }}
-                          />
-                        </View>
-                        <Text className="text-cyan-700 font-quicksandBold text-sm">
-                          {applicant.matchScore}%
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* Applicant Details Section */}
-                  <View className="space-y-3">
-                    {/* Location & Experience Row */}
-                    <View className="flex flex-row items-center">
-                      <View className="flex-1 flex flex-row items-center bg-gray-50 px-3 py-2 rounded-xl mr-2">
-                        <View className="bg-cyan-100 p-1.5 rounded-lg">
-                          <Ionicons name="location" size={14} color="#0E7490" />
-                        </View>
-                        <Text
-                          className="text-gray-700 font-quicksandSemibold text-xs ml-2 flex-1"
-                          numberOfLines={1}
-                        >
-                          {applicant.location}
-                        </Text>
-                      </View>
-
-                      <View className="flex-1 flex flex-row items-center bg-purple-50 px-3 py-2 rounded-xl ml-2">
-                        <View className="bg-purple-100 p-1.5 rounded-lg">
-                          <Ionicons
-                            name="briefcase"
-                            size={14}
-                            color="#7C3AED"
-                          />
-                        </View>
-                        <Text
-                          className="text-purple-700 font-quicksandSemibold text-xs ml-2 flex-1"
-                          numberOfLines={1}
-                        >
-                          {applicant.experience}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Applied Date */}
-                    <View className="flex flex-row items-center bg-gray-50 px-3 py-2 rounded-xl">
-                      <View className="bg-blue-100 p-1.5 rounded-lg">
-                        <MaterialIcons
-                          name={getStatusIcon(applicant.status)}
-                          size={14}
-                          color="#2563EB"
-                        />
-                      </View>
-                      <Text className="text-gray-600 font-quicksandMedium text-xs ml-2">
-                        Applied {applicant.appliedDate}
-                      </Text>
-                    </View>
-
-                    {/* Skills */}
-                    <View className="flex flex-row flex-wrap gap-2 mt-2">
-                      {applicant.skills.map((skill, index) => (
-                        <View
-                          key={index}
-                          className="bg-cyan-50 px-3 py-1.5 rounded-full border border-cyan-200"
-                        >
-                          <Text className="text-cyan-700 font-quicksandSemibold text-xs">
-                            {skill}
-                          </Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-
-                  {/* Action Buttons */}
-                  <View className="flex flex-row space-x-3 mt-4 gap-2">
-                    <TouchableOpacity className="flex-1 bg-gray-100 py-2 rounded-2xl flex flex-row items-center justify-center">
-                      <Ionicons
-                        name="document-text-outline"
-                        size={16}
-                        color="#6B7280"
-                      />
-                      <Text className="text-gray-700 font-quicksandMedium text-sm ml-2">
-                        View Profile
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity className="flex-1 bg-cyan-700 py-2 rounded-2xl flex flex-row items-center justify-center">
-                      <Ionicons
-                        name="chatbubble-outline"
-                        size={16}
-                        color="white"
-                      />
-                      <Text className="text-white font-quicksandMedium text-sm ml-2">
-                        Message
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        ) : (
-          // Empty State
-          <View className="flex-1 items-center justify-center flex py-20 px-8">
-            <Ionicons name="people-outline" size={80} color="#D1D5DB" />
-            <Text className="text-2xl font-quicksandBold text-gray-800 mt-6 text-center">
-              No applicants found
-            </Text>
-            <Text className="text-gray-500 font-quicksandMedium text-base mt-2 text-center">
-              {activeFilter === "all"
-                ? "You haven't received any applications yet."
-                : `No ${activeFilter} applicants found.`}
-            </Text>
-            <TouchableOpacity className="bg-cyan-700 rounded-2xl px-6 py-3 mt-6">
-              <Text className="text-white font-quicksandBold text-base">
-                Post a Job
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </ScrollView>
-    </View>
+      {isLoading && applicants.length === 0 ? (
+        <View className="flex-1 items-center justify-center flex">
+          <ActivityIndicator size="large" color="#0E7490" />
+          <Text className="font-quicksandMedium text-gray-500 mt-4">
+            Loading applicants...
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredApplicants}
+          renderItem={({ item }) => (
+            <ApplicantCard applicant={item} onStatusUpdated={fetchApplicants} />
+          )}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 24,
+            flexGrow: 1,
+          }}
+          ListEmptyComponent={renderEmptyState}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#0E7490"
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,5 @@
-import { useApplyJob } from "@/app/hooks/useApplyJob";
 import InfoAlertModal from "@/components/modal/InfoAlertModal";
+import { useApplyJob } from "@/hooks/useApplyJob";
 import { supabase } from "@/lib/supabase";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -80,7 +80,7 @@ export default function JobDetailsScreen() {
             company_name,
             email
           )
-        `
+        `,
         )
         .eq("id", id)
         .eq("status", "active")
@@ -118,7 +118,7 @@ export default function JobDetailsScreen() {
     if (requirements.missingFields.length > 0) {
       setInfoAlertTitle("Profile Incomplete");
       setInfoAlertMessage(
-        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`
+        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`,
       );
       setShowInfoAlert(true);
       return;

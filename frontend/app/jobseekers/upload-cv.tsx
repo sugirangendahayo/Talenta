@@ -1,15 +1,15 @@
+import { useCVManagement } from "@/hooks/useCVManagement";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Linking,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useCVManagement } from "@/app/hooks/useCVManagement";
 
 export default function UploadCVScreen() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function UploadCVScreen() {
           style: "destructive",
           onPress: deleteCV,
         },
-      ]
+      ],
     );
   };
 

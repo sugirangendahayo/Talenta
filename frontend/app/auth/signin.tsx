@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { ActivityIndicator, View , Text} from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 // Shared Components
 import FieldWrapper from "@/components/auth/fields/FieldWrapper";
@@ -11,7 +11,7 @@ import AuthLink from "@/components/auth/shared/AuthLink";
 import PrimaryButton from "@/components/auth/shared/PrimaryButton";
 
 // Custom Hook
-import useSigninForm from "@/app/hooks/useSigninForm";
+import useSigninForm from "@/hooks/useSigninForm";
 
 export default function Signin() {
   const router = useRouter();
