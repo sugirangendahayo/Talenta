@@ -1,8 +1,8 @@
 // supabase/functions/send-interview-email/index.ts
+// FIXED VERSION - Handles shortlisted, rejected, and hired emails
 /* eslint-disable import/no-unresolved */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
-
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 // CORS headers for cross-origin requests
 const corsHeaders = {
@@ -10,7 +10,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Email template generator
+// Email template for SHORTLISTED candidates
 function generateInterviewEmail(data: {
   jobseekerName: string;
   jobTitle: string;
@@ -222,6 +222,173 @@ function generateInterviewEmail(data: {
   `;
 }
 
+// Email template for REJECTED candidates
+function generateRejectionEmail(data: {
+  jobseekerName: string;
+  jobTitle: string;
+  companyName: string;
+}): string {
+  const { jobseekerName, jobTitle, companyName } = data;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+          line-height: 1.6; 
+          color: #333; 
+          margin: 0;
+          padding: 0;
+          background-color: #f5f5f5;
+        }
+        .container { 
+          max-width: 600px; 
+          margin: 20px auto; 
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header { 
+          background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%); 
+          color: white; 
+          padding: 40px 30px; 
+          text-align: center;
+        }
+        .content { 
+          padding: 40px 30px;
+        }
+        .footer { 
+          text-align: center; 
+          color: #6b7280; 
+          font-size: 13px; 
+          padding: 30px;
+          background: #f9fafb;
+          border-top: 1px solid #e5e7eb;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Application Update</h1>
+        </div>
+        
+        <div class="content">
+          <p>Dear <strong>${jobseekerName}</strong>,</p>
+          
+          <p>Thank you for your interest in the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.</p>
+          
+          <p>After careful consideration, we have decided to move forward with other candidates whose qualifications more closely match our current needs.</p>
+          
+          <p>We appreciate the time and effort you invested in your application. Your skills and experience are impressive, and we encourage you to apply for future opportunities that align with your career goals.</p>
+          
+          <p>We wish you all the best in your job search!</p>
+          
+          <p style="margin-top: 24px;">
+            Best regards,<br>
+            <strong>Job Finder Team</strong>
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Job Finder App</strong></p>
+          <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+// Email template for HIRED candidates
+function generateHiredEmail(data: {
+  jobseekerName: string;
+  jobTitle: string;
+  companyName: string;
+}): string {
+  const { jobseekerName, jobTitle, companyName } = data;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+          line-height: 1.6; 
+          color: #333; 
+          margin: 0;
+          padding: 0;
+          background-color: #f5f5f5;
+        }
+        .container { 
+          max-width: 600px; 
+          margin: 20px auto; 
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header { 
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); 
+          color: white; 
+          padding: 40px 30px; 
+          text-align: center;
+        }
+        .content { 
+          padding: 40px 30px;
+        }
+        .footer { 
+          text-align: center; 
+          color: #6b7280; 
+          font-size: 13px; 
+          padding: 30px;
+          background: #f9fafb;
+          border-top: 1px solid #e5e7eb;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎊 Congratulations!</h1>
+          <p style="margin: 10px 0 0 0; font-size: 18px;">You're Hired!</p>
+        </div>
+        
+        <div class="content">
+          <p>Dear <strong>${jobseekerName}</strong>,</p>
+          
+          <p>We are thrilled to inform you that you have been selected for the <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>!</p>
+          
+          <p>Your skills, experience, and performance throughout the interview process have impressed us, and we believe you will be a valuable addition to our team.</p>
+          
+          <p>The employer will be in touch with you shortly regarding next steps, onboarding details, and your start date.</p>
+          
+          <p><strong>Welcome aboard!</strong> We look forward to working with you.</p>
+          
+          <p style="margin-top: 24px;">
+            Best regards,<br>
+            <strong>Job Finder Team</strong>
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Job Finder App</strong></p>
+          <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
 // Main Edge Function handler
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -242,14 +409,16 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { applicationId, interviewDetails } = await req.json();
+    const { applicationId, status, interviewDetails } = await req.json();
+
+    console.log("Received request:", { applicationId, status, hasInterviewDetails: !!interviewDetails });
 
     // Validate required fields
-    if (!applicationId || !interviewDetails) {
+    if (!applicationId || !status) {
       return new Response(
         JSON.stringify({ 
           error: "Missing required fields",
-          required: ["applicationId", "interviewDetails"]
+          required: ["applicationId", "status"]
         }),
         { 
           status: 400, 
@@ -258,40 +427,48 @@ serve(async (req) => {
       );
     }
 
-    // Validate interview details
-    const { 
-      interviewType, 
-      interviewDate, 
-      interviewTime, 
-      location, 
-      meetingLink 
-    } = interviewDetails;
-
-    if (!interviewType || !interviewDate || !interviewTime) {
+    // Validate status
+    if (!['shortlisted', 'rejected', 'hired'].includes(status)) {
       return new Response(
-        JSON.stringify({ 
-          error: "Missing interview details",
-          required: ["interviewType", "interviewDate", "interviewTime"]
-        }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, "Content-Type": "application/json" } 
-        }
-      );
-    }
-
-    if (interviewType === 'physical' && !location) {
-      return new Response(
-        JSON.stringify({ error: "Location is required for physical interviews" }),
+        JSON.stringify({ error: "Invalid status. Must be: shortlisted, rejected, or hired" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    if (interviewType === 'online' && !meetingLink) {
-      return new Response(
-        JSON.stringify({ error: "Meeting link is required for online interviews" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // For shortlisted, validate interview details
+    if (status === 'shortlisted') {
+      if (!interviewDetails) {
+        return new Response(
+          JSON.stringify({ error: "Interview details required for shortlisted status" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { interviewType, interviewDate, interviewTime, location, meetingLink } = interviewDetails;
+
+      if (!interviewType || !interviewDate || !interviewTime) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Missing interview details",
+            required: ["interviewType", "interviewDate", "interviewTime"]
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (interviewType === 'physical' && !location) {
+        return new Response(
+          JSON.stringify({ error: "Location is required for physical interviews" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (interviewType === 'online' && !meetingLink) {
+        return new Response(
+          JSON.stringify({ error: "Meeting link is required for online interviews" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Initialize Supabase client with service role
@@ -310,14 +487,14 @@ serve(async (req) => {
       .select(`
         jobseeker_id,
         job_id,
-        jobseeker_profiles!inner(
+        jobseeker_profiles(
           first_name,
           last_name,
           email
         ),
-        jobs!inner(
+        jobs(
           title,
-          employer_profiles!inner(company_name)
+          employer_profiles(company_name)
         )
       `)
       .eq("id", applicationId)
@@ -337,27 +514,67 @@ serve(async (req) => {
       );
     }
 
-    // Prepare email data
-    const emailData = {
-      jobseekerName: `${application.jobseeker_profiles.first_name} ${application.jobseeker_profiles.last_name}`,
-      jobTitle: application.jobs.title,
-      companyName: application.jobs.employer_profiles.company_name,
-      interviewType: interviewDetails.interviewType,
-      interviewDate: interviewDetails.interviewDate,
-      interviewTime: interviewDetails.interviewTime,
-      location: interviewDetails.location,
-      meetingLink: interviewDetails.meetingLink,
-      additionalNotes: interviewDetails.additionalNotes,
-    };
+    // Extract data safely
+    const jobseekerProfile = Array.isArray(application.jobseeker_profiles) 
+      ? application.jobseeker_profiles[0] 
+      : application.jobseeker_profiles;
+    
+    const job = Array.isArray(application.jobs) 
+      ? application.jobs[0] 
+      : application.jobs;
+
+    const employerProfile = Array.isArray(job?.employer_profiles)
+      ? job.employer_profiles[0]
+      : job?.employer_profiles;
+
+    if (!jobseekerProfile || !job || !employerProfile) {
+      throw new Error("Missing required profile data");
+    }
 
     // Get Resend API key
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     
     if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY not configured. Set it with: supabase secrets set RESEND_API_KEY=your_key");
+      throw new Error("RESEND_API_KEY not configured");
+    }
+
+    // Generate appropriate email based on status
+    let emailHtml: string;
+    let emailSubject: string;
+
+    if (status === 'shortlisted') {
+      const emailData = {
+        jobseekerName: `${jobseekerProfile.first_name} ${jobseekerProfile.last_name}`,
+        jobTitle: job.title,
+        companyName: employerProfile.company_name,
+        interviewType: interviewDetails!.interviewType,
+        interviewDate: interviewDetails!.interviewDate,
+        interviewTime: interviewDetails!.interviewTime,
+        location: interviewDetails!.location,
+        meetingLink: interviewDetails!.meetingLink,
+        additionalNotes: interviewDetails!.additionalNotes,
+      };
+      emailHtml = generateInterviewEmail(emailData);
+      emailSubject = `Interview Invitation: ${job.title} at ${employerProfile.company_name}`;
+    } else if (status === 'rejected') {
+      emailHtml = generateRejectionEmail({
+        jobseekerName: `${jobseekerProfile.first_name} ${jobseekerProfile.last_name}`,
+        jobTitle: job.title,
+        companyName: employerProfile.company_name,
+      });
+      emailSubject = `Application Update: ${job.title} at ${employerProfile.company_name}`;
+    } else { // hired
+      emailHtml = generateHiredEmail({
+        jobseekerName: `${jobseekerProfile.first_name} ${jobseekerProfile.last_name}`,
+        jobTitle: job.title,
+        companyName: employerProfile.company_name,
+      });
+      emailSubject = `Congratulations! Job Offer: ${job.title} at ${employerProfile.company_name}`;
     }
 
     // Send email using Resend API
+    console.log("Sending email to:", jobseekerProfile.email);
+    
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -365,10 +582,10 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Job Finder <onboarding@resend.dev>", // Change this to your verified domain
-        to: application.jobseeker_profiles.email,
-        subject: `Interview Invitation: ${application.jobs.title} at ${application.jobs.employer_profiles.company_name}`,
-        html: generateInterviewEmail(emailData),
+        from: "Job Finder <onboarding@resend.dev>",
+        to: jobseekerProfile.email,
+        subject: emailSubject,
+        html: emailHtml,
       }),
     });
 
@@ -381,24 +598,25 @@ serve(async (req) => {
     const emailResult = await emailResponse.json();
     console.log("Email sent successfully:", emailResult);
 
-    // Update interview record to mark email as sent
-    const { error: updateError } = await supabase
-      .from("interviews")
-      .update({ email_sent: true })
-      .eq("application_id", applicationId);
+    // For shortlisted, update interview record
+    if (status === 'shortlisted') {
+      const { error: updateError } = await supabase
+        .from("interviews")
+        .update({ email_sent: true })
+        .eq("application_id", applicationId);
 
-    if (updateError) {
-      console.error("Failed to update interview record:", updateError);
-      // Don't throw - email was sent successfully
+      if (updateError) {
+        console.error("Failed to update interview record:", updateError);
+      }
     }
 
     // Return success response
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Interview email sent successfully",
+        message: `${status} email sent successfully`,
         emailId: emailResult.id,
-        sentTo: application.jobseeker_profiles.email,
+        sentTo: jobseekerProfile.email,
       }),
       {
         status: 200,

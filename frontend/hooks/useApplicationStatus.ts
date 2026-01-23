@@ -1,9 +1,9 @@
 // hooks/useApplicationStatus.ts
-// Updated to use Supabase Edge Functions + shared types
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+// FIXED: Sends emails for shortlisted, rejected, AND hired!
 import { InterviewDetails } from "@/components/modal/InterviewDetailsModal";
+import { supabase } from "@/lib/supabase";
 import { ApplicationStatus } from "@/types/job.types";
+import { useState } from "react";
 
 interface UpdateStatusParams {
   applicationId: string;
@@ -93,7 +93,7 @@ export function useApplicationStatus() {
         // Don't throw - this is not critical
       }
 
-      // 4. If shortlisted, create interview record and send email
+      // 4. If shortlisted, create interview record
       if (newStatus === "shortlisted" && interviewDetails) {
         const {
           interviewType,
@@ -135,27 +135,37 @@ export function useApplicationStatus() {
           console.error("Failed to create interview:", interviewError);
           throw new Error("Failed to schedule interview");
         }
+      }
 
-        // 5. Call Supabase Edge Function to send email
+      // 5. Send email for shortlisted, rejected, or hired
+      // ✅ NEW: Send email for ALL status changes (not just shortlisted!)
+      if (newStatus === "shortlisted" || newStatus === "rejected" || newStatus === "hired") {
         try {
+          console.log(`Sending ${newStatus} email for application ${applicationId}`);
+          
           const { data: functionData, error: functionError } =
             await supabase.functions.invoke("send-interview-email", {
               body: {
                 applicationId,
-                interviewDetails,
+                status: newStatus,
+                ...(newStatus === "shortlisted" && { interviewDetails }),
               },
             });
 
           if (functionError) {
             console.error("Email sending failed:", functionError);
-            // Don't throw - interview is already created
-            // The notification will still be sent via trigger
+            if (functionError.context) {
+    const serverError = await functionError.context.json();  // Or .text() if not JSON
+    console.error("Server error details:", serverError);
+  }
+            // Don't throw - notification will still be sent via trigger
+            console.warn("Email failed but continuing with status update");
           } else {
             console.log("Email sent successfully:", functionData);
           }
         } catch (emailError) {
           console.error("Email service error:", emailError);
-          // Don't throw - interview is already created
+          // Don't throw - notification will still be sent via trigger
         }
       }
 
