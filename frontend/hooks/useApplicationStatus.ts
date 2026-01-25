@@ -159,7 +159,7 @@ export function useApplicationStatus() {
     console.error("Server error details:", serverError);
   }
             // Don't throw - notification will still be sent via trigger
-            console.warn("Email failed but continuing with status update!");
+            console.warn("Email failed but continuing with status update");
           } else {
             console.log("Email sent successfully:", functionData);
           }
