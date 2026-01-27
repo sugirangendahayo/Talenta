@@ -588,7 +588,7 @@ serve(async (req) => {
 }),
     });
 
-    // ✅ FIX 7: Properly capture Resend errors
+    //  FIX 7: Properly capture Resend errors
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
       console.error("❌ Resend API error:", errorText);
