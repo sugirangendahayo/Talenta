@@ -1,5 +1,5 @@
 // hooks/useApplicationStatus.ts
-// FIXED: Sends emails for shortlisted, rejected, AND hired!
+// FIXED: Sends emails with proper authentication headers!
 import { InterviewDetails } from "@/components/modal/InterviewDetailsModal";
 import { supabase } from "@/lib/supabase";
 import { ApplicationStatus } from "@/types/job.types";
@@ -31,6 +31,13 @@ export function useApplicationStatus() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+
+      // Get the current session token for Edge Function authentication
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      
+      if (!session) throw new Error("No active session");
 
       // 1. Get application details to verify ownership
       const { data: application, error: appError } = await supabase
@@ -138,7 +145,7 @@ export function useApplicationStatus() {
       }
 
       // 5. Send email for shortlisted, rejected, or hired
-      // ✅ NEW: Send email for ALL status changes (not just shortlisted!)
+      //  Now passes authentication token!
       if (newStatus === "shortlisted" || newStatus === "rejected" || newStatus === "hired") {
         try {
           console.log(`Sending ${newStatus} email for application ${applicationId}`);
@@ -150,14 +157,25 @@ export function useApplicationStatus() {
                 status: newStatus,
                 ...(newStatus === "shortlisted" && { interviewDetails }),
               },
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
             });
 
           if (functionError) {
             console.error("Email sending failed:", functionError);
+            
+            // Try to get more error details
             if (functionError.context) {
-    const serverError = await functionError.context.json();  // Or .text() if not JSON
-    console.error("Server error details:", serverError);
-  }
+              try {
+                const errorResponse = await functionError.context.json();
+                console.error("Server error details:", errorResponse);
+              } catch (e) {
+                // Ignore if can't parse error
+                
+              }
+            }
+            
             // Don't throw - notification will still be sent via trigger
             console.warn("Email failed but continuing with status update");
           } else {

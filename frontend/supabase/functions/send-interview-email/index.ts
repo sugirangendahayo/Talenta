@@ -1,16 +1,17 @@
 // supabase/functions/send-interview-email/index.ts
-// FIXED VERSION - Handles shortlisted, rejected, and hired emails
+// ✅ FINAL VERSION - All issues fixed!
 /* eslint-disable import/no-unresolved */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-// CORS headers for cross-origin requests
+// ✅ FIX 1: Proper CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Email template for SHORTLISTED candidates
+// Email templates... (keeping your existing templates)
 function generateInterviewEmail(data: {
   jobseekerName: string;
   jobTitle: string;
@@ -222,7 +223,6 @@ function generateInterviewEmail(data: {
   `;
 }
 
-// Email template for REJECTED candidates
 function generateRejectionEmail(data: {
   jobseekerName: string;
   jobTitle: string;
@@ -305,7 +305,6 @@ function generateRejectionEmail(data: {
   `;
 }
 
-// Email template for HIRED candidates
 function generateHiredEmail(data: {
   jobseekerName: string;
   jobTitle: string;
@@ -389,15 +388,15 @@ function generateHiredEmail(data: {
   `;
 }
 
-// Main Edge Function handler
+// ✅ Main Edge Function handler with ALL FIXES
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // ✅ FIX 1: Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Only allow POST requests
+    // ✅ FIX 8: Method validation
     if (req.method !== "POST") {
       return new Response(
         JSON.stringify({ error: "Method not allowed. Use POST." }), 
@@ -411,7 +410,7 @@ serve(async (req) => {
     // Parse request body
     const { applicationId, status, interviewDetails } = await req.json();
 
-    console.log("Received request:", { applicationId, status, hasInterviewDetails: !!interviewDetails });
+    console.log("✅ Received request:", { applicationId, status, hasInterviewDetails: !!interviewDetails });
 
     // Validate required fields
     if (!applicationId || !status) {
@@ -435,7 +434,7 @@ serve(async (req) => {
       );
     }
 
-    // For shortlisted, validate interview details
+    // ✅ FIX 5: Validate interview details for shortlisted status
     if (status === 'shortlisted') {
       if (!interviewDetails) {
         return new Response(
@@ -471,7 +470,7 @@ serve(async (req) => {
       }
     }
 
-    // Initialize Supabase client with service role
+    // ✅ FIX 3: Use SERVICE ROLE KEY (not anon key!)
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     
@@ -501,7 +500,7 @@ serve(async (req) => {
       .single();
 
     if (appError || !application) {
-      console.error("Application fetch error:", appError);
+      console.error("❌ Application fetch error:", appError);
       return new Response(
         JSON.stringify({ 
           error: "Application not found",
@@ -514,7 +513,7 @@ serve(async (req) => {
       );
     }
 
-    // Extract data safely
+    // ✅ FIX 4: Handle Supabase relational arrays correctly
     const jobseekerProfile = Array.isArray(application.jobseeker_profiles) 
       ? application.jobseeker_profiles[0] 
       : application.jobseeker_profiles;
@@ -531,11 +530,11 @@ serve(async (req) => {
       throw new Error("Missing required profile data");
     }
 
-    // Get Resend API key
+    // ✅ FIX 6: Validate Resend API key exists
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     
     if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY not configured");
+      throw new Error("RESEND_API_KEY not configured. Set it with: supabase secrets set RESEND_API_KEY=your_key");
     }
 
     // Generate appropriate email based on status
@@ -573,7 +572,7 @@ serve(async (req) => {
     }
 
     // Send email using Resend API
-    console.log("Sending email to:", jobseekerProfile.email);
+    console.log("📧 Sending email to:", jobseekerProfile.email);
     
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -589,14 +588,15 @@ serve(async (req) => {
       }),
     });
 
+    // ✅ FIX 7: Properly capture Resend errors
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
-      console.error("Resend API error:", errorText);
+      console.error("❌ Resend API error:", errorText);
       throw new Error(`Email sending failed: ${errorText}`);
     }
 
     const emailResult = await emailResponse.json();
-    console.log("Email sent successfully:", emailResult);
+    console.log("✅ Email sent successfully:", emailResult);
 
     // For shortlisted, update interview record
     if (status === 'shortlisted') {
@@ -606,7 +606,7 @@ serve(async (req) => {
         .eq("application_id", applicationId);
 
       if (updateError) {
-        console.error("Failed to update interview record:", updateError);
+        console.error("⚠️ Failed to update interview record:", updateError);
       }
     }
 
@@ -625,7 +625,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("Edge Function error:", error);
+    console.error("❌ Edge Function error:", error);
     
     return new Response(
       JSON.stringify({
