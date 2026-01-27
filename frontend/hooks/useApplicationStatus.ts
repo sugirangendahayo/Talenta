@@ -138,7 +138,7 @@ export function useApplicationStatus() {
       }
 
       // 5. Send email for shortlisted, rejected, or hired
-      // ✅ No headers needed (JWT disabled on function)!
+      //  No headers needed (JWT disabled on function)!
       if (newStatus === "shortlisted" || newStatus === "rejected" || newStatus === "hired") {
         try {
           console.log(`Sending ${newStatus} email for application ${applicationId}`);

@@ -580,12 +580,12 @@ serve(async (req) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: "Job Finder <onboarding@resend.dev>",
-        to: "Sugiraelisha@gmal.com",
-        subject: emailSubject,
-        html: emailHtml,
-      }),
+   body: JSON.stringify({
+  from: "Job Finder <onboarding@resend.dev>",
+  to: ["sugiraelisha@gmail.com"],  // Array format + fix typo
+  subject: emailSubject,
+  html: emailHtml,
+}),
     });
 
     // ✅ FIX 7: Properly capture Resend errors
