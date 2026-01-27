@@ -572,7 +572,7 @@ serve(async (req) => {
     }
 
     // Send email using Resend API
-    console.log("📧 Sending email to:", jobseekerProfile.email);
+    console.log("📧 Sending email to:", "Sugiraelisha@gmal.com");
     
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -582,7 +582,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: "Job Finder <onboarding@resend.dev>",
-        to: jobseekerProfile.email,
+        to: "Sugiraelisha@gmal.com",
         subject: emailSubject,
         html: emailHtml,
       }),
@@ -616,7 +616,7 @@ serve(async (req) => {
         success: true,
         message: `${status} email sent successfully`,
         emailId: emailResult.id,
-        sentTo: jobseekerProfile.email,
+        sentTo: "Sugiraelisha@gmal.com",
       }),
       {
         status: 200,

@@ -148,6 +148,7 @@ export function useApplicationStatus() {
               body: {
                 applicationId,
                 status: newStatus,
+                recipientEmail: "sugiraelisha@gmail.com"  ,
                 ...(newStatus === "shortlisted" && { interviewDetails }),
               },
             });
@@ -162,6 +163,8 @@ export function useApplicationStatus() {
                 console.error("Server error details:", errorResponse);
               } catch (e) {
                 // Ignore if can't parse error
+                console.error(e);
+                
                 
               }
             }
