@@ -26,18 +26,11 @@ export function useApplicationStatus() {
     setError(null);
 
     try {
-      // Get current user (employer)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      // Get current session (includes user and access_token)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user) throw new Error("Not authenticated");
 
-      // Get the current session token for Edge Function authentication
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      
-      if (!session) throw new Error("No active session");
+      const user = session.user;
 
       // 1. Get application details to verify ownership
       const { data: application, error: appError } = await supabase
@@ -145,7 +138,7 @@ export function useApplicationStatus() {
       }
 
       // 5. Send email for shortlisted, rejected, or hired
-      //  Now passes authentication token!
+      // ✅ Now passes BOTH required authentication headers!
       if (newStatus === "shortlisted" || newStatus === "rejected" || newStatus === "hired") {
         try {
           console.log(`Sending ${newStatus} email for application ${applicationId}`);
@@ -159,6 +152,7 @@ export function useApplicationStatus() {
               },
               headers: {
                 Authorization: `Bearer ${session.access_token}`,
+                apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,  // ✅ FIX: Add this (your anon key from .env)
               },
             });
 
