@@ -1,5 +1,5 @@
 // hooks/useApplicationStatus.ts
-// FIXED: Sends emails with proper authentication headers!
+// FIXED: Sends emails without auth headers (JWT disabled on function)!
 import { InterviewDetails } from "@/components/modal/InterviewDetailsModal";
 import { supabase } from "@/lib/supabase";
 import { ApplicationStatus } from "@/types/job.types";
@@ -138,7 +138,7 @@ export function useApplicationStatus() {
       }
 
       // 5. Send email for shortlisted, rejected, or hired
-      // ✅ Now passes BOTH required authentication headers!
+      // ✅ No headers needed (JWT disabled on function)!
       if (newStatus === "shortlisted" || newStatus === "rejected" || newStatus === "hired") {
         try {
           console.log(`Sending ${newStatus} email for application ${applicationId}`);
@@ -149,10 +149,6 @@ export function useApplicationStatus() {
                 applicationId,
                 status: newStatus,
                 ...(newStatus === "shortlisted" && { interviewDetails }),
-              },
-              headers: {
-                Authorization: `Bearer ${session.access_token}`,
-                apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,  // ✅ FIX: Add this (your anon key from .env)
               },
             });
 
