@@ -1,12 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Category {
   id: string;
@@ -16,127 +16,158 @@ interface Category {
 interface EmployerJobFiltersProps {
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
-  onSearchChange: (query: string) => void;
   searchQuery: string;
+  onSearchChange: (query: string) => void;
   categories: Category[];
   selectedStatus: string;
   onStatusChange: (status: string) => void;
 }
 
-const EmployerJobFilters: React.FC<EmployerJobFiltersProps> = ({
+// Status filter options
+const STATUS_FILTERS = [
+  { id: "all", label: "All Jobs", icon: "apps-outline" },
+  {
+    id: "active",
+    label: "Active",
+    icon: "checkmark-circle-outline",
+    color: "#10B981",
+  },
+  { id: "expired", label: "Expired", icon: "time-outline", color: "#EF4444" },
+  {
+    id: "paused",
+    label: "Paused",
+    icon: "pause-circle-outline",
+    color: "#F59E0B",
+  },
+  {
+    id: "closed",
+    label: "Closed",
+    icon: "close-circle-outline",
+    color: "#6B7280",
+  },
+  { id: "draft", label: "Draft", icon: "create-outline", color: "#3B82F6" },
+];
+
+export default function EmployerJobFilters({
   selectedCategory,
   onCategoryChange,
-  onSearchChange,
   searchQuery,
+  onSearchChange,
   categories,
   selectedStatus,
   onStatusChange,
-}) => {
-  const statuses = [
-    { id: "all", name: "All", color: "#6B7280" },
-    { id: "active", name: "Active", color: "#10B981" },
-    { id: "paused", name: "Paused", color: "#F59E0B" },
-    { id: "closed", name: "Closed", color: "#EF4444" },
-  ];
+}: EmployerJobFiltersProps) {
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
 
   return (
-    <View className="pb-3 bg-white">
+    <View className="bg-white border-b border-gray-200 pb-3">
       {/* Search Bar */}
-      <View className="px-4 py-3">
-        <View className="flex flex-row items-center bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
-          <Ionicons name="search" size={20} color="#6B7280" />
+      <View className="px-4 pt-3 pb-2">
+        <View className="flex flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
+          <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           <TextInput
-            placeholder="Search your jobs..."
-            placeholderTextColor="#9CA3AF"
-            className="flex-1 ml-3 text-gray-800 font-quicksandMedium text-base"
-            onChangeText={onSearchChange}
+            placeholder="Search jobs by title or location..."
             value={searchQuery}
+            onChangeText={onSearchChange}
+            className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
+            placeholderTextColor="#9CA3AF"
           />
-          <View className="h-6 w-px bg-gray-300 mx-2" />
-          <TouchableOpacity className="flex flex-row items-center bg-cyan-700 rounded-xl px-3 py-2 shadow-sm">
-            <Ionicons name="options-outline" size={16} color="white" />
-            <Text className="text-white font-quicksandBold text-sm ml-1">
-              Filter
-            </Text>
-          </TouchableOpacity>
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => onSearchChange("")}>
+              <Ionicons name="close-circle" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
       {/* Status Filters */}
-      <View className="px-4 mb-2">
+      <View className="px-4 pb-2">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingRight: 16 }}
+          contentContainerStyle={{ gap: 8 }}
         >
-          <View className="flex flex-row gap-2">
-            {statuses.map((status) => (
+          {STATUS_FILTERS.map((status) => {
+            const isSelected = selectedStatus === status.id;
+            return (
               <TouchableOpacity
                 key={status.id}
-                className={`flex flex-row items-center px-4 py-2 rounded-full border ${
-                  status.id === selectedStatus
-                    ? "bg-cyan-700 border-cyan-600 border"
-                    : "bg-white border-gray-200 border"
-                }`}
                 onPress={() => onStatusChange(status.id)}
+                className={`flex flex-row items-center gap-2 px-4 py-2 rounded-full border ${
+                  isSelected
+                    ? "bg-cyan-700 border-cyan-700"
+                    : "bg-white border-gray-300"
+                }`}
               >
-                {status.id !== "all" && (
-                  <View
-                    className="w-2 h-2 rounded-full mr-2"
-                    style={{
-                      backgroundColor:
-                        status.id === selectedStatus ? "white" : status.color,
-                    }}
-                  />
-                )}
+                <Ionicons
+                  name={status.icon as any}
+                  size={16}
+                  color={isSelected ? "#fff" : status.color || "#6B7280"}
+                />
                 <Text
-                  className={`font-quicksandBold text-sm ${
-                    status.id === selectedStatus
-                      ? "text-white"
-                      : "text-gray-700"
+                  className={`text-sm font-quicksandBold ${
+                    isSelected ? "text-white" : "text-gray-700"
                   }`}
                 >
-                  {status.name}
+                  {status.label}
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })}
         </ScrollView>
       </View>
 
-      {/* Category Filters */}
-      {/* <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="px-4"
-        contentContainerStyle={{ paddingRight: 16 }}
-      >
-        <View className="flex flex-row space-x-2 gap-2">
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category.id}
-              className={`flex flex-row items-center px-4 py-2 rounded-full border ${
-                category.id === selectedCategory
-                  ? "bg-gray-800 border-gray-700 border"
-                  : "bg-gray-100 border-gray-200 border"
-              }`}
-              onPress={() => onCategoryChange(category.id)}
-            >
-              <Text
-                className={`font-quicksandMedium text-sm ${
-                  category.id === selectedCategory
-                    ? "text-white"
-                    : "text-gray-700"
-                }`}
-              >
-                {category.name}
+      {/* Category Filter Toggle */}
+      <View className="px-4">
+        <TouchableOpacity
+          onPress={() => setShowCategoryFilter(!showCategoryFilter)}
+          className="flex flex-row items-center justify-between py-2"
+        >
+          <View className="flex flex-row items-center gap-2">
+            <Ionicons name="grid-outline" size={18} color="#0E7490" />
+            <Text className="text-sm font-quicksandBold text-gray-700">
+              Category:{" "}
+              <Text className="text-cyan-700">
+                {categories.find((c) => c.id === selectedCategory)?.name ||
+                  "All Categories"}
               </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView> */}
+            </Text>
+          </View>
+          <Ionicons
+            name={showCategoryFilter ? "chevron-up" : "chevron-down"}
+            size={18}
+            color="#9CA3AF"
+          />
+        </TouchableOpacity>
+
+        {/* Category Chips */}
+        {showCategoryFilter && (
+          <View className="flex flex-row flex-wrap gap-2 mt-2">
+            {categories.map((category) => {
+              const isSelected = selectedCategory === category.id;
+              return (
+                <TouchableOpacity
+                  key={category.id}
+                  onPress={() => onCategoryChange(category.id)}
+                  className={`px-4 py-2 rounded-full border ${
+                    isSelected
+                      ? "bg-cyan-100 border-cyan-700"
+                      : "bg-white border-gray-300"
+                  }`}
+                >
+                  <Text
+                    className={`text-xs font-quicksandBold ${
+                      isSelected ? "text-cyan-700" : "text-gray-700"
+                    }`}
+                  >
+                    {category.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </View>
     </View>
   );
-};
-
-export default EmployerJobFilters;
+}

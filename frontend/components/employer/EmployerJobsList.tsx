@@ -237,14 +237,15 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     const status = job.status;
     const isExpired = job.expires_at && new Date(job.expires_at) < new Date();
 
+    // ACTIVE: Can pause or close
     if (status === "active" && !isExpired) {
       return (
         <>
           <TouchableOpacity
             onPress={() => handlePauseJob(job.id)}
-            className="bg-gray-100 p-2 rounded-full"
+            className="bg-yellow-100 p-2 rounded-full"
           >
-            <Ionicons name="pause" size={20} color="#6B7280" />
+            <Ionicons name="pause" size={20} color="#F59E0B" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handleCloseJob(job.id)}
@@ -256,6 +257,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       );
     }
 
+    // PAUSED: Can reactivate or close
     if (status === "paused") {
       return (
         <>
@@ -275,6 +277,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       );
     }
 
+    // EXPIRED: Can renew (extend expiry → becomes active) or close
     if (status === "expired" || (status === "active" && isExpired)) {
       return (
         <>
@@ -294,17 +297,19 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       );
     }
 
+    // CLOSED: Usually no actions (hiring finished)
+    // Optional: Can add "Reopen" button if you want to allow reopening
     if (status === "closed") {
       return (
-        <TouchableOpacity
-          onPress={() => handleRenewJob(job.id)}
-          className="bg-cyan-100 p-2 rounded-full"
-        >
-          <Ionicons name="refresh" size={20} color="#0E7490" />
-        </TouchableOpacity>
+        <View className="bg-gray-100 px-3 py-2 rounded-full">
+          <Text className="text-gray-500 text-xs font-quicksandBold">
+            Hiring Complete
+          </Text>
+        </View>
       );
     }
 
+    // DRAFT: Can edit
     if (status === "draft") {
       return (
         <TouchableOpacity
