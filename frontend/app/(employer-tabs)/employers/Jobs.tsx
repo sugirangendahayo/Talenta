@@ -1,10 +1,11 @@
-import jsonData from "@/data/jobs.json";
+import { useState, useEffect } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { View, Text, ActivityIndicator } from "react-native";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
 import EmployerJobsList from "@/components/employer/EmployerJobsList";
 import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
-import { JobsData } from "@/types/job.types";
-import { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Category {
   id: string;
@@ -28,8 +29,47 @@ const categoryNames: { [key: string]: string } = {
 };
 
 export default function Jobs() {
-  const data = jsonData as JobsData;
-  const jobs = data.jobs;
+  const { user } = useAuth();
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+
+  // Fetch jobs from Supabase
+  useEffect(() => {
+    fetchJobs();
+  }, [user]);
+
+  const fetchJobs = async () => {
+    if (!user) {
+      setError("You must be logged in to view jobs");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from("jobs")
+        .select("*")
+        .eq("employer_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      setJobs(data || []);
+    } catch (err: any) {
+      console.error("Error fetching jobs:", err);
+      setError(err.message || "Failed to fetch jobs");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Compute unique categories dynamically from jobs data
   const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
@@ -41,15 +81,42 @@ export default function Jobs() {
     })),
   ];
 
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  // Loading state
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <EmployerJobsHeader />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#0E7490" />
+          <Text className="mt-4 text-gray-600 font-quicksandMedium">
+            Loading your jobs...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <EmployerJobsHeader />
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="text-red-600 font-quicksandBold text-lg text-center">
+            {error}
+          </Text>
+          <Text className="mt-2 text-gray-500 font-quicksandMedium text-center">
+            Please try again later or contact support
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <EmployerJobsHeader />
       <EmployerJobFilters
-        
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
         onSearchChange={setSearchQuery}
@@ -59,9 +126,11 @@ export default function Jobs() {
         onStatusChange={setSelectedStatus}
       />
       <EmployerJobsList
+        jobs={jobs}
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
         statusFilter={selectedStatus}
+        onRefresh={fetchJobs}
       />
     </SafeAreaView>
   );

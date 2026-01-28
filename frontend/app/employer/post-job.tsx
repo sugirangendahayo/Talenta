@@ -19,12 +19,20 @@ import FormInput from "@/components/employer/FormInput";
 import CategorySelector from "@/components/employer/CategorySelector";
 import JobTypeSelector from "@/components/employer/JobTypeSelector";
 import SkillsInput from "@/components/employer/SkillsInput";
+import ExpiryDatePicker from "@/components/employer/ExpiryDatePicker";
 import { toast } from "sonner-native";
 
 export default function PostJob() {
   const router = useRouter();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Default expiry date: 30 days from now
+  const getDefaultExpiryDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date;
+  };
 
   // Form State
   const [formData, setFormData] = useState({
@@ -37,6 +45,7 @@ export default function PostJob() {
     description: "",
     requirements: [] as string[],
     skills: [] as string[],
+    expiresAt: getDefaultExpiryDate(),
   });
 
   // Update form field
@@ -61,7 +70,7 @@ export default function PostJob() {
   const removeFromList = (field: "skills" | "requirements", index: number) => {
     updateField(
       field,
-      formData[field].filter((_, i) => i !== index)
+      formData[field].filter((_, i) => i !== index),
     );
   };
 
@@ -91,6 +100,16 @@ export default function PostJob() {
     if (formData.requirements.length === 0)
       return "Please add at least one requirement";
 
+    // Validate expiry date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiryDate = new Date(formData.expiresAt);
+    expiryDate.setHours(0, 0, 0, 0);
+
+    if (expiryDate <= today) {
+      return "Expiry date must be in the future";
+    }
+
     return null;
   };
 
@@ -112,11 +131,14 @@ export default function PostJob() {
     try {
       // Parse salary values
       const minSalary = parseFloat(
-        formData.salaryMin.replace(/[^0-9.-]+/g, "")
+        formData.salaryMin.replace(/[^0-9.-]+/g, ""),
       );
       const maxSalary = parseFloat(
-        formData.salaryMax.replace(/[^0-9.-]+/g, "")
+        formData.salaryMax.replace(/[^0-9.-]+/g, ""),
       );
+
+      // Format expiry date to YYYY-MM-DD
+      const expiryDateString = formData.expiresAt.toISOString().split("T")[0];
 
       // Prepare job data
       const jobData = {
@@ -131,6 +153,7 @@ export default function PostJob() {
         experience_level: formData.requirements[0] || "", // First requirement as experience
         skills_required: formData.skills, // Store as array
         status: "active",
+        expires_at: expiryDateString, // Add expiry date
       };
 
       // Insert job into database
@@ -180,6 +203,9 @@ export default function PostJob() {
         ? parseFloat(formData.salaryMax.replace(/[^0-9.-]+/g, ""))
         : 0;
 
+      // Format expiry date to YYYY-MM-DD
+      const expiryDateString = formData.expiresAt.toISOString().split("T")[0];
+
       const draftData = {
         employer_id: user.id,
         title: formData.title.trim() || "Untitled Job",
@@ -192,6 +218,7 @@ export default function PostJob() {
         experience_level: formData.requirements[0] || "",
         skills_required: formData.skills,
         status: "draft",
+        expires_at: expiryDateString,
       };
 
       const { error } = await supabase.from("jobs").insert(draftData);
@@ -283,6 +310,14 @@ export default function PostJob() {
                   </View>
                 </View>
               </View>
+
+              {/* Expiry Date Picker */}
+              <ExpiryDatePicker
+                label="Job Expiry Date"
+                selectedDate={formData.expiresAt}
+                onDateChange={(date) => updateField("expiresAt", date)}
+                required
+              />
             </View>
 
             {/* Section: Job Details */}

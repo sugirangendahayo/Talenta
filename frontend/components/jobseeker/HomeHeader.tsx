@@ -45,7 +45,7 @@ export default function HomeHeader() {
           </View>
           <View>
             <Text className="font-quicksandSemibold text-base">
-              Hey, {firstName} 👋
+              Hey, {firstName} 
             </Text>
           </View>
         </View>
