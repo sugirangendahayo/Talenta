@@ -38,6 +38,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     await onRefresh();
     setRefreshing(false);
   };
+  
 
   // Filter jobs based on category, search query, and status
   const filteredJobs = useMemo(() => {
@@ -61,19 +62,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   }, [selectedCategory, searchQuery, statusFilter, jobs]);
 
   // Get status badge configuration
-  const getStatusBadge = (status: string, expiresAt?: string) => {
-    // Check if job is expired (even if status is still "active")
-    const isExpired =
-      expiresAt && new Date(expiresAt) < new Date() && status === "active";
-
-    if (isExpired) {
-      return {
-        text: "Expired",
-        bgColor: "bg-red-100",
-        textColor: "text-red-700",
-      };
-    }
-
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
         return {
@@ -235,10 +224,9 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   // Render action buttons based on status
   const renderActionButtons = (job: any) => {
     const status = job.status;
-    const isExpired = job.expires_at && new Date(job.expires_at) < new Date();
 
     // ACTIVE: Can pause or close
-    if (status === "active" && !isExpired) {
+    if (status === "active") {
       return (
         <>
           <TouchableOpacity
@@ -278,7 +266,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     }
 
     // EXPIRED: Can renew (extend expiry → becomes active) or close
-    if (status === "expired" || (status === "active" && isExpired)) {
+    if (status === "expired") {
       return (
         <>
           <TouchableOpacity
@@ -298,7 +286,6 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     }
 
     // CLOSED: Usually no actions (hiring finished)
-    // Optional: Can add "Reopen" button if you want to allow reopening
     if (status === "closed") {
       return (
         <View className="bg-gray-100 px-3 py-2 rounded-full">
@@ -325,11 +312,19 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   };
 
   const renderJobItem = ({ item }: { item: any }) => {
-    const statusBadge = getStatusBadge(item.status, item.expires_at);
+    const statusBadge = getStatusBadge(item.status);
     const daysLeft = getDaysUntilExpiry(item.expires_at);
 
     return (
-      <TouchableOpacity className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200">
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/employer/job-details/[id]",
+            params: { id: item.id },
+          })
+        }
+        className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
+      >
         <View className="flex-1">
           {/* Header: Job Info + Status */}
           <View className="flex flex-row items-start justify-between mb-3">
