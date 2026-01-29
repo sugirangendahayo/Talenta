@@ -45,7 +45,7 @@ export default function Jobs() {
 
   const fetchJobs = async () => {
     if (!user) {
-      setError("You must be logged in to view jobs");
+      setError("You must be logged in to view jobs!");
       setLoading(false);
       return;
     }
