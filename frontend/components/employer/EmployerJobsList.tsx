@@ -312,6 +312,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   };
 
   const renderJobItem = ({ item }: { item: any }) => {
+    console.log("Item: ", item);
+    
     const statusBadge = getStatusBadge(item.status);
     const daysLeft = getDaysUntilExpiry(item.expires_at);
 
