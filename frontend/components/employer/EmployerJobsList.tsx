@@ -38,11 +38,22 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     await onRefresh();
     setRefreshing(false);
   };
-  
+
+  // DEBUG: Log all jobs and their statuses
+  console.log("=== DEBUG: All Jobs ===");
+  console.log("Total jobs received:", jobs.length);
+  jobs.forEach((job, index) => {
+    console.log(`Job ${index + 1}:`, {
+      id: job.id,
+      title: job.title,
+      status: job.status,
+    });
+  });
+  console.log("Selected status filter:", statusFilter);
 
   // Filter jobs based on category, search query, and status
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
+    const filtered = jobs.filter((job) => {
       // Category filter
       const categoryMatch =
         selectedCategory === "all" || job.category === selectedCategory;
@@ -57,8 +68,26 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       // Status filter
       const statusMatch = statusFilter === "all" || job.status === statusFilter;
 
+      // DEBUG
+      if (!statusMatch && statusFilter !== "all") {
+        console.log(
+          `Job "${job.title}" filtered out. Expected: ${statusFilter}, Got: ${job.status}`,
+        );
+      }
+
       return categoryMatch && searchMatch && statusMatch;
     });
+
+    console.log("=== DEBUG: Filtered Results ===");
+    console.log("Filtered jobs count:", filtered.length);
+    filtered.forEach((job, index) => {
+      console.log(`Filtered job ${index + 1}:`, {
+        title: job.title,
+        status: job.status,
+      });
+    });
+
+    return filtered;
   }, [selectedCategory, searchQuery, statusFilter, jobs]);
 
   // Get status badge configuration
@@ -144,12 +173,14 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   // Handle job actions
   const handlePauseJob = async (jobId: string) => {
     try {
+      console.log("Pausing job:", jobId);
       const { error } = await supabase.rpc("pause_job", { job_id: jobId });
 
       if (error) throw error;
 
       toast.success("Job paused successfully");
-      onRefresh();
+      console.log("Job paused, refreshing list...");
+      await onRefresh();
     } catch (error: any) {
       console.error("Error pausing job:", error);
       toast.error(error.message || "Failed to pause job");
@@ -163,7 +194,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       if (error) throw error;
 
       toast.success("Job reactivated successfully");
-      onRefresh();
+      await onRefresh();
     } catch (error: any) {
       console.error("Error reactivating job:", error);
       toast.error(error.message || "Failed to reactivate job");
@@ -188,7 +219,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
               if (error) throw error;
 
               toast.success("Job closed successfully");
-              onRefresh();
+              await onRefresh();
             } catch (error: any) {
               console.error("Error closing job:", error);
               toast.error(error.message || "Failed to close job");
@@ -214,7 +245,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       if (error) throw error;
 
       toast.success("Job renewed for 30 days");
-      onRefresh();
+      await onRefresh();
     } catch (error: any) {
       console.error("Error renewing job:", error);
       toast.error(error.message || "Failed to renew job");
@@ -230,13 +261,19 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       return (
         <>
           <TouchableOpacity
-            onPress={() => handlePauseJob(job.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handlePauseJob(job.id);
+            }}
             className="bg-yellow-100 p-2 rounded-full"
           >
             <Ionicons name="pause" size={20} color="#F59E0B" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => handleCloseJob(job.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleCloseJob(job.id);
+            }}
             className="bg-gray-100 p-2 rounded-full"
           >
             <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
@@ -250,13 +287,19 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       return (
         <>
           <TouchableOpacity
-            onPress={() => handleReactivateJob(job.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleReactivateJob(job.id);
+            }}
             className="bg-green-100 p-2 rounded-full"
           >
             <Ionicons name="play" size={20} color="#10B981" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => handleCloseJob(job.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleCloseJob(job.id);
+            }}
             className="bg-gray-100 p-2 rounded-full"
           >
             <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
@@ -270,13 +313,19 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       return (
         <>
           <TouchableOpacity
-            onPress={() => handleRenewJob(job.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleRenewJob(job.id);
+            }}
             className="bg-cyan-100 p-2 rounded-full"
           >
             <Ionicons name="refresh" size={20} color="#0E7490" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => handleCloseJob(job.id)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleCloseJob(job.id);
+            }}
             className="bg-gray-100 p-2 rounded-full"
           >
             <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
@@ -300,7 +349,10 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     if (status === "draft") {
       return (
         <TouchableOpacity
-          // Navigate to edit
+          onPress={(e) => {
+            e.stopPropagation();
+            // Navigate to edit
+          }}
           className="bg-cyan-100 p-2 rounded-full"
         >
           <Ionicons name="create-outline" size={20} color="#0E7490" />
@@ -312,8 +364,6 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   };
 
   const renderJobItem = ({ item }: { item: any }) => {
-    console.log("Item: ", item);
-    
     const statusBadge = getStatusBadge(item.status);
     const daysLeft = getDaysUntilExpiry(item.expires_at);
 
@@ -417,13 +467,13 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
             <View className="flex flex-row gap-2">
               {renderActionButtons(item)}
               <TouchableOpacity
-                // Navigate to applicants
-                onPress={() =>
+                onPress={(e) => {
+                  e.stopPropagation();
                   router.push({
                     pathname: "/(employer-tabs)/employers/Applicants",
                     params: { jobId: item.id },
-                  })
-                }
+                  });
+                }}
                 className="bg-cyan-700 p-2 rounded-full"
               >
                 <MaterialIcons name="arrow-outward" size={20} color="#fff" />
@@ -444,7 +494,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center">
         {jobs.length === 0
           ? "Start by posting your first job"
-          : "Try adjusting your filters"}
+          : `Try adjusting your filters (Current: ${statusFilter})`}
       </Text>
     </View>
   );
