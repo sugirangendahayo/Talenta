@@ -1,11 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
 import EmployerJobsList from "@/components/employer/EmployerJobsList";
 import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+
 
 interface Category {
   id: string;
@@ -37,6 +45,8 @@ export default function Jobs() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+    const { setIsVisible } = useTabBarVisibility();
+    const lastScrollY = useRef(0);
 
   // Fetch jobs from Supabase
   useEffect(() => {
@@ -81,6 +91,19 @@ export default function Jobs() {
     })),
   ];
 
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const currentScrollY = event.nativeEvent.contentOffset.y;
+      const scrollDirection =
+        currentScrollY > lastScrollY.current ? "down" : "up";
+
+      if (scrollDirection === "down" && currentScrollY > 50) {
+        setIsVisible(false);
+      } else if (scrollDirection === "up") {
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
   // Loading state
   if (loading) {
     return (
@@ -131,6 +154,7 @@ export default function Jobs() {
         searchQuery={searchQuery}
         statusFilter={selectedStatus}
         onRefresh={fetchJobs}
+        onScroll={handleScroll}
       />
     </SafeAreaView>
   );

@@ -1,17 +1,16 @@
-import { Job } from "@/types/job.types";
+import { supabase } from "@/lib/supabase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
+  Alert,
   FlatList,
+  RefreshControl,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  RefreshControl,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 
 interface EmployerJobsListProps {
@@ -20,6 +19,7 @@ interface EmployerJobsListProps {
   searchQuery: string;
   statusFilter: string;
   onRefresh: () => void;
+  onScroll?: (event: any) => void;
 }
 
 const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
@@ -28,6 +28,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   searchQuery,
   statusFilter,
   onRefresh,
+  onScroll,
 }) => {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -515,6 +516,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingVertical: 8 }}
         ListEmptyComponent={renderEmptyState}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -523,6 +526,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
             tintColor="#0E7490"
           />
         }
+        onEndReachedThreshold={0.5}
       />
     </View>
   );

@@ -1,12 +1,26 @@
 // app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Animated } from "react-native";
+import { useEffect, useRef } from "react";
+import {
+  TabBarVisibilityProvider,
+  useTabBarVisibility,
+} from "@/contexts/TabBarVisibilityContext";
 
 // Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }: any) {
+   const { isVisible } = useTabBarVisibility();
+    const translateY = useRef(new Animated.Value(0)).current;
+     useEffect(() => {
+        Animated.timing(translateY, {
+          toValue: isVisible ? 0 : 150, // Slide down 150px to hide
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }, [isVisible]);
   return (
-    <View
+    <Animated.View
       style={{
         flexDirection: "row",
         position: "absolute",
@@ -92,12 +106,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           </TouchableOpacity>
         );
       })}
-    </View>
+    </Animated.View>
   );
 }
 
 export default function TabLayout() {
+
   return (
+    <TabBarVisibilityProvider>
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
@@ -141,5 +157,8 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </TabBarVisibilityProvider>
   );
 }
+
+
