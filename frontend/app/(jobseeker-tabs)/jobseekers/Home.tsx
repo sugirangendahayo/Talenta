@@ -56,7 +56,7 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1">
+      <View className="flex-1 ">
         <HomeHeader />
         <SearchAndSort
           selectedCategory={selectedCategory}

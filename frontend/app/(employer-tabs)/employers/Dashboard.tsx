@@ -38,7 +38,7 @@ export default function Dashboard() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
         onScroll={handleScroll}
-        
+        scrollEventThrottle={16}
       >
         {/* Header with company logo, greeting, notifications */}
         <DashboardHeader />

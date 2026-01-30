@@ -10,13 +10,23 @@ import {
 // REMOVED: AsyncStorage import (no longer needed here)
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text as RNText, View } from "react-native";
+import {
+  ActivityIndicator,
+  Text as RNText,
+  View,
+  useColorScheme,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import "../global.css";
 
 export const unstable_settings = { anchor: "(jobseeker-tabs)" };
+
+function useAppBackground() {
+  const colorScheme = useColorScheme();
+  return colorScheme === "dark" ? "#141414" : "#ffffff";
+}
 
 // Navigation logic component
 function RootLayoutNav() {
@@ -25,6 +35,7 @@ function RootLayoutNav() {
   const router = useRouter();
   // REMOVED: Local hasSeenOnboarding state
   const [isReady, setIsReady] = useState(false);
+  const APP_BACKGROUND = useAppBackground();
 
   // UPDATED: New useEffect to set isReady when hasSeenOnboarding is loaded (not null)
   useEffect(() => {
@@ -111,7 +122,11 @@ function RootLayoutNav() {
   }
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        contentStyle: { backgroundColor: APP_BACKGROUND },
+      }}
+    >
       {/* Welcome screens */}
       <Stack.Screen name="welcome/Step1" options={{ headerShown: false }} />
       <Stack.Screen name="welcome/Step2" options={{ headerShown: false }} />
@@ -164,6 +179,7 @@ export default function RootLayout() {
     Quicksand_600SemiBold,
     Quicksand_700Bold,
   });
+  const backgroundColor = useAppBackground();
 
   if (!fontsLoaded) {
     return (
@@ -178,7 +194,7 @@ export default function RootLayout() {
   (RNText as any).defaultProps.style = { fontFamily: "Quicksand_400Regular" };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor }}>
       <SafeAreaProvider>
         <AuthProvider>
           <RootLayoutNav />
