@@ -1,5 +1,6 @@
-// app/(employer)/applicants.tsx - IMPROVED VERSION with Contact Actions
+// app/(employer)/applicants.tsx - IMPROVED VERSION with Beautiful Filters
 import ApplicantCard from "@/components/employer/ApplicantCard";
+import ApplicantFilters from "@/components/employer/ApplicantFilters";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Applicant } from "@/types/job.types";
@@ -13,9 +14,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Linking,
-  Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -44,114 +42,6 @@ type RawApplication = {
   };
 };
 
-// Contact Actions Component for Hired Candidates
-const ContactActions = ({ applicant }: { applicant: Applicant }) => {
-  const candidateName = `${applicant.jobseeker_profiles.first_name} ${applicant.jobseeker_profiles.last_name}`;
-  const phone = applicant.jobseeker_profiles.phone;
-  const email = applicant.jobseeker_profiles.email;
-
-  const handleCall = () => {
-    if (!phone) {
-      Alert.alert(
-        "No Phone Number",
-        "This candidate hasn't provided a phone number.",
-      );
-      return;
-    }
-    const phoneNumber = phone.replace(/[^0-9+]/g, "");
-    Linking.openURL(`tel:${phoneNumber}`);
-  };
-
-  const handleWhatsApp = () => {
-    if (!phone) {
-      Alert.alert(
-        "No Phone Number",
-        "This candidate hasn't provided a phone number.",
-      );
-      return;
-    }
-    const phoneNumber = phone.replace(/[^0-9+]/g, "");
-    const message = `Hi ${candidateName}, congratulations on being selected for ${applicant.jobs.title}!`;
-
-    const whatsappURL = Platform.select({
-      ios: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
-      android: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
-      default: `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`,
-    });
-
-    Linking.canOpenURL(whatsappURL!).then((supported) => {
-      if (supported) {
-        Linking.openURL(whatsappURL!);
-      } else {
-        Alert.alert(
-          "WhatsApp Not Installed",
-          "Please install WhatsApp to use this feature.",
-        );
-      }
-    });
-  };
-
-  const handleEmail = () => {
-    const subject = `Congratulations - ${applicant.jobs.title}`;
-    const body = `Hi ${candidateName},\n\nCongratulations! We're pleased to inform you that you've been selected for the ${applicant.jobs.title} position.\n\nBest regards`;
-    Linking.openURL(
-      `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-    );
-  };
-
-  if (applicant.status !== "hired") return null;
-
-  return (
-    <View className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 mb-3 border border-green-200">
-      <View className="flex-row items-center mb-2">
-        <View className="w-7 h-7 bg-green-500 rounded-full items-center justify-center mr-2">
-          <Ionicons name="checkmark" size={16} color="#fff" />
-        </View>
-        <Text className="font-quicksandBold text-sm text-green-800">
-          Quick Contact Actions
-        </Text>
-      </View>
-
-      <View className="flex-row gap-2">
-        {phone && (
-          <>
-            <TouchableOpacity
-              className="flex-1 bg-cyan-600 px-3 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
-              onPress={handleCall}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="call" size={16} color="#fff" />
-              <Text className="text-xs font-quicksandBold text-white">
-                Call
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-1 bg-green-600 px-3 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
-              onPress={handleWhatsApp}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-              <Text className="text-xs font-quicksandBold text-white">
-                WhatsApp
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        <TouchableOpacity
-          className={`${phone ? "flex-1" : "flex-1"} bg-purple-600 px-3 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5`}
-          onPress={handleEmail}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="mail" size={16} color="#fff" />
-          <Text className="text-xs font-quicksandBold text-white">Email</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};
-
 export default function ApplicantsScreen() {
   const { user } = useAuth();
   const params = useLocalSearchParams();
@@ -164,6 +54,7 @@ export default function ApplicantsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>("all");
   const [jobTitle, setJobTitle] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const transformApplications = (rawApps: RawApplication[]): Applicant[] => {
     return rawApps
@@ -252,17 +143,46 @@ export default function ApplicantsScreen() {
     }
   };
 
-  const applyFilter = (data: Applicant[], filter: FilterStatus) => {
-    if (filter === "all") {
-      setFilteredApplicants(data);
-    } else {
-      setFilteredApplicants(data.filter((app) => app.status === filter));
+  const applyFilter = (
+    data: Applicant[],
+    filter: FilterStatus,
+    search: string = searchQuery,
+  ) => {
+    let filtered = data;
+
+    // Apply status filter
+    if (filter !== "all") {
+      filtered = filtered.filter((app) => app.status === filter);
     }
+
+    // Apply search filter
+    if (search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filtered = filtered.filter((app) => {
+        const fullName =
+          `${app.jobseeker_profiles.first_name} ${app.jobseeker_profiles.last_name}`.toLowerCase();
+        const email = app.jobseeker_profiles.email.toLowerCase();
+        const phone = app.jobseeker_profiles.phone?.toLowerCase() || "";
+
+        return (
+          fullName.includes(searchLower) ||
+          email.includes(searchLower) ||
+          phone.includes(searchLower)
+        );
+      });
+    }
+
+    setFilteredApplicants(filtered);
   };
 
   const handleFilterChange = (filter: FilterStatus) => {
     setSelectedFilter(filter);
-    applyFilter(applicants, filter);
+    applyFilter(applicants, filter, searchQuery);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    applyFilter(applicants, selectedFilter, query);
   };
 
   const onRefresh = async () => {
@@ -285,39 +205,9 @@ export default function ApplicantsScreen() {
 
   const counts = getCounts();
 
-  const FilterButton = ({
-    status,
-    label,
-    count,
-  }: {
-    status: FilterStatus;
-    label: string;
-    count: number;
-  }) => {
-    const isSelected = selectedFilter === status;
-
-    return (
-      <TouchableOpacity
-        onPress={() => handleFilterChange(status)}
-        className={`px-4 py-2 rounded-full ${
-          isSelected ? "bg-cyan-700" : "bg-white border border-gray-200"
-        }`}
-        activeOpacity={0.7}
-      >
-        <Text
-          className={`font-quicksandBold text-sm ${
-            isSelected ? "text-white" : "text-gray-600"
-          }`}
-        >
-          {label} ({count})
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
   const renderEmptyState = () => (
-    <View className="flex-1 items-center justify-center px-6 py-20">
-      <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-4">
+    <View className="flex-1 items-center justify-center flex px-6 py-20">
+      <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center flex mb-4">
         <Ionicons name="people-outline" size={40} color="#9CA3AF" />
       </View>
       <Text className="font-quicksandBold text-lg text-gray-900 mb-2">
@@ -356,14 +246,13 @@ export default function ApplicantsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      {/* Improved Header */}
-      <View className="bg-white px-4 pt-3 pb-4 border-b border-gray-100">
-        {/* Top Row */}
-        <View className="flex-row items-center justify-between mb-4">
-          <View className="flex-row items-center flex-1">
+      {/* Header with Job Title */}
+      <View className="bg-white px-4 pt-3 pb-3 border-b border-gray-100">
+        <View className="flex flex-row items-center justify-between">
+          <View className="flex flex-row items-center flex-1">
             <TouchableOpacity
               onPress={() => router.back()}
-              className="mr-3 w-9 h-9 items-center justify-center rounded-full bg-gray-100"
+              className="mr-3 w-9 h-9 items-center justify-center flex rounded-full bg-gray-100"
               activeOpacity={0.7}
             >
               <Ionicons name="arrow-back" size={20} color="#111827" />
@@ -386,32 +275,20 @@ export default function ApplicantsScreen() {
             </Text>
           </View>
         </View>
-
-        {/* Filter Pills */}
-        <View className="flex-row gap-2">
-          <FilterButton status="all" label="All" count={counts.all} />
-          <FilterButton
-            status="pending"
-            label="Pending"
-            count={counts.pending}
-          />
-          <FilterButton
-            status="shortlisted"
-            label="Shortlisted"
-            count={counts.shortlisted}
-          />
-          <FilterButton status="hired" label="Hired" count={counts.hired} />
-          <FilterButton
-            status="rejected"
-            label="Rejected"
-            count={counts.rejected}
-          />
-        </View>
       </View>
+
+      {/* Filter Component */}
+      <ApplicantFilters
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        selectedStatus={selectedFilter}
+        onStatusChange={handleFilterChange}
+        counts={counts}
+      />
 
       {/* Applicants List */}
       {isLoading && applicants.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center flex">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="font-quicksandMedium text-gray-500 mt-4">
             Loading applicants...
@@ -421,16 +298,7 @@ export default function ApplicantsScreen() {
         <FlatList
           data={filteredApplicants}
           renderItem={({ item }) => (
-            <View>
-              {/* Contact Actions for Hired Candidates */}
-              <ContactActions applicant={item} />
-
-              {/* Applicant Card */}
-              <ApplicantCard
-                applicant={item}
-                onStatusUpdated={fetchApplicants}
-              />
-            </View>
+            <ApplicantCard applicant={item} onStatusUpdated={fetchApplicants} />
           )}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{

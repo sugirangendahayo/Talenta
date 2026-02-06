@@ -80,12 +80,12 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     });
 
     console.log("=== DEBUG: Filtered Results ===");
-    console.log("Filtered jobs count:", filtered.length);
+    // console.log("Filtered jobs count:", filtered.length);
     filtered.forEach((job, index) => {
-      console.log(`Filtered job ${index + 1}:`, {
-        title: job.title,
-        status: job.status,
-      });
+      // console.log(`Filtered job ${index + 1}:`, {
+      //   title: job.title,
+      //   status: job.status,
+      // });
     });
 
     return filtered;
