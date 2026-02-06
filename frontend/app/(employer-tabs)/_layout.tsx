@@ -36,6 +36,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         shadowRadius: 8,
         elevation: 3,
         minHeight: 60,
+        transform: [{ translateY }],
       }}
     >
       {state.routes.map((route: any, index: number) => {
@@ -93,7 +94,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 style={{
                   marginLeft: 4, // Reduced margin
                   fontSize: 11, // Slightly smaller font
-                  
+
                   color: "#fff",
                   includeFontPadding: false, // Remove extra font padding
                   textAlignVertical: "center", // Better vertical alignment
@@ -110,10 +111,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   );
 }
 
-export default function TabLayout() {
-
+ function TabsContent(){
   return (
-    <TabBarVisibilityProvider>
+  
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
@@ -157,6 +157,13 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+ 
+  );
+}
+export default function TabLayout() {
+  return (
+    <TabBarVisibilityProvider>
+      <TabsContent />
     </TabBarVisibilityProvider>
   );
 }

@@ -9,17 +9,20 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 
 export default function EmployerProfile() {
   const { profile, role, signOut, loading } = useAuth();
+  const { setIsVisible } = useTabBarVisibility();
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const lastScrollY = useRef(0);
 
   // Get employer profile data
   const employerData =
@@ -49,6 +52,20 @@ export default function EmployerProfile() {
       },
     ]);
   };
+
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const currentScrollY = event.nativeEvent.contentOffset.y;
+      const scrollDirection =
+        currentScrollY > lastScrollY.current ? "down" : "up";
+  
+      if (scrollDirection === "down" && currentScrollY > 50) {
+        setIsVisible(false);
+      } else if (scrollDirection === "up") {
+        setIsVisible(true);
+      }
+  
+      lastScrollY.current = currentScrollY;
+    };
 
   const settingsSections = [
     {
@@ -135,7 +152,12 @@ export default function EmployerProfile() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Company Profile Card */}
         <View className="mx-6 my-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
           <View className="flex-row items-center">

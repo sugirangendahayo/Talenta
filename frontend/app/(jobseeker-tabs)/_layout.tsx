@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, TouchableOpacity, Animated } from "react-native";
+import {  Text, TouchableOpacity, Animated } from "react-native";
 import { useEffect, useRef } from "react";
 import {
   TabBarVisibilityProvider,

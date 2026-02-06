@@ -27,7 +27,7 @@ export default function DashboardHeader() {
           </View>
           <View>
             <Text className="font-quicksandBold text-base text-gray-800">
-              Hi, TechCorp Inc! 👋
+              Hi, TechCorp Inc! 
             </Text>
             <Text className="font-quicksandMedium text-xs text-gray-500">
               Welcome back to your dashboard
@@ -36,7 +36,7 @@ export default function DashboardHeader() {
         </View>
 
         {/* Right: Notifications + Profile */}
-        <View className="flex flex-row items-center gap-3">
+        <View className="flex flex-row items-center gap-3 px-2">
           {/* Notification Bell */}
           <TouchableOpacity className="relative">
             <View
@@ -53,24 +53,8 @@ export default function DashboardHeader() {
             </View>
           </TouchableOpacity>
 
-          {/* Profile Icon */}
-          <TouchableOpacity>
-            <View
-              className="w-10 h-10 rounded-full border border-gray-200 bg-white overflow-hidden"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-              }}
-            >
-              <ImageBackground
-                source={require("@/assets/images/user_.png")}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            </View>
-          </TouchableOpacity>
+         
+         
         </View>
       </View>
 
