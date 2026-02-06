@@ -1,5 +1,6 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 interface StatCardProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -7,18 +8,32 @@ interface StatCardProps {
   value: string | number;
   label: string;
   badge?: string;
+  onPress?: () => void;
 }
 
-const StatCard = ({ icon, iconColor, value, label, badge }: StatCardProps) => (
-  <TouchableOpacity className="flex-1 bg-white rounded-2xl p-4 border border-gray-200 mx-1">
+const StatCard = ({
+  icon,
+  iconColor,
+  value,
+  label,
+  badge,
+  onPress,
+}: StatCardProps) => (
+  <TouchableOpacity
+    className="flex-1 bg-white rounded-2xl p-4 border border-gray-200 mx-1"
+    onPress={onPress}
+    disabled={!onPress}
+  >
     <View className="flex items-center">
       <View
-        className="w-12 h-12 rounded-full items-center justify-center mb-2"
+        className="w-12 h-12 rounded-full items-center justify-center flex mb-2"
         style={{ backgroundColor: `${iconColor}15` }}
       >
         <Ionicons name={icon} size={24} color={iconColor} />
       </View>
-      <Text className="text-2xl font-quicksandBold text-gray-800">{value}</Text>
+      <Text className="text-2xl font-quicksandBold text-gray-800">
+        {value}
+      </Text>
       <Text className="text-xs font-quicksandMedium text-gray-500 text-center mt-1">
         {label}
       </Text>
@@ -33,38 +48,53 @@ const StatCard = ({ icon, iconColor, value, label, badge }: StatCardProps) => (
   </TouchableOpacity>
 );
 
-export default function StatCards() {
-  const stats = [
+interface StatsCardsProps {
+  stats: {
+    activeJobs: number;
+    totalApplicants: number;
+    scheduledInterviews: number;
+    unreadMessages: number;
+  };
+}
+
+export default function StatCards({ stats }: StatsCardsProps) {
+  const router = useRouter();
+
+  const statCards = [
     {
       icon: "briefcase" as keyof typeof Ionicons.glyphMap,
       iconColor: "#0E7490",
-      value: 12,
+      value: stats.activeJobs,
       label: "Active Jobs",
+      onPress: () => router.push("/(employer-tabs)/employers/Jobs"),
     },
     {
       icon: "people" as keyof typeof Ionicons.glyphMap,
       iconColor: "#10B981",
-      value: 156,
+      value: stats.totalApplicants,
       label: "Total Applicants",
+      onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
       icon: "calendar" as keyof typeof Ionicons.glyphMap,
       iconColor: "#F59E0B",
-      value: 8,
+      value: stats.scheduledInterviews,
       label: "Scheduled",
+      onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
       icon: "mail" as keyof typeof Ionicons.glyphMap,
       iconColor: "#8B5CF6",
-      value: 16,
+      value: stats.unreadMessages,
       label: "Messages",
-      badge: "3 new",
+      badge: stats.unreadMessages > 0 ? `${stats.unreadMessages} new` : undefined,
+      onPress: () => router.push("/(employer-tabs)/employers/Profile"),
     },
   ];
 
   return (
     <View className="flex flex-row flex-wrap px-3 py-4">
-      {stats.map((stat, index) => (
+      {statCards.map((stat, index) => (
         <View className="w-1/2 mb-3" key={index}>
           <StatCard {...stat} />
         </View>

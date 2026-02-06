@@ -1,60 +1,60 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import type { HighPriorityApplicant } from "@/hooks/useDashboard";
 
 interface ApplicantItemProps {
-  name: string;
-  position: string;
-  match: number;
-  isNew?: boolean;
+  applicant: HighPriorityApplicant;
 }
 
-const ApplicantItem = ({
-  name,
-  position,
-  match,
-  isNew,
-}: ApplicantItemProps) => (
-  <TouchableOpacity className="flex flex-row items-center justify-between py-3 border-b border-gray-100">
-    <View className="flex-1">
-      <View className="flex flex-row items-center gap-2">
-        <Text className="text-sm font-quicksandBold text-gray-800">{name}</Text>
-        {isNew && (
-          <View className="bg-red-500 px-2 py-0.5 rounded-full">
-            <Text className="text-xs font-quicksandBold text-white">NEW</Text>
-          </View>
-        )}
-      </View>
-      <Text className="text-xs font-quicksandMedium text-gray-500 mt-0.5">
-        {position}
-      </Text>
-    </View>
-    <View className="flex flex-row items-center gap-2">
-      <View className="bg-green-100 px-2 py-1 rounded-full">
-        <Text className="text-xs font-quicksandBold text-green-700">
-          {match}% match
+const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity
+      className="flex flex-row items-center justify-between py-3 border-b border-gray-100"
+      onPress={() =>
+        router.push({
+          pathname: "/(employer-tabs)/employers/Applicants",
+          params: { applicationId: applicant.id },
+        })
+      }
+    >
+      <View className="flex-1">
+        <View className="flex flex-row items-center gap-2">
+          <Text className="text-sm font-quicksandBold text-gray-800">
+            {applicant.applicant_name}
+          </Text>
+          {applicant.is_new && (
+            <View className="bg-red-500 px-2 py-0.5 rounded-full">
+              <Text className="text-xs font-quicksandBold text-white">NEW</Text>
+            </View>
+          )}
+        </View>
+        <Text className="text-xs font-quicksandMedium text-gray-500 mt-0.5">
+          {applicant.job_title}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
-    </View>
-  </TouchableOpacity>
-);
+      <View className="flex flex-row items-center gap-2">
+        <View className="bg-green-100 px-2 py-1 rounded-full">
+          <Text className="text-xs font-quicksandBold text-green-700">
+            {applicant.match_score}% match
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
-export default function AttentionSection() {
-  const applicants = [
-    {
-      name: "John Doe",
-      position: "Senior React Developer",
-      match: 85,
-      isNew: true,
-    },
-    { name: "Sarah Lee", position: "UX Designer", match: 92, isNew: true },
-    {
-      name: "Mike Chen",
-      position: "Backend Developer",
-      match: 78,
-      isNew: true,
-    },
-  ];
+interface AttentionSectionProps {
+  applicants: HighPriorityApplicant[];
+}
+
+export default function AttentionSection({ applicants }: AttentionSectionProps) {
+  const router = useRouter();
+
+  if (applicants.length === 0) return null;
 
   return (
     <View className="mx-4 my-2">
@@ -62,7 +62,7 @@ export default function AttentionSection() {
         {/* Header */}
         <View className="flex flex-row items-center justify-between mb-3">
           <View className="flex flex-row items-center gap-2">
-            <View className="w-8 h-8 bg-red-100 rounded-full items-center justify-center">
+            <View className="w-8 h-8 bg-red-100 rounded-full items-center justify-center flex">
               <Ionicons name="alert-circle" size={18} color="#EF4444" />
             </View>
             <View>
@@ -70,11 +70,14 @@ export default function AttentionSection() {
                 Requiring Attention
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-500">
-                3 high-priority applicants
+                {applicants.length} high-priority applicant{applicants.length > 1 ? "s" : ""}
               </Text>
             </View>
           </View>
-          <TouchableOpacity className="flex flex-row items-center gap-1">
+          <TouchableOpacity
+            className="flex flex-row items-center gap-1"
+            onPress={() => router.push("/(employer-tabs)/employers/Applicants")}
+          >
             <Text className="text-sm font-quicksandBold text-cyan-700">
               View All
             </Text>
@@ -84,8 +87,8 @@ export default function AttentionSection() {
 
         {/* Applicants List */}
         <View>
-          {applicants.map((applicant, index) => (
-            <ApplicantItem key={index} {...applicant} />
+          {applicants.map((applicant) => (
+            <ApplicantItem key={applicant.id} applicant={applicant} />
           ))}
         </View>
       </View>
