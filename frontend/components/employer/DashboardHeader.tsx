@@ -1,71 +1,65 @@
-import Octicons from "@expo/vector-icons/Octicons";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { ImageBackground, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "@/contexts/AuthContext";
+import { EmployerProfile } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
 
-export default function DashboardHeader() {
+interface DashboardHeaderProps {
+  unreadCount?: number;
+}
+
+export default function DashboardHeader({
+  unreadCount = 0,
+}: DashboardHeaderProps) {
+  const { profile, role } = useAuth();
+  const router = useRouter();
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
+  const companyName =
+    role === "employer" && profile
+      ? (profile as EmployerProfile).company_name || "There"
+      : "There";
+
   return (
-    <View className="my-2  ">
-      <View className="flex flex-row justify-between items-center px-4 py-4">
-        {/* Left: Company Logo + Greeting */}
+    <View className="bg-white px-4 py-4 border-b border-gray-200">
+      <View className="flex flex-row items-center justify-between">
+        {/* Left: Company Logo & Greeting */}
         <View className="flex flex-row items-center gap-3">
-          <View
-            className="w-12 h-12 rounded-full border border-gray-200 bg-white overflow-hidden p-1"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.15,
-              shadowRadius: 3,
-            }}
-          >
-            <ImageBackground
-              source={{
-                uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
-              }}
-              className="w-full h-full "
-              resizeMode="contain"
-            />
+          <View className="w-12 h-12 bg-cyan-100 rounded-full items-center justify-center flex">
+            <Ionicons name="business" size={24} color="#0E7490" />
           </View>
           <View>
-            <Text className="font-quicksandBold text-base text-gray-800">
-              Hi, TechCorp Inc! 
+            <Text className="text-lg font-quicksandBold text-gray-800">
+              {getGreeting()}
             </Text>
-            <Text className="font-quicksandMedium text-xs text-gray-500">
-              Welcome back to your dashboard
+            <Text className="text-sm font-quicksandMedium text-gray-500">
+              {companyName}
             </Text>
           </View>
         </View>
 
-        {/* Right: Notifications + Profile */}
-        <View className="flex flex-row items-center gap-3 px-2">
-          {/* Notification Bell */}
-          <TouchableOpacity className="relative">
-            <View
-              className="p-2 rounded-full bg-white"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-              }}
-            >
-              <View className="w-2 h-2 bg-red-500 rounded-full absolute right-1 top-1 z-10" />
-              <Octicons name="bell" size={20} color="#0E7490" />
+        {/* Right: Notifications */}
+        <TouchableOpacity
+          className="relative"
+          onPress={() => router.push("/(employer-tabs)/employers/Profile")}
+        >
+          <View className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center flex">
+            <Ionicons name="notifications-outline" size={22} color="#374151" />
+          </View>
+          {unreadCount > 0 && (
+            <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center flex px-1">
+              <Text className="text-[10px] font-quicksandBold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
             </View>
-          </TouchableOpacity>
-
-         
-         
-        </View>
-      </View>
-
-      {/* Title */}
-      <View className="px-4 mt-2">
-        <View className=" flex flex-row items-center gap-2">
-          <Ionicons name="analytics-sharp" size={24} color="black" />
-          <Text className="font-quicksandBold text-2xl text-gray-800">
-            Dashboard Overview
-          </Text>
-        </View>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );

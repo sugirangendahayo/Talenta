@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export interface DashboardStats {
   activeJobs: number;
   totalApplicants: number;
-  scheduledInterviews: number;
+  shortlistedApplicants: number;
   unreadMessages: number;
 }
 
@@ -55,7 +55,7 @@ export function useDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     activeJobs: 0,
     totalApplicants: 0,
-    scheduledInterviews: 0,
+    shortlistedApplicants: 0,
     unreadMessages: 0,
   });
   const [highPriorityApplicants, setHighPriorityApplicants] = useState<HighPriorityApplicant[]>([]);
@@ -109,13 +109,12 @@ export function useDashboard() {
         .select("*, jobs!inner(employer_id)", { count: "exact", head: true })
         .eq("jobs.employer_id", user.id);
 
-      // Scheduled interviews count
-      const { count: scheduledInterviewsCount } = await supabase
-        .from("interviews")
+      // Shortlisted applicants count (pending review)
+      const { count: shortlistedApplicantsCount } = await supabase
+        .from("job_applications")
         .select("*, jobs!inner(employer_id)", { count: "exact", head: true })
         .eq("jobs.employer_id", user.id)
-        .gte("scheduled_at", new Date().toISOString())
-        .in("status", ["scheduled", "confirmed"]);
+        .eq("status", "shortlisted");
 
       // Unread notifications count (messages)
       const { count: unreadMessagesCount } = await supabase
@@ -127,7 +126,7 @@ export function useDashboard() {
       setStats({
         activeJobs: activeJobsCount || 0,
         totalApplicants: totalApplicantsCount || 0,
-        scheduledInterviews: scheduledInterviewsCount || 0,
+        shortlistedApplicants: shortlistedApplicantsCount || 0,
         unreadMessages: unreadMessagesCount || 0,
       });
     } catch (err: any) {
@@ -149,7 +148,8 @@ export function useDashboard() {
           status,
           created_at,
           jobseeker_profiles!inner(
-            full_name,
+            first_name,
+            last_name,
             skills,
             experience_level
           ),
@@ -172,11 +172,15 @@ export function useDashboard() {
         const matchScore = calculateMatchScore(app);
         const isNew = new Date().getTime() - new Date(app.created_at).getTime() < 24 * 60 * 60 * 1000; // Last 24 hours
 
+        const firstName = app.jobseeker_profiles?.first_name || "";
+        const lastName = app.jobseeker_profiles?.last_name || "";
+        const fullName = `${firstName} ${lastName}`.trim() || "Unknown";
+
         return {
           id: app.id,
           jobseeker_id: app.jobseeker_id,
           job_id: app.job_id,
-          applicant_name: app.jobseeker_profiles?.full_name || "Unknown",
+          applicant_name: fullName,
           job_title: app.jobs?.title || "Unknown Position",
           match_score: matchScore,
           is_new: isNew,
@@ -246,7 +250,8 @@ export function useDashboard() {
           status,
           updated_at,
           jobseeker_profiles!inner(
-            full_name,
+            first_name,
+            last_name,
             phone,
             email
           ),
@@ -262,17 +267,23 @@ export function useDashboard() {
 
       if (fetchError) throw fetchError;
 
-      const contacts = (data || []).map((app: any) => ({
-        id: app.id,
-        jobseeker_id: app.jobseeker_id,
-        job_id: app.job_id,
-        candidate_name: app.jobseeker_profiles?.full_name || "Unknown",
-        job_title: app.jobs?.title || "Unknown Position",
-        phone: app.jobseeker_profiles?.phone || null,
-        email: app.jobseeker_profiles?.email || "",
-        last_contact: app.updated_at,
-        status: app.status,
-      }));
+      const contacts = (data || []).map((app: any) => {
+        const firstName = app.jobseeker_profiles?.first_name || "";
+        const lastName = app.jobseeker_profiles?.last_name || "";
+        const fullName = `${firstName} ${lastName}`.trim() || "Unknown";
+
+        return {
+          id: app.id,
+          jobseeker_id: app.jobseeker_id,
+          job_id: app.job_id,
+          candidate_name: fullName,
+          job_title: app.jobs?.title || "Unknown Position",
+          phone: app.jobseeker_profiles?.phone || null,
+          email: app.jobseeker_profiles?.email || "",
+          last_contact: app.updated_at,
+          status: app.status,
+        };
+      });
 
       setRecentContacts(contacts);
     } catch (err: any) {

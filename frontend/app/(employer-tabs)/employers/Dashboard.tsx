@@ -13,7 +13,7 @@ import StatCards from "@/components/employer/StatsCards";
 import AttentionSection from "@/components/employer/AttentionSection";
 import ActiveJobsSection from "@/components/employer/ActiveJobsSection";
 import QuickActions from "@/components/employer/QuickActions";
-import RecentContactsSection from "@/components/employer/RecentContactsSection";
+import RecentContactsSection from "@/components/employer/RecentContactSection";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useState, useRef } from "react";
 import { useDashboard } from "@/hooks/useDashboard";

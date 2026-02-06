@@ -52,7 +52,7 @@ interface StatsCardsProps {
   stats: {
     activeJobs: number;
     totalApplicants: number;
-    scheduledInterviews: number;
+    shortlistedApplicants: number;
     unreadMessages: number;
   };
 }
@@ -76,10 +76,10 @@ export default function StatCards({ stats }: StatsCardsProps) {
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
-      icon: "calendar" as keyof typeof Ionicons.glyphMap,
+      icon: "star" as keyof typeof Ionicons.glyphMap,
       iconColor: "#F59E0B",
-      value: stats.scheduledInterviews,
-      label: "Scheduled",
+      value: stats.shortlistedApplicants,
+      label: "Shortlisted",
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
