@@ -287,7 +287,7 @@ export default function EmployerProfile() {
           <View className="flex-row mt-6 pt-6 border-t border-gray-100">
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                1
+                0
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.activeJobs")}
@@ -296,7 +296,7 @@ export default function EmployerProfile() {
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                2
+                0
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.applicants")}
@@ -305,7 +305,7 @@ export default function EmployerProfile() {
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                3
+                0
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.hired")}
