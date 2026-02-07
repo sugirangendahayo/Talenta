@@ -305,7 +305,7 @@ export default function EmployerProfile() {
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                23
+                12
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.hired")}
