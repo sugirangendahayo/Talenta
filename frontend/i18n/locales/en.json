@@ -1,0 +1,187 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "search": "Search",
+    "filter": "Filter",
+    "apply": "Apply",
+    "reset": "Reset",
+    "viewAll": "View All",
+    "new": "NEW"
+  },
+
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?"
+  },
+
+  "tabs": {
+    "home": "Home",
+    "jobs": "Jobs",
+    "applications": "Applications",
+    "applicants": "Applicants",
+    "profile": "Profile",
+    "myJobs": "My Jobs"
+  },
+
+  "dashboard": {
+    "greeting": {
+      "morning": "Good Morning",
+      "afternoon": "Good Afternoon",
+      "evening": "Good Evening"
+    },
+    "stats": {
+      "activeJobs": "Active Jobs",
+      "totalApplicants": "Total Applicants",
+      "shortlisted": "Shortlisted",
+      "messages": "Messages",
+      "newMessages": "{{count}} new"
+    },
+    "attention": {
+      "title": "Requiring Attention",
+      "subtitle": "{{count}} high-priority applicant",
+      "subtitle_plural": "{{count}} high-priority applicants",
+      "match": "{{score}}% match"
+    },
+    "activeJobs": {
+      "title": "Active Jobs",
+      "subtitle": "{{count}} position open",
+      "subtitle_plural": "{{count}} positions open",
+      "expiresIn": "Expires in {{days}} day",
+      "expiresIn_plural": "Expires in {{days}} days",
+      "daysActive": "{{days}} day active",
+      "daysActive_plural": "{{days}} days active",
+      "applicants": "{{count}} applicant",
+      "applicants_plural": "{{count}} applicants",
+      "pause": "Pause"
+    },
+    "contacts": {
+      "title": "Contact Candidates",
+      "subtitle": "{{count}} candidate to reach",
+      "subtitle_plural": "{{count}} candidates to reach",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "hired": "Hired",
+      "shortlisted": "Shortlisted",
+      "lastContact": "Last contact: {{time}}"
+    },
+    "quickActions": {
+      "postJob": "Post Job",
+      "findCandidates": "Find Candidates",
+      "analytics": "Analytics"
+    }
+  },
+
+  "jobs": {
+    "yourJobs": "Your Job Posts ({{count}})",
+    "noJobs": "No jobs found",
+    "startPosting": "Start by posting your first job",
+    "adjustFilters": "Try adjusting your filters",
+    "status": {
+      "all": "All Jobs",
+      "active": "Active",
+      "expired": "Expired",
+      "paused": "Paused",
+      "closed": "Closed",
+      "draft": "Draft"
+    },
+    "actions": {
+      "pause": "Pause Job",
+      "resume": "Resume",
+      "renew": "Renew",
+      "close": "Close Job",
+      "edit": "Edit",
+      "viewApplicants": "View Applicants"
+    },
+    "filters": {
+      "search": "Search jobs by title or location...",
+      "category": "Category",
+      "allCategories": "All Categories"
+    }
+  },
+
+  "profile": {
+    "title": "Company Profile",
+    "subtitle": "Manage your company account and settings",
+    "editProfile": "Edit Company Profile",
+    "changeLanguage": "Change Language",
+    "selectLanguage": "Select Language",
+    "currentLanguage": "Current language",
+    "verified": "Verified",
+    "pending": "Pending",
+    "stats": {
+      "activeJobs": "Active Jobs",
+      "applicants": "Applicants",
+      "hired": "Hired"
+    },
+    "sections": {
+      "account": {
+        "title": "Company Account",
+        "editProfile": "Edit Company Profile",
+        "teamManagement": "Team Management",
+        "verification": "Verification Status",
+        "privacy": "Privacy & Security"
+      },
+      "preferences": {
+        "title": "Hiring Preferences",
+        "applicationAlerts": "Application Alerts",
+        "emailNotifications": "Email Notifications",
+        "defaultFilters": "Default Filters",
+        "autoReply": "Auto-Reply Settings"
+      },
+      "billing": {
+        "title": "Subscription & Billing",
+        "currentPlan": "Current Plan",
+        "paymentMethod": "Payment Method",
+        "billingHistory": "Billing History",
+        "upgrade": "Upgrade Plan"
+      },
+      "support": {
+        "title": "Support & Resources",
+        "contactSupport": "Contact Support",
+        "resources": "Hiring Resources",
+        "terms": "Terms & Conditions",
+        "privacy": "Privacy Policy"
+      },
+      "language": {
+        "title": "Language & Region",
+        "appLanguage": "App Language",
+        "dateFormat": "Date Format",
+        "timeZone": "Time Zone"
+      }
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "postJob": "Post Job",
+      "applicants": "Applicants",
+      "analytics": "Analytics"
+    },
+    "logout": {
+      "button": "Log Out",
+      "confirm": "Are you sure you want to log out?",
+      "success": "Logged out successfully",
+      "error": "Failed to log out. Please try again."
+    },
+    "version": "Talenta Employer v1.0.0"
+  },
+
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "rw": "Kinyarwanda"
+  }
+}

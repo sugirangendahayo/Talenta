@@ -1,0 +1,187 @@
+{
+  "common": {
+    "cancel": "Hagarika",
+    "save": "Bika",
+    "delete": "Siba",
+    "edit": "Hindura",
+    "close": "Funga",
+    "confirm": "Emeza",
+    "loading": "Biratunganywa...",
+    "error": "Ikosa",
+    "success": "Byagenze Neza",
+    "search": "Shakisha",
+    "filter": "Sororanya",
+    "apply": "Shyiraho",
+    "reset": "Ongera Utangire",
+    "viewAll": "Reba Byose",
+    "new": "GISHYA"
+  },
+
+  "auth": {
+    "signIn": "Injira",
+    "signUp": "Iyandikishe",
+    "signOut": "Sohoka",
+    "email": "Imeri",
+    "password": "Ijambo Ryibanga",
+    "forgotPassword": "Wibagiwe Ijambo Ryibanga?",
+    "dontHaveAccount": "Nta Konti Ufite?",
+    "alreadyHaveAccount": "Usanzwe Ufite Konti?"
+  },
+
+  "tabs": {
+    "home": "Ahabanza",
+    "jobs": "Imyanya",
+    "applications": "Ibyasabwe",
+    "applicants": "Abasaba",
+    "profile": "Umwirondoro",
+    "myJobs": "Imyanya Yanjye"
+  },
+
+  "dashboard": {
+    "greeting": {
+      "morning": "Mwaramutse",
+      "afternoon": "Mwiriwe",
+      "evening": "Mwiriwe"
+    },
+    "stats": {
+      "activeJobs": "Imyanya Ikora",
+      "totalApplicants": "Abasaba Bose",
+      "shortlisted": "Batowe",
+      "messages": "Ubutumwa",
+      "newMessages": "{{count}} nshya"
+    },
+    "attention": {
+      "title": "Bisaba Ibanze",
+      "subtitle": "{{count}} usaba w'ibanze",
+      "subtitle_plural": "{{count}} abasaba b'ibanze",
+      "match": "{{score}}% bihuye"
+    },
+    "activeJobs": {
+      "title": "Imyanya Ikora",
+      "subtitle": "Umwanya {{count}} ufunguye",
+      "subtitle_plural": "Imyanya {{count}} ifunguye",
+      "expiresIn": "Birangira mu minsi {{days}}",
+      "expiresIn_plural": "Birangira mu minsi {{days}}",
+      "daysActive": "Umusi {{days}} ikora",
+      "daysActive_plural": "Iminsi {{days}} ikora",
+      "applicants": "{{count}} usaba",
+      "applicants_plural": "{{count}} abasaba",
+      "pause": "Hagarika"
+    },
+    "contacts": {
+      "title": "Vugana n'Abasaba",
+      "subtitle": "{{count}} usaba wo kuvugana",
+      "subtitle_plural": "{{count}} abasaba bo kuvugana",
+      "call": "Hamagara",
+      "whatsapp": "WhatsApp",
+      "email": "Imeri",
+      "hired": "Yahawe Akazi",
+      "shortlisted": "Yatowe",
+      "lastContact": "Iheruka kuvugana: {{time}}"
+    },
+    "quickActions": {
+      "postJob": "Tanga Umwanya",
+      "findCandidates": "Shakisha Abasaba",
+      "analytics": "Isesengura"
+    }
+  },
+
+  "jobs": {
+    "yourJobs": "Imyanya Yawe ({{count}})",
+    "noJobs": "Nta myanya ibonetse",
+    "startPosting": "Tangira utange umwanya wawe wa mbere",
+    "adjustFilters": "Gerageza guhindura uburyo ukurura",
+    "status": {
+      "all": "Imyanya Yose",
+      "active": "Ikora",
+      "expired": "Yarangiye",
+      "paused": "Yahagaritswe",
+      "closed": "Yafunze",
+      "draft": "Ikiri Iteganywa"
+    },
+    "actions": {
+      "pause": "Hagarika Umwanya",
+      "resume": "Komeza",
+      "renew": "Shyira Ahandi",
+      "close": "Funga Umwanya",
+      "edit": "Hindura",
+      "viewApplicants": "Reba Abasaba"
+    },
+    "filters": {
+      "search": "Shakisha ku izina cyangwa ahantu...",
+      "category": "Icyiciro",
+      "allCategories": "Ibyiciro Byose"
+    }
+  },
+
+  "profile": {
+    "title": "Umwirondoro w'Ikigo",
+    "subtitle": "Genzura konti yawe n'amahitamo",
+    "editProfile": "Hindura Umwirondoro",
+    "changeLanguage": "Hindura Ururimi",
+    "selectLanguage": "Hitamo Ururimi",
+    "currentLanguage": "Ururimi rukoresha",
+    "verified": "Byemejwe",
+    "pending": "Birategerezwa",
+    "stats": {
+      "activeJobs": "Imyanya Ikora",
+      "applicants": "Abasaba",
+      "hired": "Bahawe Akazi"
+    },
+    "sections": {
+      "account": {
+        "title": "Konti y'Ikigo",
+        "editProfile": "Hindura Umwirondoro",
+        "teamManagement": "Imicungire y'Itsinda",
+        "verification": "Imiterere y'Ikemeza",
+        "privacy": "Ibanga & Umutekano"
+      },
+      "preferences": {
+        "title": "Ibyifuzo by'Igura",
+        "applicationAlerts": "Amakuru y'Ibisabwe",
+        "emailNotifications": "Amakuru kuri Imeri",
+        "defaultFilters": "Uburyo Busanzwe bwo Kurura",
+        "autoReply": "Amahitamo yo Gusubiza"
+      },
+      "billing": {
+        "title": "Kwiyandikisha & Kwishyura",
+        "currentPlan": "Gahunda Ikoresha",
+        "paymentMethod": "Uburyo bwo Kwishyura",
+        "billingHistory": "Amateka y'Amadeni",
+        "upgrade": "Zamura Gahunda"
+      },
+      "support": {
+        "title": "Ubufasha & Ibikorwa",
+        "contactSupport": "Vugana n'Ubufasha",
+        "resources": "Ibikorwa byo Kugura",
+        "terms": "Amategeko n'Amabwiriza",
+        "privacy": "Politiki y'Ibanga"
+      },
+      "language": {
+        "title": "Ururimi & Akarere",
+        "appLanguage": "Ururimi rw'Urubuga",
+        "dateFormat": "Imiterere y'Itariki",
+        "timeZone": "Igihe cy'Akarere"
+      }
+    },
+    "quickActions": {
+      "title": "Ibikorwa Byihuse",
+      "postJob": "Tanga Umwanya",
+      "applicants": "Abasaba",
+      "analytics": "Isesengura"
+    },
+    "logout": {
+      "button": "Sohoka",
+      "confirm": "Uzi neza ko ushaka gusohoka?",
+      "success": "Wasohowe neza",
+      "error": "Ntibyashobotse gusohoka. Ongera ugerageze."
+    },
+    "version": "Talenta Umukoresha v1.0.0"
+  },
+
+  "languages": {
+    "en": "Icyongereza",
+    "fr": "Igifaransa",
+    "rw": "Ikinyarwanda"
+  }
+}

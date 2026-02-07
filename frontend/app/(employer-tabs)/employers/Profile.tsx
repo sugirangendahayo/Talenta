@@ -7,21 +7,27 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState,useRef } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "expo-router";
 import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "@/components/employer/LanguageSelector";
 
 export default function EmployerProfile() {
   const { profile, role, signOut, loading } = useAuth();
   const { setIsVisible } = useTabBarVisibility();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
   const lastScrollY = useRef(0);
 
   // Get employer profile data
@@ -29,13 +35,13 @@ export default function EmployerProfile() {
     role === "employer" && profile ? (profile as EmployerProfileType) : null;
 
   const handleLogout = () => {
-    Alert.alert("Log Out", "Are you sure you want to log out?", [
+    Alert.alert(t("profile.logout.button"), t("profile.logout.confirm"), [
       {
-        text: "Cancel",
+        text: t("common.cancel"),
         style: "cancel",
       },
       {
-        text: "Log Out",
+        text: t("profile.logout.button"),
         style: "destructive",
         onPress: async () => {
           setIsLoggingOut(true);
@@ -44,7 +50,7 @@ export default function EmployerProfile() {
             router.replace("/auth/signin");
           } catch (error) {
             console.error("Logout error:", error);
-            Alert.alert("Error", "Failed to log out. Please try again.");
+            Alert.alert(t("common.error"), t("profile.logout.error"));
           } finally {
             setIsLoggingOut(false);
           }
@@ -53,81 +59,153 @@ export default function EmployerProfile() {
     ]);
   };
 
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const currentScrollY = event.nativeEvent.contentOffset.y;
-      const scrollDirection =
-        currentScrollY > lastScrollY.current ? "down" : "up";
-  
-      if (scrollDirection === "down" && currentScrollY > 50) {
-        setIsVisible(false);
-      } else if (scrollDirection === "up") {
-        setIsVisible(true);
-      }
-  
-      lastScrollY.current = currentScrollY;
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
+
+    if (scrollDirection === "down" && currentScrollY > 50) {
+      setIsVisible(false);
+    } else if (scrollDirection === "up") {
+      setIsVisible(true);
+    }
+
+    lastScrollY.current = currentScrollY;
+  };
+
+  const getCurrentLanguageName = () => {
+    const languages: { [key: string]: string } = {
+      en: t("languages.en"),
+      fr: t("languages.fr"),
+      rw: t("languages.rw"),
     };
+    return languages[i18n.language] || "English";
+  };
 
   const settingsSections = [
     {
-      title: "Company Account",
+      title: t("profile.sections.account.title"),
       icon: "business-outline",
       items: [
-        { icon: "edit", label: "Edit Company Profile", type: "link" },
-        { icon: "people", label: "Team Management", type: "link" },
         {
-          icon: "verified-user",
-          label: "Verification Status",
-          value: employerData?.is_verified ? "Verified" : "Pending",
+          icon: "edit",
+          label: t("profile.sections.account.editProfile"),
           type: "link",
         },
-        { icon: "lock", label: "Privacy & Security", type: "link" },
+        {
+          icon: "people",
+          label: t("profile.sections.account.teamManagement"),
+          type: "link",
+        },
+        {
+          icon: "verified-user",
+          label: t("profile.sections.account.verification"),
+          value: employerData?.is_verified
+            ? t("profile.verified")
+            : t("profile.pending"),
+          type: "link",
+        },
+        {
+          icon: "lock",
+          label: t("profile.sections.account.privacy"),
+          type: "link",
+        },
       ],
     },
     {
-      title: "Hiring Preferences",
+      title: t("profile.sections.language.title"),
+      icon: "language",
+      items: [
+        {
+          icon: "translate",
+          label: t("profile.sections.language.appLanguage"),
+          value: getCurrentLanguageName(),
+          type: "link",
+          onPress: () => setLanguageSelectorVisible(true),
+        },
+      ],
+    },
+    {
+      title: t("profile.sections.preferences.title"),
       icon: "settings-outline",
       items: [
         {
           icon: "notifications",
-          label: "Application Alerts",
+          label: t("profile.sections.preferences.applicationAlerts"),
           type: "toggle",
           value: notifications,
           onValueChange: setNotifications,
         },
         {
           icon: "email",
-          label: "Email Notifications",
+          label: t("profile.sections.preferences.emailNotifications"),
           type: "toggle",
           value: emailUpdates,
           onValueChange: setEmailUpdates,
         },
-        { icon: "filter-list", label: "Default Filters", type: "link" },
-        { icon: "schedule", label: "Auto-Reply Settings", type: "link" },
+        {
+          icon: "filter-list",
+          label: t("profile.sections.preferences.defaultFilters"),
+          type: "link",
+        },
+        {
+          icon: "schedule",
+          label: t("profile.sections.preferences.autoReply"),
+          type: "link",
+        },
       ],
     },
     {
-      title: "Subscription & Billing",
+      title: t("profile.sections.billing.title"),
       icon: "card-outline",
       items: [
         {
           icon: "workspace-premium",
-          label: "Current Plan",
+          label: t("profile.sections.billing.currentPlan"),
           value: "Business Pro",
           type: "link",
         },
-        { icon: "payment", label: "Payment Method", type: "link" },
-        { icon: "receipt-long", label: "Billing History", type: "link" },
-        { icon: "upgrade", label: "Upgrade Plan", type: "link" },
+        {
+          icon: "payment",
+          label: t("profile.sections.billing.paymentMethod"),
+          type: "link",
+        },
+        {
+          icon: "receipt-long",
+          label: t("profile.sections.billing.billingHistory"),
+          type: "link",
+        },
+        {
+          icon: "upgrade",
+          label: t("profile.sections.billing.upgrade"),
+          type: "link",
+        },
       ],
     },
     {
-      title: "Support & Resources",
+      title: t("profile.sections.support.title"),
       icon: "help-outline",
       items: [
-        { icon: "support-agent", label: "Contact Support", type: "link" },
-        { icon: "school", label: "Hiring Resources", type: "link" },
-        { icon: "description", label: "Terms & Conditions", type: "link" },
-        { icon: "privacy-tip", label: "Privacy Policy", type: "link" },
+        {
+          icon: "support-agent",
+          label: t("profile.sections.support.contactSupport"),
+          type: "link",
+        },
+        {
+          icon: "school",
+          label: t("profile.sections.support.resources"),
+          type: "link",
+        },
+        {
+          icon: "description",
+          label: t("profile.sections.support.terms"),
+          type: "link",
+        },
+        {
+          icon: "privacy-tip",
+          label: t("profile.sections.support.privacy"),
+          type: "link",
+        },
       ],
     },
   ];
@@ -145,10 +223,10 @@ export default function EmployerProfile() {
       {/* Header */}
       <View className="bg-white px-6 pt-16 pb-6">
         <Text className="text-3xl font-quicksandBold text-gray-800">
-          Company Profile
+          {t("profile.title")}
         </Text>
         <Text className="text-gray-500 font-quicksandMedium mt-1">
-          Manage your company account and settings
+          {t("profile.subtitle")}
         </Text>
       </View>
 
@@ -188,7 +266,9 @@ export default function EmployerProfile() {
                     color="#0E7490"
                   />
                   <Text className="text-cyan-700 text-xs font-quicksandBold">
-                    {employerData?.is_verified ? "Verified" : "Pending"}
+                    {employerData?.is_verified
+                      ? t("profile.verified")
+                      : t("profile.pending")}
                   </Text>
                 </View>
                 <View className="bg-purple-100 px-3 py-1 rounded-full">
@@ -210,7 +290,7 @@ export default function EmployerProfile() {
                 12
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
-                Active Jobs
+                {t("profile.stats.activeJobs")}
               </Text>
             </View>
             <View className="w-px bg-gray-200" />
@@ -219,7 +299,7 @@ export default function EmployerProfile() {
                 156
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
-                Applicants
+                {t("profile.stats.applicants")}
               </Text>
             </View>
             <View className="w-px bg-gray-200" />
@@ -228,7 +308,7 @@ export default function EmployerProfile() {
                 23
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
-                Hired
+                {t("profile.stats.hired")}
               </Text>
             </View>
           </View>
@@ -257,7 +337,9 @@ export default function EmployerProfile() {
                     ? "border-b border-gray-100"
                     : ""
                 }`}
-                onPress={item.type === "link" ? () => {} : undefined}
+                onPress={
+                  item.onPress || (item.type === "link" ? () => {} : undefined)
+                }
               >
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons
@@ -308,7 +390,7 @@ export default function EmployerProfile() {
           <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
             <Ionicons name="flash-outline" size={20} color="#0E7490" />
             <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              Quick Actions
+              {t("profile.quickActions.title")}
             </Text>
           </View>
           <View className="flex-row p-4">
@@ -317,7 +399,7 @@ export default function EmployerProfile() {
                 <Ionicons name="add-circle-outline" size={24} color="#0E7490" />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                Post Job
+                {t("profile.quickActions.postJob")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity className="flex-1 items-center p-4">
@@ -325,7 +407,7 @@ export default function EmployerProfile() {
                 <Ionicons name="people-outline" size={24} color="#059669" />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                Applicants
+                {t("profile.quickActions.applicants")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity className="flex-1 items-center p-4">
@@ -337,7 +419,7 @@ export default function EmployerProfile() {
                 />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                Analytics
+                {t("profile.quickActions.analytics")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -355,7 +437,7 @@ export default function EmployerProfile() {
             <>
               <Ionicons name="log-out-outline" size={20} color="#DC2626" />
               <Text className="text-red-600 font-quicksandBold text-lg ml-2">
-                Log Out
+                {t("profile.logout.button")}
               </Text>
             </>
           )}
@@ -364,10 +446,16 @@ export default function EmployerProfile() {
         {/* App Version */}
         <View className="items-center pb-8">
           <Text className="text-gray-400 font-quicksandMedium text-sm">
-            Talenta Employer v1.0.0
+            {t("profile.version")}
           </Text>
         </View>
       </ScrollView>
+
+      {/* Language Selector Modal */}
+      <LanguageSelector
+        visible={languageSelectorVisible}
+        onClose={() => setLanguageSelectorVisible(false)}
+      />
     </View>
   );
 }
