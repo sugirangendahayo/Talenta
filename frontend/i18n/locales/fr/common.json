@@ -32,7 +32,10 @@
     "share": "Partager",
     "copy": "Copier",
     "download": "Télécharger",
-    "upload": "Téléverser"
+    "upload": "Téléverser",
+    "call": "Appeler",
+    "whatsapp": "WhatsApp",
+    "email": "E-mail"
   },
   "navigation": {
     "home": "Accueil",

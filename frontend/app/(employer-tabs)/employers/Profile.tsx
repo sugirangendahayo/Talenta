@@ -22,7 +22,7 @@ import {
 export default function EmployerProfile() {
   const { profile, role, signOut, loading } = useAuth();
   const { setIsVisible } = useTabBarVisibility();
-  const { t, i18n } = useTranslation("profile");
+  const { t, i18n } = useTranslation(["profile", "common"]);
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(true);
@@ -37,7 +37,7 @@ export default function EmployerProfile() {
   const handleLogout = () => {
     Alert.alert(t("logout.button"), t("logout.confirm"), [
       {
-        text: t("common.cancel"),
+        text: t("buttons.cancel", { ns: "common" }),
         style: "cancel",
       },
       {

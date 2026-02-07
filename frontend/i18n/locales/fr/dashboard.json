@@ -22,8 +22,15 @@
       "highPriorityApplicant": "candidat prioritaire",
       "plural": "s"
     },
-    "activeJobs": "Emplois actifs",
-    "recentContacts": "Contacts récents",
+    "activeJobs": {
+      "title": "Emplois actifs"
+    },
+    "recentContacts": {
+      "title": "Contacter les candidats",
+      "candidate": "candidat",
+      "plural": "s",
+      "toReach": "à contacter"
+    },
     "quickActions": "Actions rapides"
   },
   "quickActions": {
@@ -45,6 +52,18 @@
     "hired": "Embauché",
     "rejected": "Rejeté"
   },
+  "jobs": {
+    "notSpecified": "Non spécifié",
+    "day": "jour",
+    "plural": "s",
+    "active": "actif",
+    "applicant": "candidat",
+    "open": "ouvert",
+    "position": "poste",
+    "pause": "Mettre en pause",
+    "pausedSuccess": "Emploi mis en pause avec succès",
+    "pauseError": "Échec de la mise en pause de l'emploi"
+  },
   "priority": {
     "high": "Haute priorité",
     "medium": "Priorité moyenne",
@@ -52,6 +71,35 @@
     "new": "NOUVEAU",
     "match": "correspondance"
   },
+  "alerts": {
+    "noPhone": {
+      "title": "Aucun numéro de téléphone",
+      "message": "Ce candidat n'a pas fourni de numéro de téléphone."
+    },
+    "whatsapp": {
+      "message": "Salut {{candidateName}}, je vous contacte concernant votre candidature pour {{jobTitle}}.",
+      "notInstalled": {
+        "title": "WhatsApp n'est pas installé",
+        "message": "Veuillez installer WhatsApp pour utiliser cette fonctionnalité, ou utilisez plutôt l'option d'appel."
+      }
+    },
+    "email": {
+      "subject": "Concernant: {{jobTitle}}",
+      "body": "Salut {{candidateName}},\n\nJe vous contacte concernant votre candidature pour {{jobTitle}}.\n\nCordialement"
+    }
+  },
+  "time": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "daysAgo": "il y a {{days}} jours",
+    "weeksAgo": "il y a {{weeks}} semaines",
+    "monthsAgo": "il y a {{months}} mois"
+  },
+  "status": {
+    "hired": "Embauché",
+    "shortlisted": "Présélectionné"
+  },
+  "lastContact": "Dernier contact",
   "emptyStates": {
     "noJobs": "Aucun emploi actif pour le moment",
     "noApplicants": "Aucun candidat pour le moment",

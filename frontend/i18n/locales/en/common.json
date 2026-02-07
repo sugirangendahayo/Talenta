@@ -32,7 +32,10 @@
     "share": "Share",
     "copy": "Copy",
     "download": "Download",
-    "upload": "Upload"
+    "upload": "Upload",
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "email": "Email"
   },
   "navigation": {
     "home": "Home",

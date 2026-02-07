@@ -22,8 +22,15 @@
       "highPriorityApplicant": "high-priority applicant",
       "plural": "s"
     },
-    "activeJobs": "Active Jobs",
-    "recentContacts": "Recent Contacts",
+    "activeJobs": {
+      "title": "Active Jobs"
+    },
+    "recentContacts": {
+      "title": "Contact Candidates",
+      "candidate": "candidate",
+      "plural": "s",
+      "toReach": "to reach"
+    },
     "quickActions": "Quick Actions"
   },
   "quickActions": {
@@ -58,6 +65,47 @@
     "noMessages": "No messages yet",
     "noRecentContacts": "No recent contacts"
   },
+  "jobs": {
+    "notSpecified": "Not specified",
+    "day": "day",
+    "plural": "s",
+    "active": "active",
+    "applicant": "applicant",
+    "open": "open",
+    "position": "position",
+    "pause": "Pause",
+    "pausedSuccess": "Job paused successfully",
+    "pauseError": "Failed to pause job"
+  },
+  "alerts": {
+    "noPhone": {
+      "title": "No Phone Number",
+      "message": "This candidate hasn't provided a phone number."
+    },
+    "whatsapp": {
+      "message": "Hi {{candidateName}}, I'm reaching out regarding your application for {{jobTitle}}.",
+      "notInstalled": {
+        "title": "WhatsApp Not Installed",
+        "message": "Please install WhatsApp to use this feature, or use the call option instead."
+      }
+    },
+    "email": {
+      "subject": "Regarding: {{jobTitle}}",
+      "body": "Hi {{candidateName}},\n\nI'm reaching out regarding your application for {{jobTitle}}.\n\nBest regards"
+    }
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{days}} days ago",
+    "weeksAgo": "{{weeks}} weeks ago",
+    "monthsAgo": "{{months}} months ago"
+  },
+  "status": {
+    "hired": "Hired",
+    "shortlisted": "Shortlisted"
+  },
+  "lastContact": "Last contact",
   "messages": {
     "loadingDashboard": "Loading dashboard...",
     "refreshSuccess": "Dashboard refreshed successfully",

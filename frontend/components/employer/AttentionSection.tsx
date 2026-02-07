@@ -10,7 +10,9 @@ interface ApplicantItemProps {
 
 const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
   const router = useRouter();
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "common"]);
+
+  
 
   return (
     <TouchableOpacity
@@ -59,7 +61,8 @@ export default function AttentionSection({
   applicants,
 }: AttentionSectionProps) {
   const router = useRouter();
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation(["dashboard", "common"]);
+
 
   if (applicants.length === 0) return null;
 
@@ -88,7 +91,7 @@ export default function AttentionSection({
             onPress={() => router.push("/(employer-tabs)/employers/Applicants")}
           >
             <Text className="text-sm font-quicksandBold text-cyan-700">
-              {t("common.viewAll")}
+              {t("buttons.viewAll", { ns: "common" })}
             </Text>
             <Ionicons name="arrow-forward" size={14} color="#0E7490" />
           </TouchableOpacity>

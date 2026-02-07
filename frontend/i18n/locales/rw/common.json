@@ -7,13 +7,13 @@
     "save": "Bika",
     "delete": "Siba",
     "edit": "Hindura",
-    "add": "Ongera",
+    "add": "Ongeraho",
     "remove": "Kuraho",
     "submit": "Ohereza",
     "back": "Subira inyuma",
-    "next": "Ikurikira",
+    "next": "Komeza",
     "previous": "Ibanjirije",
-    "close": "Funga",
+    "close": "Gufunga",
     "continue": "Komeza",
     "confirm": "Emeza",
     "skip": "Tanga",
@@ -32,7 +32,10 @@
     "share": "Sangiza",
     "copy": "Koporora",
     "download": "Ikarura",
-    "upload": "Iherekaho"
+    "upload": "Iherekaho",
+    "call": "Hamagara",
+    "whatsapp": "WhatsApp",
+    "email": "Imeri"
   },
   "navigation": {
     "home": "Ahabanza",
