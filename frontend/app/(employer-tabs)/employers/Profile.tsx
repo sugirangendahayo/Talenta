@@ -287,7 +287,7 @@ export default function EmployerProfile() {
           <View className="flex-row mt-6 pt-6 border-t border-gray-100">
             <View className="flex-1 items-center">
               <Text className="text-2xl font-quicksandBold text-gray-800">
-                2
+                23
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.activeJobs")}
