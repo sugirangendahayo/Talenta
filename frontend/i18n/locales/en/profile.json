@@ -16,6 +16,7 @@
     },
     "language": {
       "title": "Language",
+      "name": "English",
       "appLanguage": "App Language",
       "selectLanguage": "Select language",
       "currentLanguage": "Current language"

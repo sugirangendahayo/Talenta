@@ -75,9 +75,9 @@ export default function EmployerProfile() {
 
   const getCurrentLanguageName = () => {
     const languages: { [key: string]: string } = {
-      en: t("languages.en"),
-      fr: t("languages.fr"),
-      rw: t("languages.rw"),
+      en: t("sections.language.name"),
+      fr: t("sections.language.name"),
+      rw: t("sections.language.name"),
     };
     return languages[i18n.language] || "English";
   };

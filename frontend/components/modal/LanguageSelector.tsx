@@ -56,7 +56,9 @@ export default function LanguageSelector({
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{t("language.selectLanguage")}</Text>
+            <Text style={styles.title}>
+              {t("sections.language.selectLanguage")}
+            </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color="#6B7280" />
             </TouchableOpacity>
@@ -66,7 +68,7 @@ export default function LanguageSelector({
           <View style={styles.currentLanguageContainer}>
             <Ionicons name="globe-outline" size={20} color="#0E7490" />
             <Text style={styles.currentLanguageText}>
-              {t("currentLanguage")}:{" "}
+              {t("sections.language.currentLanguage")}:{" "}
               {LANGUAGES.find((l) => l.code === i18n.language)?.nativeName}
             </Text>
           </View>

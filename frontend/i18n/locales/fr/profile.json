@@ -16,7 +16,10 @@
     },
     "language": {
       "title": "Langue",
-      "appLanguage": "Langue de l'application"
+      "name": "Français",
+      "appLanguage": "Langue de l'application",
+      "selectLanguage": "Sélectionner une langue",
+      "currentLanguage": "Langue actuelle"
     },
     "preferences": {
       "title": "Préférences",
