@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Text, View } from "react-native";
 
 // Shared Components
@@ -15,6 +16,7 @@ import useSigninForm from "@/hooks/useSigninForm";
 
 export default function Signin() {
   const router = useRouter();
+  const { t } = useTranslation("auth");
 
   const {
     formData,
@@ -30,8 +32,8 @@ export default function Signin() {
       {/* Header */}
       <AuthHeader
         icon="login"
-        title="Welcome Back"
-        subtitle="Sign in to continue"
+        title={t("signin.title")}
+        subtitle={t("signin.subtitle")}
         showBackButton
         onBackPress={() => router.back()}
       />
@@ -40,9 +42,9 @@ export default function Signin() {
       <View className="flex-1 px-6 pt-8">
         <View className="space-y-4">
           {/* Email Field */}
-          <FieldWrapper label="Email" required icon="email">
+          <FieldWrapper label={t("fields.email")} required icon="email">
             <TextField
-              placeholder="Enter your email"
+              placeholder={t("placeholders.email")}
               value={formData.email}
               onChangeText={(value) => handleInputChange("email", value)}
               keyboardType="email-address"
@@ -53,9 +55,9 @@ export default function Signin() {
           </FieldWrapper>
 
           {/* Password Field */}
-          <FieldWrapper label="Password" required icon="lock">
+          <FieldWrapper label={t("fields.password")} required icon="lock">
             <PasswordField
-              placeholder="Enter your password"
+              placeholder={t("placeholders.password")}
               value={formData.password}
               onChangeText={(value) => handleInputChange("password", value)}
               showPassword={showPassword}
@@ -66,7 +68,7 @@ export default function Signin() {
 
           {/* Forgot Password Link */}
           <AuthLink
-            linkText="Forgot Password?"
+            linkText={t("signin.forgotPassword")}
             align="right"
             onPress={() => {
               // TODO: Implement forgot password
@@ -80,7 +82,7 @@ export default function Signin() {
           <PrimaryButton onPress={handleSignin} disabled={isLoading}>
             <View className="flex flex-row items-center justify-center">
               <Text className="text-white font-quicksandBold text-base">
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? t("signin.signingIn") : t("signin.signInButton")}
               </Text>
 
               {isLoading && (
@@ -92,8 +94,8 @@ export default function Signin() {
 
         {/* Sign Up Link */}
         <AuthLink
-          text="Don't have an account?"
-          linkText="Sign Up"
+          text={t("signin.noAccount")}
+          linkText={t("signin.signUpLink")}
           onPress={() => router.push("/auth/signup")}
           className="mt-8"
         />

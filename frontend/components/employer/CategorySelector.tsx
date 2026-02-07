@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface CategorySelectorProps {
@@ -14,22 +15,52 @@ export default function CategorySelector({
   onSelect,
   required = false,
 }: CategorySelectorProps) {
+  const { t } = useTranslation("categories");
+
   const categories = [
-    { id: "it", name: "IT & Software", icon: "laptop-outline" },
-    { id: "design", name: "Design", icon: "color-palette-outline" },
-    { id: "business", name: "Business", icon: "briefcase-outline" },
-    { id: "construction", name: "Construction", icon: "hammer-outline" },
-    { id: "finance", name: "Finance", icon: "cash-outline" },
-    { id: "healthcare", name: "Healthcare", icon: "medical-outline" },
-    { id: "education", name: "Education", icon: "school-outline" },
-    { id: "sales", name: "Sales & Marketing", icon: "trending-up-outline" },
-    { id: "hospitality", name: "Hospitality", icon: "restaurant-outline" },
-    { id: "transport", name: "Transport", icon: "car-outline" },
-    { id: "creative", name: "Creative", icon: "bulb-outline" },
-    { id: "agriculture", name: "Agriculture", icon: "leaf-outline" },
+    { id: "it", name: t("categories.it"), icon: "laptop-outline" },
+    {
+      id: "design",
+      name: t("categories.design"),
+      icon: "color-palette-outline",
+    },
+    {
+      id: "business",
+      name: t("categories.business"),
+      icon: "briefcase-outline",
+    },
+    {
+      id: "construction",
+      name: t("categories.construction"),
+      icon: "hammer-outline",
+    },
+    { id: "finance", name: t("categories.finance"), icon: "cash-outline" },
+    {
+      id: "healthcare",
+      name: t("categories.healthcare"),
+      icon: "medical-outline",
+    },
+    {
+      id: "education",
+      name: t("categories.education"),
+      icon: "school-outline",
+    },
+    { id: "sales", name: t("categories.sales"), icon: "trending-up-outline" },
+    {
+      id: "hospitality",
+      name: t("categories.hospitality"),
+      icon: "restaurant-outline",
+    },
+    { id: "transport", name: t("categories.transport"), icon: "car-outline" },
+    { id: "creative", name: t("categories.creative"), icon: "bulb-outline" },
+    {
+      id: "agriculture",
+      name: t("categories.agriculture"),
+      icon: "leaf-outline",
+    },
     {
       id: "security",
-      name: "Security & Law",
+      name: t("categories.security"),
       icon: "shield-checkmark-outline",
     },
   ];

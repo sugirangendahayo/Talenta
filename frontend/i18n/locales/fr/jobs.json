@@ -7,7 +7,16 @@
     "postJob": "Publier l'emploi",
     "posting": "Publication...",
     "draftSaved": "Brouillon enregistré avec succès",
-    "jobPosted": "Emploi publié avec succès"
+    "jobPosted": "Emploi publié avec succès",
+    "untitledJob": "Emploi sans titre",
+    "quickOptions": {
+      "7days": "7 jours",
+      "14days": "14 jours",
+      "30days": "30 jours",
+      "60days": "60 jours",
+      "90days": "90 jours"
+    },
+    "expiryInfo": "L'emploi expirera automatiquement à cette date et deviendra caché pour les chercheurs d'emploi. Vous pouvez le renouveler plus tard."
   },
   "sections": {
     "basicInfo": {

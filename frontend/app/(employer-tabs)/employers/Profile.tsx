@@ -1,23 +1,23 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Image,
-  Alert,
-  ActivityIndicator,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState, useRef } from "react";
+import LanguageSelector from "@/components/modal/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "expo-router";
-import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "@/components/employer/LanguageSelector";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function EmployerProfile() {
   const { profile, role, signOut, loading } = useAuth();

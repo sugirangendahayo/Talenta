@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface PostJobHeaderProps {
@@ -8,6 +9,7 @@ interface PostJobHeaderProps {
 
 export default function PostJobHeader({ onSaveDraft }: PostJobHeaderProps) {
   const router = useRouter();
+  const { t } = useTranslation("jobs");
 
   return (
     <View className="bg-white">
@@ -28,7 +30,7 @@ export default function PostJobHeader({ onSaveDraft }: PostJobHeaderProps) {
         >
           <Ionicons name="bookmark-outline" size={18} color="#0E7490" />
           <Text className="text-sm font-quicksandBold text-cyan-700">
-            Save Draft
+            {t("postJob.saveDraft")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -36,12 +38,12 @@ export default function PostJobHeader({ onSaveDraft }: PostJobHeaderProps) {
       {/* Title Section */}
       <View className="px-6 pb-6">
         <Text className="text-3xl font-quicksandBold text-gray-800">
-          Post New Job
+          {t("postJob.title")}
         </Text>
         <View className="flex flex-row items-center mt-2">
           <View className="w-1.5 h-1.5 rounded-full bg-cyan-600 mr-2" />
           <Text className="text-sm font-quicksandMedium text-gray-500">
-            Fill in the details to find your perfect candidate
+            {t("postJob.subtitle")}
           </Text>
         </View>
       </View>

@@ -1,5 +1,17 @@
+import CategorySelector from "@/components/employer/CategorySelector";
+import ExpiryDatePicker from "@/components/employer/ExpiryDatePicker";
+import FormInput from "@/components/employer/FormInput";
+import JobTypeSelector from "@/components/employer/JobTypeSelector";
+import PostJobHeader from "@/components/employer/PostJobHeader";
+import SkillsInput from "@/components/employer/SkillsInput";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -7,24 +19,14 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
-import PostJobHeader from "@/components/employer/PostJobHeader";
-import FormInput from "@/components/employer/FormInput";
-import CategorySelector from "@/components/employer/CategorySelector";
-import JobTypeSelector from "@/components/employer/JobTypeSelector";
-import SkillsInput from "@/components/employer/SkillsInput";
-import ExpiryDatePicker from "@/components/employer/ExpiryDatePicker";
 import { toast } from "sonner-native";
 
 export default function PostJob() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation("jobs");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Default expiry date: 30 days from now
@@ -76,29 +78,29 @@ export default function PostJob() {
 
   // Validate form
   const validateForm = () => {
-    if (!formData.title.trim()) return "Job title is required";
-    if (!formData.location.trim()) return "Location is required";
-    if (!formData.salaryMin.trim()) return "Minimum salary is required";
-    if (!formData.salaryMax.trim()) return "Maximum salary is required";
+    if (!formData.title.trim()) return t("validation.titleRequired");
+    if (!formData.location.trim()) return t("validation.locationRequired");
+    if (!formData.salaryMin.trim()) return t("validation.minSalaryRequired");
+    if (!formData.salaryMax.trim()) return t("validation.maxSalaryRequired");
 
     // Validate salary numbers
     const minSalary = parseFloat(formData.salaryMin.replace(/[^0-9.-]+/g, ""));
     const maxSalary = parseFloat(formData.salaryMax.replace(/[^0-9.-]+/g, ""));
 
     if (isNaN(minSalary) || isNaN(maxSalary)) {
-      return "Please enter valid salary amounts";
+      return t("validation.validSalary");
     }
 
     if (minSalary >= maxSalary) {
-      return "Maximum salary must be greater than minimum salary";
+      return t("validation.salaryRange");
     }
 
-    if (!formData.category) return "Please select a category";
-    if (formData.type.length === 0)
-      return "Please select at least one job type";
-    if (!formData.description.trim()) return "Job description is required";
+    if (!formData.category) return t("validation.categoryRequired");
+    if (formData.type.length === 0) return t("validation.jobTypeRequired");
+    if (!formData.description.trim())
+      return t("validation.descriptionRequired");
     if (formData.requirements.length === 0)
-      return "Please add at least one requirement";
+      return t("validation.requirementsRequired");
 
     // Validate expiry date
     const today = new Date();
@@ -107,7 +109,7 @@ export default function PostJob() {
     expiryDate.setHours(0, 0, 0, 0);
 
     if (expiryDate <= today) {
-      return "Expiry date must be in the future";
+      return t("validation.expiryDateFuture");
     }
 
     return null;
@@ -117,12 +119,12 @@ export default function PostJob() {
   const handleSubmit = async () => {
     const error = validateForm();
     if (error) {
-      Alert.alert("Validation Error", error);
+      Alert.alert(t("messages.validationError"), error);
       return;
     }
 
     if (!user) {
-      Alert.alert("Error", "You must be logged in to post a job");
+      Alert.alert(t("messages.error"), t("messages.loginRequired"));
       return;
     }
 
@@ -166,7 +168,7 @@ export default function PostJob() {
       if (insertError) throw insertError;
 
       // Success!
-      toast.success("Job posted successfully!", {
+      toast.success(t("messages.jobPosted"), {
         duration: 2000,
       });
 
@@ -177,12 +179,12 @@ export default function PostJob() {
     } catch (error: any) {
       console.error("Error posting job:", error);
 
-      let errorMessage = "Failed to post job. Please try again.";
+      let errorMessage = t("messages.errorPosting");
       if (error.message) {
         errorMessage = error.message;
       }
 
-      Alert.alert("Error", errorMessage);
+      Alert.alert(t("messages.error"), errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -191,7 +193,7 @@ export default function PostJob() {
   // Save as draft
   const handleSaveDraft = async () => {
     if (!user) {
-      Alert.alert("Error", "You must be logged in to save a draft");
+      Alert.alert(t("messages.error"), t("messages.loginRequiredDraft"));
       return;
     }
 
@@ -208,7 +210,7 @@ export default function PostJob() {
 
       const draftData = {
         employer_id: user.id,
-        title: formData.title.trim() || "Untitled Job",
+        title: formData.title.trim() || t("postJob.untitledJob"),
         location: formData.location.trim() || "",
         salary_min: minSalary,
         salary_max: maxSalary,
@@ -225,12 +227,12 @@ export default function PostJob() {
 
       if (error) throw error;
 
-      toast.success("Draft saved successfully!", {
+      toast.success(t("messages.draftSaved"), {
         duration: 2000,
       });
     } catch (error: any) {
       console.error("Error saving draft:", error);
-      Alert.alert("Error", "Failed to save draft. Please try again.");
+      Alert.alert(t("messages.error"), t("messages.errorSaving"));
     }
   };
 
@@ -264,8 +266,8 @@ export default function PostJob() {
               </View>
 
               <FormInput
-                label="Job Title"
-                placeholder="e.g., Senior React Developer"
+                label={t("sections.basicInfo.jobTitle")}
+                placeholder={t("sections.basicInfo.jobTitlePlaceholder")}
                 value={formData.title}
                 onChangeText={(text) => updateField("title", text)}
                 icon="briefcase-outline"
@@ -273,8 +275,8 @@ export default function PostJob() {
               />
 
               <FormInput
-                label="Location"
-                placeholder="e.g., Remote, New York, USA"
+                label={t("sections.basicInfo.location")}
+                placeholder={t("sections.basicInfo.locationPlaceholder")}
                 value={formData.location}
                 onChangeText={(text) => updateField("location", text)}
                 icon="location-outline"
@@ -285,7 +287,7 @@ export default function PostJob() {
                 <View className="flex flex-row items-center mb-2 gap-1">
                   <Ionicons name="cash-outline" size={16} color="#0E7490" />
                   <Text className="text-sm font-quicksandBold text-gray-700">
-                    Salary Range
+                    {t("sections.basicInfo.salaryRange")}
                   </Text>
                   <Text className="text-red-500 font-quicksandBold">*</Text>
                 </View>
@@ -293,7 +295,7 @@ export default function PostJob() {
                   <View className="flex-1">
                     <FormInput
                       label=""
-                      placeholder="Min (e.g., 120000)"
+                      placeholder={t("sections.basicInfo.minSalary")}
                       value={formData.salaryMin}
                       onChangeText={(text) => updateField("salaryMin", text)}
                       keyboardType="numeric"
@@ -302,7 +304,7 @@ export default function PostJob() {
                   <View className="flex-1">
                     <FormInput
                       label=""
-                      placeholder="Max (e.g., 180000)"
+                      placeholder={t("sections.basicInfo.maxSalary")}
                       value={formData.salaryMax}
                       onChangeText={(text) => updateField("salaryMax", text)}
                       keyboardType="numeric"
@@ -313,7 +315,7 @@ export default function PostJob() {
 
               {/* Expiry Date Picker */}
               <ExpiryDatePicker
-                label="Job Expiry Date"
+                label={t("sections.basicInfo.expiryDate")}
                 selectedDate={formData.expiresAt}
                 onDateChange={(date) => updateField("expiresAt", date)}
                 required
@@ -327,27 +329,27 @@ export default function PostJob() {
                   <Ionicons name="document-text" size={18} color="#8B5CF6" />
                 </View>
                 <Text className="text-lg font-quicksandBold text-gray-800">
-                  Job Details
+                  {t("sections.jobDetails.title")}
                 </Text>
               </View>
 
               <CategorySelector
-                label="Category"
+                label={t("sections.jobDetails.category")}
                 selected={formData.category}
                 onSelect={(cat) => updateField("category", cat)}
                 required
               />
 
               <JobTypeSelector
-                label="Job Type"
+                label={t("sections.jobDetails.jobType")}
                 selected={formData.type}
                 onSelect={toggleJobType}
                 required
               />
 
               <FormInput
-                label="Job Description"
-                placeholder="Describe the role, responsibilities, and what makes this opportunity great..."
+                label={t("sections.jobDetails.description")}
+                placeholder={t("sections.jobDetails.descriptionPlaceholder")}
                 value={formData.description}
                 onChangeText={(text) => updateField("description", text)}
                 icon="document-text-outline"
@@ -363,13 +365,13 @@ export default function PostJob() {
                   <Ionicons name="checkmark-done" size={18} color="#10B981" />
                 </View>
                 <Text className="text-lg font-quicksandBold text-gray-800">
-                  Requirements & Skills
+                  {t("sections.requirementsAndSkills.title")}
                 </Text>
               </View>
 
               <SkillsInput
-                label="Requirements"
-                placeholder="e.g., 3+ years experience"
+                label={t("sections.requirements.title")}
+                placeholder={t("sections.requirements.requirementsPlaceholder")}
                 skills={formData.requirements}
                 onAdd={(req) => addToList("requirements", req)}
                 onRemove={(index) => removeFromList("requirements", index)}
@@ -377,8 +379,8 @@ export default function PostJob() {
               />
 
               <SkillsInput
-                label="Skills"
-                placeholder="e.g., React, TypeScript"
+                label={t("sections.requirements.skills")}
+                placeholder={t("sections.requirements.skillsPlaceholder")}
                 skills={formData.skills}
                 onAdd={(skill) => addToList("skills", skill)}
                 onRemove={(index) => removeFromList("skills", index)}
@@ -404,7 +406,7 @@ export default function PostJob() {
               disabled={isSubmitting}
             >
               <Text className="text-gray-700 font-quicksandBold text-base">
-                Cancel
+                {t("postJob.cancel")}
               </Text>
             </TouchableOpacity>
 
@@ -420,7 +422,7 @@ export default function PostJob() {
                 <>
                   <Ionicons name="checkmark-circle" size={20} color="white" />
                   <Text className="text-white font-quicksandBold text-base">
-                    Post Job
+                    {t("postJob.postJob")}
                   </Text>
                 </>
               )}

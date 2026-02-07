@@ -1,25 +1,27 @@
+import ActiveJobsSection from "@/components/employer/ActiveJobsSection";
+import AttentionSection from "@/components/employer/AttentionSection";
+import DashboardHeader from "@/components/employer/DashboardHeader";
+import QuickActions from "@/components/employer/QuickActions";
+import RecentContactsSection from "@/components/employer/RecentContactSection";
+import StatCards from "@/components/employer/StatsCards";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useDashboard } from "@/hooks/useDashboard";
+import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  ScrollView,
-  View,
+  ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
   RefreshControl,
-  ActivityIndicator,
+  ScrollView,
   Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import DashboardHeader from "@/components/employer/DashboardHeader";
-import StatCards from "@/components/employer/StatsCards";
-import AttentionSection from "@/components/employer/AttentionSection";
-import ActiveJobsSection from "@/components/employer/ActiveJobsSection";
-import QuickActions from "@/components/employer/QuickActions";
-import RecentContactsSection from "@/components/employer/RecentContactSection";
-import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import { useState, useRef } from "react";
-import { useDashboard } from "@/hooks/useDashboard";
 
 export default function Dashboard() {
   const { setIsVisible } = useTabBarVisibility();
+  const { t } = useTranslation("dashboard");
   const lastScrollY = useRef(0);
 
   const {
@@ -54,7 +56,7 @@ export default function Dashboard() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="mt-4 text-gray-600 font-quicksandMedium">
-            Loading dashboard...
+            {t("messages.loadingDashboard")}
           </Text>
         </View>
       </SafeAreaView>

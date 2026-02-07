@@ -1,11 +1,13 @@
-import { useRouter } from "expo-router";
-import { Pressable, Text, ImageBackground, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { ImageBackground, Pressable, Text, View } from "react-native";
 
 export default function Step1() {
   const router = useRouter();
+  const { t } = useTranslation("welcome");
   const image = require("../../assets/images/HeroImage.jpg");
 
   return (
@@ -32,27 +34,10 @@ export default function Step1() {
       <View className="flex-1 justify-end px-6 pb-40">
         <View className="items-center">
           <Text className="text-4xl mb-2 text-white font-quicksandBold ">
-            Find y
-            <Text>
-              <MaterialCommunityIcons
-                name="shield-search"
-                size={28}
-                color="#00827E"
-              />
-            </Text>
-            ur{"\n"}
-            <Text className="text-4xl">
-              {"    "}dream job{"\n"}
-            </Text>
-            easily{"\n"}
-            <Text className="text-4xl">
-              {"    "}with <Text className="font-quicksandBold ">Talenta!</Text>
-            </Text>
+            {t("step1.title")}
           </Text>
           <Text className="text-lg mt-2 text-center font-quicksandBold text-black ">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid
-            repudiandae voluptas magni esse explicabo assumenda quam tempore
-            fuga numquam expedita? fugit totam!
+            {t("step1.subtitle")}
           </Text>
         </View>
       </View>
@@ -70,7 +55,9 @@ export default function Step1() {
               color="#00827E"
             />
           </Text>
-          <Text className="text-white text-lg font-quicksandBold">Next</Text>
+          <Text className="text-white text-lg font-quicksandBold">
+            {t("step1.nextButton")}
+          </Text>
           <Text className="bg-white rounded-full p-2">
             <MaterialIcons name="arrow-outward" size={24} color="#00827E" />
           </Text>

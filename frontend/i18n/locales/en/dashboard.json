@@ -1,7 +1,7 @@
 {
   "greetings": {
     "goodMorning": "Good Morning",
-    "goodAfternoon": "Good Afternoon", 
+    "goodAfternoon": "Good Afternoon",
     "goodEvening": "Good Evening"
   },
   "stats": {
@@ -21,8 +21,10 @@
     "quickActions": "Quick Actions"
   },
   "quickActions": {
-    "postJob": "Post New Job",
+    "postJob": "Post Job",
     "findCandidates": "Find Candidates",
+    "viewStats": "View Stats",
+    "teamManage": "Team Manage",
     "scheduleInterview": "Schedule Interview",
     "viewAnalytics": "View Analytics",
     "manageJobs": "Manage Jobs",

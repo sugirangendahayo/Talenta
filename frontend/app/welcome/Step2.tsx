@@ -1,15 +1,17 @@
 // Step2.tsx (Updated)
-import { useRouter } from "expo-router";
-import { Pressable, Text, View, ScrollView } from "react-native";
+import { useAuth } from "@/contexts/AuthContext"; // NEW: Import useAuth
+import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "@/contexts/AuthContext"; // NEW: Import useAuth
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 export default function Step2() {
   const router = useRouter();
   const { setHasSeenOnboarding } = useAuth(); // NEW: Destructure from context
+  const { t } = useTranslation("welcome");
 
   const handleGetStarted = async () => {
     try {
@@ -27,22 +29,20 @@ export default function Step2() {
   const features = [
     {
       icon: "briefcase-search",
-      title: "Browse Jobs",
-      description:
-        "Explore thousands of job opportunities tailored to your skills",
+      title: t("step2.features.browseJobs.title"),
+      description: t("step2.features.browseJobs.description"),
       color: "#00827E",
     },
     {
       icon: "cursor-pointer",
-      title: "Apply with One Click",
-      description:
-        "Send your application instantly with our smart apply feature",
+      title: t("step2.features.applyOneClick.title"),
+      description: t("step2.features.applyOneClick.description"),
       color: "#2f95dc",
     },
     {
       icon: "chart-line",
-      title: "Track Applications",
-      description: "Monitor your application status and get real-time updates",
+      title: t("step2.features.trackApplications.title"),
+      description: t("step2.features.trackApplications.description"),
       color: "#FF6B6B",
     },
   ];
@@ -52,10 +52,10 @@ export default function Step2() {
       {/* Header with gradient background */}
       <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700">
         <Text className="text-3xl font-quicksandBold text-white text-center mb-2">
-          Why Choose Talenta?
+          {t("step2.title")}
         </Text>
         <Text className="text-white/90 text-center text-base font-quicksandBold">
-          Everything you need for your job search
+          {t("step2.subtitle")}
         </Text>
       </View>
 
@@ -97,26 +97,26 @@ export default function Step2() {
           <View className="flex flex-row items-center mb-3">
             <Ionicons name="sparkles" size={20} color="#00827E" />
             <Text className="text-lg font-quicksandBold text-gray-800 ml-2">
-              Plus More Benefits
+              {t("step2.benefits.title")}
             </Text>
           </View>
           <View className="space-y-2">
             <View className="flex flex-row items-center mb-2">
               <View className="w-2 h-2 rounded-full bg-cyan-700 mr-3" />
               <Text className="text-gray-700 flex-1 font-quicksandMedium">
-                Personalized job recommendations
+                {t("step2.benefits.personalizedRecommendations")}
               </Text>
             </View>
             <View className="flex flex-row items-center mb-2">
               <View className="w-2 h-2 rounded-full bg-cyan-700 mr-3" />
               <Text className="text-gray-700 flex-1 font-quicksandMedium">
-                Save jobs for later
+                {t("step2.benefits.saveJobs")}
               </Text>
             </View>
             <View className="flex flex-row items-center">
               <View className="w-2 h-2 rounded-full bg-cyan-700 mr-3" />
               <Text className="text-gray-700 flex-1 font-quicksandMedium">
-                Get notified of new opportunities
+                {t("step2.benefits.getNotified")}
               </Text>
             </View>
           </View>
@@ -137,7 +137,7 @@ export default function Step2() {
             />
           </Text>
           <Text className="text-white text-lg font-quicksandBold">
-            Get Started
+            {t("step2.getStartedButton")}
           </Text>
           <Text className="bg-white rounded-full p-2">
             <MaterialIcons name="arrow-outward" size={24} color="#00827E" />
