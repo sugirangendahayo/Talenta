@@ -78,7 +78,7 @@ export default function Dashboard() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        // contentContainerStyle={{ paddingBottom: 100 }}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         refreshControl={
