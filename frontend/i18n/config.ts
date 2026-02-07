@@ -1,4 +1,7 @@
 // i18n/config.ts
+
+/* eslint-disable import/no-named-as-default-member */
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import i18n from 'i18next';
