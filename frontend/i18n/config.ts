@@ -49,9 +49,9 @@ const initI18n = async () => {
     .use(initReactI18next)
     .init({
       resources: {
-        en,
-        fr,
-        rw,
+        en: en.translation,
+        fr: fr.translation,
+        rw: rw.translation,
       },
       lng: initialLanguage,
       fallbackLng: 'en',
