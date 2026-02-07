@@ -1,7 +1,7 @@
 {
   "greetings": {
     "goodMorning": "Mwaramutse",
-    "goodAfternoon": "Mwiriwe", 
+    "goodAfternoon": "Mwiriwe",
     "goodEvening": "Mwanyire"
   },
   "stats": {
@@ -12,10 +12,16 @@
     "views": "Ireba",
     "hired": "Abashyizweho akazi",
     "pending": "Biteganyijwe",
-    "rejected": "Bakiriye"
+    "rejected": "Bakiriye",
+    "shortlisted": "Barushijwe",
+    "new": "gashya"
   },
   "sections": {
-    "attention": "Ukeneye kureberwa",
+    "attention": {
+      "title": "Ukeneye kureberwa",
+      "highPriorityApplicant": "umushakwaho w'ingirakamaro",
+      "plural": ""
+    },
     "activeJobs": "Akazi akora",
     "recentContacts": "Abo wahuriye hafi",
     "quickActions": "Ibikorwa byihuse"
@@ -23,6 +29,8 @@
   "quickActions": {
     "postJob": "Shakira akazi gashya",
     "findCandidates": "Gushaka abashakwaho",
+    "viewStats": "Kureba statistiki",
+    "teamManage": "Gukora itsinda",
     "scheduleInterview": "Gutegekanya iganiro",
     "viewAnalytics": "Kureba analitiki",
     "manageJobs": "Gukora akazi",
@@ -40,7 +48,9 @@
   "priority": {
     "high": "By'ingirakamaro",
     "medium": "Hagati",
-    "low": "Hasi"
+    "low": "Hasi",
+    "new": "GASHYA",
+    "match": "bihuye ne"
   },
   "emptyStates": {
     "noJobs": "Nta kazi ikora kuri none",

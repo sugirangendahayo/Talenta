@@ -1,7 +1,7 @@
 {
   "greetings": {
     "goodMorning": "Bonjour",
-    "goodAfternoon": "Bon après-midi", 
+    "goodAfternoon": "Bon après-midi",
     "goodEvening": "Bonsoir"
   },
   "stats": {
@@ -12,10 +12,16 @@
     "views": "Vues",
     "hired": "Embauchés",
     "pending": "En attente",
-    "rejected": "Rejetés"
+    "rejected": "Rejetés",
+    "shortlisted": "Présélectionnés",
+    "new": "nouveau"
   },
   "sections": {
-    "attention": "Requiert une attention",
+    "attention": {
+      "title": "Requiert une attention",
+      "highPriorityApplicant": "candidat prioritaire",
+      "plural": "s"
+    },
     "activeJobs": "Emplois actifs",
     "recentContacts": "Contacts récents",
     "quickActions": "Actions rapides"
@@ -23,6 +29,8 @@
   "quickActions": {
     "postJob": "Publier un nouvel emploi",
     "findCandidates": "Trouver des candidats",
+    "viewStats": "Voir les statistiques",
+    "teamManage": "Gérer l'équipe",
     "scheduleInterview": "Planifier un entretien",
     "viewAnalytics": "Voir les analyses",
     "manageJobs": "Gérer les emplois",
@@ -40,7 +48,9 @@
   "priority": {
     "high": "Haute priorité",
     "medium": "Priorité moyenne",
-    "low": "Faible priorité"
+    "low": "Faible priorité",
+    "new": "NOUVEAU",
+    "match": "correspondance"
   },
   "emptyStates": {
     "noJobs": "Aucun emploi actif pour le moment",

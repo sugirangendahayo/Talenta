@@ -12,10 +12,16 @@
     "views": "Views",
     "hired": "Hired",
     "pending": "Pending",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "shortlisted": "Shortlisted",
+    "new": "new"
   },
   "sections": {
-    "attention": "Requiring Attention",
+    "attention": {
+      "title": "Requiring Attention",
+      "highPriorityApplicant": "high-priority applicant",
+      "plural": "s"
+    },
     "activeJobs": "Active Jobs",
     "recentContacts": "Recent Contacts",
     "quickActions": "Quick Actions"
@@ -42,7 +48,9 @@
   "priority": {
     "high": "High Priority",
     "medium": "Medium Priority",
-    "low": "Low Priority"
+    "low": "Low Priority",
+    "new": "NEW",
+    "match": "match"
   },
   "emptyStates": {
     "noJobs": "No active jobs yet",
