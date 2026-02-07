@@ -1,0 +1,54 @@
+{
+  "greeting": "Salut, {{firstName}}",
+  "welcome": "Bienvenue dans la découverte d'emplois intelligente",
+  "search": {
+    "placeholder": "Rechercher des emplois, des entreprises ou des compétences...",
+    "recentSearches": "Recherches récentes",
+    "trending": "Recherches tendance",
+    "noResults": "Aucun résultat trouvé"
+  },
+  "categories": {
+    "title": "Catégories",
+    "all": "Toutes",
+    "seeAll": "Voir toutes les catégories"
+  },
+  "featuredJobs": {
+    "title": "Emplois en vedette",
+    "new": "Nouveau",
+    "urgent": "Urgent",
+    "remote": "Télétravail",
+    "viewAll": "Voir tous les emplois"
+  },
+  "recommended": {
+    "title": "Recommandé pour vous",
+    "basedOnProfile": "Basé sur votre profil",
+    "basedOnSkills": "Basé sur vos compétences"
+  },
+  "recentActivity": {
+    "title": "Activité récente",
+    "applications": "Candidatures",
+    "views": "Vues du profil",
+    "savedJobs": "Emplois sauvegardés"
+  },
+  "quickActions": {
+    "title": "Actions rapides",
+    "updateProfile": "Mettre à jour le profil",
+    "uploadResume": "Télécharger le CV",
+    "setAlerts": "Définir des alertes d'emploi"
+  },
+  "stats": {
+    "jobsAvailable": "Emplois disponibles",
+    "companiesHiring": "Entreprises qui recrutent",
+    "newToday": "Nouveaux aujourd'hui"
+  },
+  "emptyStates": {
+    "noJobs": "Aucun emploi disponible pour le moment",
+    "noRecommendations": "Aucune recommandation pour le moment",
+    "completeProfile": "Complétez votre profil pour obtenir de meilleures recommandations"
+  },
+  "messages": {
+    "loading": "Chargement des emplois...",
+    "error": "Erreur lors du chargement des emplois",
+    "refresh": "Tirer pour actualiser"
+  }
+}

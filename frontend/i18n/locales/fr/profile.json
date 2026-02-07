@@ -1,0 +1,66 @@
+{
+  "title": "Profil",
+  "subtitle": "Gérez les paramètres et préférences de votre compte",
+  "stats": {
+    "activeJobs": "Emplois actifs",
+    "applicants": "Candidats", 
+    "hired": "Embauchés"
+  },
+  "sections": {
+    "account": {
+      "title": "Compte",
+      "editProfile": "Modifier le profil",
+      "teamManagement": "Gestion d'équipe",
+      "verification": "Vérification",
+      "privacy": "Confidentialité"
+    },
+    "language": {
+      "title": "Langue",
+      "appLanguage": "Langue de l'application"
+    },
+    "preferences": {
+      "title": "Préférences",
+      "applicationAlerts": "Alertes de candidature",
+      "emailNotifications": "Notifications par email",
+      "defaultFilters": "Filtres par défaut",
+      "autoReply": "Réponse automatique"
+    },
+    "billing": {
+      "title": "Facturation",
+      "currentPlan": "Plan actuel",
+      "paymentMethod": "Méthode de paiement",
+      "billingHistory": "Historique de facturation",
+      "upgrade": "Mettre à niveau"
+    },
+    "support": {
+      "title": "Support",
+      "contactSupport": "Contacter le support",
+      "resources": "Ressources",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité"
+    }
+  },
+  "quickActions": {
+    "title": "Actions rapides",
+    "postJob": "Publier un emploi",
+    "applicants": "Candidats",
+    "analytics": "Analyses"
+  },
+  "logout": {
+    "button": "Déconnexion",
+    "confirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "error": "Échec de la déconnexion. Veuillez réessayer."
+  },
+  "status": {
+    "verified": "Vérifié",
+    "pending": "En attente",
+    "loading": "Chargement du profil..."
+  },
+  "companyInfo": {
+    "companyName": "Nom de l'entreprise",
+    "email": "Email",
+    "verified": "Vérifié",
+    "businessPro": "Business Pro"
+  },
+  "version": "Version 1.0.0"
+}

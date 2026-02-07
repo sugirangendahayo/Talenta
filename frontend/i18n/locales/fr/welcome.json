@@ -1,0 +1,32 @@
+{
+  "step1": {
+    "title": "Trouvez votre emploi de rêve facilement avec Talenta !",
+    "subtitle": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid repudiandae voluptas magni esse explicabo assumenda quam tempore fuga numquam expedita? fugit totam!",
+    "nextButton": "Suivant"
+  },
+  "step2": {
+    "title": "Pourquoi choisir Talenta ?",
+    "subtitle": "Tout ce dont vous avez besoin pour votre recherche d'emploi",
+    "features": {
+      "browseJobs": {
+        "title": "Parcourir les emplois",
+        "description": "Explorez des milliers d'opportunités d'emploi adaptées à vos compétences"
+      },
+      "applyOneClick": {
+        "title": "Postuler en un clic",
+        "description": "Envoyez votre candidature instantanément avec notre fonction de postulation intelligente"
+      },
+      "trackApplications": {
+        "title": "Suivre les candidatures",
+        "description": "Surveillez le statut de votre candidature et obtenez des mises à jour en temps réel"
+      }
+    },
+    "benefits": {
+      "title": "Et plus encore d'avantages",
+      "personalizedRecommendations": "Recommandations d'emploi personnalisées",
+      "saveJobs": "Sauvegarder des emplois pour plus tard",
+      "getNotified": "Être notifié des nouvelles opportunités"
+    },
+    "getStartedButton": "Commencer"
+  }
+}

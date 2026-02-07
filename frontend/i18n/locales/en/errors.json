@@ -1,0 +1,64 @@
+{
+  "network": {
+    "noConnection": "No internet connection",
+    "connectionLost": "Connection lost. Please check your internet.",
+    "timeout": "Request timeout. Please try again.",
+    "serverUnreachable": "Server is unreachable. Please try again later."
+  },
+  "authentication": {
+    "invalidCredentials": "Invalid email or password",
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "unauthorized": "You are not authorized to perform this action",
+    "accountNotFound": "Account not found",
+    "emailAlreadyExists": "Email already exists",
+    "weakPassword": "Password is too weak",
+    "loginFailed": "Login failed. Please try again.",
+    "signupFailed": "Account creation failed. Please try again."
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordsNotMatch": "Passwords do not match",
+    "invalidUrl": "Please enter a valid URL",
+    "invalidNumber": "Please enter a valid number",
+    "fileTooBig": "File size is too large",
+    "invalidFileType": "Invalid file type",
+    "selectAtLeastOne": "Please select at least one option"
+  },
+  "server": {
+    "internalError": "Internal server error",
+    "serviceUnavailable": "Service temporarily unavailable",
+    "maintenance": "Server is under maintenance",
+    "rateLimit": "Too many requests. Please try again later.",
+    "databaseError": "Database error occurred"
+  },
+  "file": {
+    "uploadFailed": "File upload failed",
+    "fileNotFound": "File not found",
+    "invalidFormat": "Invalid file format",
+    "sizeExceeded": "File size exceeded limit"
+  },
+  "general": {
+    "somethingWentWrong": "Something went wrong. Please try again.",
+    "operationFailed": "Operation failed",
+    "tryAgain": "Please try again",
+    "contactSupport": "If the problem persists, please contact support",
+    "unexpectedError": "An unexpected error occurred"
+  },
+  "permissions": {
+    "cameraDenied": "Camera permission denied",
+    "galleryDenied": "Gallery access denied",
+    "locationDenied": "Location permission denied",
+    "notificationsDenied": "Notification permission denied"
+  },
+  "business": {
+    "jobNotFound": "Job not found",
+    "applicationFailed": "Application submission failed",
+    "alreadyApplied": "You have already applied for this job",
+    "jobExpired": "This job has expired",
+    "companyNotFound": "Company not found",
+    "profileIncomplete": "Please complete your profile first"
+  }
+}

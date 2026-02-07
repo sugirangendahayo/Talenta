@@ -1,0 +1,54 @@
+{
+  "greeting": "Mwaramutse, {{firstName}}",
+  "welcome": "Murakaza neza ku gushaka akazi ku buryo bwihuse",
+  "search": {
+    "placeholder": "Shakisha akazi, isosiyete, cyangwa ubwenge...",
+    "recentSearches": "Ishakisha rishize hafi",
+    "trending": "Ishakisha bivuye",
+    "noResults": "Nta bisubizo byabonetse"
+  },
+  "categories": {
+    "title": "Amatsinda",
+    "all": "Byose",
+    "seeAll": "Reba amatsinda yose"
+  },
+  "featuredJobs": {
+    "title": "Akazi azamamaye",
+    "new": "Gashya",
+    "urgent": "Byihutirwa",
+    "remote": "Kuri interineti",
+    "viewAll": "Reba akazi yose"
+  },
+  "recommended": {
+    "title": "Byabawewe",
+    "basedOnProfile": "Bifite ahanini n'ibyinshiheho byawe",
+    "basedOnSkills": "Bifite ahanini n'ubwenge bwo"
+  },
+  "recentActivity": {
+    "title": "Ibikorwa byashize hafi",
+    "applications": "Ikwizihizwa",
+    "views": "Ireba ibyinshiheho",
+    "savedJobs": "Akazi byabitswe"
+  },
+  "quickActions": {
+    "title": "Ibikorwa byihuse",
+    "updateProfile": "Kuvugurura ibyinshiheho",
+    "uploadResume": "Iherekaho CV",
+    "setAlerts": "Gushiraho amabwiriza y'akazi"
+  },
+  "stats": {
+    "jobsAvailable": "Akazi ariho",
+    "companiesHiring": "Isosiyete zishakaho",
+    "newToday": "Zashuye uyu munsi"
+  },
+  "emptyStates": {
+    "noJobs": "Nta kazi kiriho kuri none",
+    "noRecommendations": "Nta byabawewe kuri none",
+    "completeProfile": "Kuzamura ibyinshiheho byawe kugirango ubone ibyiza byinshi"
+  },
+  "messages": {
+    "loading": "Ikorwa akazi...",
+    "error": "Ikosa mu gukurikirana akazi",
+    "refresh": "Kuramo kongera igenamishusho"
+  }
+}

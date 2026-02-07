@@ -1,0 +1,64 @@
+{
+  "network": {
+    "noConnection": "Aucune connexion internet",
+    "connectionLost": "Connexion perdue. Veuillez vérifier votre internet.",
+    "timeout": "Délai d'attente dépassé. Veuillez réessayer.",
+    "serverUnreachable": "Serveur inaccessible. Veuillez réessayer plus tard."
+  },
+  "authentication": {
+    "invalidCredentials": "Email ou mot de passe invalide",
+    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action",
+    "accountNotFound": "Compte non trouvé",
+    "emailAlreadyExists": "L'email existe déjà",
+    "weakPassword": "Le mot de passe est trop faible",
+    "loginFailed": "Connexion échouée. Veuillez réessayer.",
+    "signupFailed": "Échec de la création du compte. Veuillez réessayer."
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Veuillez entrer une adresse email valide",
+    "invalidPhone": "Veuillez entrer un numéro de téléphone valide",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "passwordsNotMatch": "Les mots de passe ne correspondent pas",
+    "invalidUrl": "Veuillez entrer une URL valide",
+    "invalidNumber": "Veuillez entrer un nombre valide",
+    "fileTooBig": "La taille du fichier est trop grande",
+    "invalidFileType": "Type de fichier invalide",
+    "selectAtLeastOne": "Veuillez sélectionner au moins une option"
+  },
+  "server": {
+    "internalError": "Erreur interne du serveur",
+    "serviceUnavailable": "Service temporairement indisponible",
+    "maintenance": "Serveur en maintenance",
+    "rateLimit": "Trop de demandes. Veuillez réessayer plus tard.",
+    "databaseError": "Erreur de base de données survenue"
+  },
+  "file": {
+    "uploadFailed": "Échec du téléversement du fichier",
+    "fileNotFound": "Fichier non trouvé",
+    "invalidFormat": "Format de fichier invalide",
+    "sizeExceeded": "Taille de fichier dépassée"
+  },
+  "general": {
+    "somethingWentWrong": "Quelque chose s'est mal passé. Veuillez réessayer.",
+    "operationFailed": "Opération échouée",
+    "tryAgain": "Veuillez réessayer",
+    "contactSupport": "Si le problème persiste, veuillez contacter le support",
+    "unexpectedError": "Une erreur inattendue s'est produite"
+  },
+  "permissions": {
+    "cameraDenied": "Autorisation de la caméra refusée",
+    "galleryDenied": "Accès à la galerie refusé",
+    "locationDenied": "Autorisation de localisation refusée",
+    "notificationsDenied": "Autorisation de notification refusée"
+  },
+  "business": {
+    "jobNotFound": "Emploi non trouvé",
+    "applicationFailed": "Échec de la soumission de la candidature",
+    "alreadyApplied": "Vous avez déjà postulé à cet emploi",
+    "jobExpired": "Cet emploi a expiré",
+    "companyNotFound": "Entreprise non trouvée",
+    "profileIncomplete": "Veuillez d'abord compléter votre profil"
+  }
+}

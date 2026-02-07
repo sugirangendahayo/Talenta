@@ -1,0 +1,64 @@
+{
+  "network": {
+    "noConnection": "Nta interineti",
+    "connectionLost": "Ukwihuza byarahindutse. Wagenza kuri interineti yawe.",
+    "timeout": "Igihe cy'ibisubzo cyarangiye. Ongeraugerage.",
+    "serverUnreachable": "Seriveri ntibashakwa. Ongeraugerage nyuma."
+  },
+  "authentication": {
+    "invalidCredentials": "Imeri cyangwa ijambo ry'ibanga sibyo",
+    "sessionExpired": "Igihe cyawe cyarangiye. Ongera kwinjira.",
+    "unauthorized": "Nta uruhare ufite gukora iki gikorwa",
+    "accountNotFound": "Konti ntiyabonetse",
+    "emailAlreadyExists": "Imeri isanzweho",
+    "weakPassword": "Ijambo ry'ibanga rirahenze",
+    "loginFailed": "Kwinjira byanze. Ongeraugerage.",
+    "signupFailed": "Kurema konti byanze. Ongeraugerage."
+  },
+  "validation": {
+    "required": "Uyu mukoro ukenewe",
+    "invalidEmail": "Andika imeri idahwitse",
+    "invalidPhone": "Andika numero ya telefoni idahwitse",
+    "passwordTooShort": "Ijambo ry'ibanga riraguma kuba ari inguni 8 cyangwa byinshi",
+    "passwordsNotMatch": "Amajambo y'ibanga atagira uruhare",
+    "invalidUrl": "Andika URL idahwitse",
+    "invalidNumber": "Andiza numero idahwitse",
+    "fileTooBig": "Ingano ya dosiye nini cyane",
+    "invalidFileType": "Ubwoko bwa dosiye butahwitse",
+    "selectAtLeastOne": "Hitamo kimwe cyangwa byinshi"
+  },
+  "server": {
+    "internalError": "Ikosa rya seriveri ry'imbere",
+    "serviceUnavailable": "Serivisi ntibikora bihagije",
+    "maintenance": "Seriveri iri mu gukurikirana",
+    "rateLimit": "Amasaba menshi. Ongeraugerage nyuma.",
+    "databaseError": "Ikosa ry'ububikokoporora ryabaye"
+  },
+  "file": {
+    "uploadFailed": "Kureka dosiye byanze",
+    "fileNotFound": "Dosiye ntiyabonetse",
+    "invalidFormat": "Imiterere ya dosiye sibyo",
+    "sizeExceeded": "Ingano ya dosiye yarengeje"
+  },
+  "general": {
+    "somethingWentWrong": "Ibyahise biratanye. Ongeraugerage.",
+    "operationFailed": "Ikorwa byanze",
+    "tryAgain": "Ongeraugerage",
+    "contactSupport": "Niba ikoma kibaho, twandikire",
+    "unexpectedError": "Ikosa kidasanzwe cyabaye"
+  },
+  "permissions": {
+    "cameraDenied": "Uruhane rwa kamera ryakiriwe",
+    "galleryDenied": "Kwinjira muri galeri byakiriwe",
+    "locationDenied": "Uruhane rwa ahantu rwakiriwe",
+    "notificationsDenied": "Uruhane rwa tangazo rwakiriwe"
+  },
+  "business": {
+    "jobNotFound": "Akazi ntiyabonetse",
+    "applicationFailed": "Kwizihizwa byanze",
+    "alreadyApplied": "Wahisize kuri iyi kazi",
+    "jobExpired": "Iyi kazi yarangiye",
+    "companyNotFound": "Isosiyete ntiyabonetse",
+    "profileIncomplete": "Kwanza uzamure ibyinshiheho byawe"
+  }
+}

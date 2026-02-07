@@ -1,0 +1,56 @@
+{
+  "greetings": {
+    "goodMorning": "Good Morning",
+    "goodAfternoon": "Good Afternoon", 
+    "goodEvening": "Good Evening"
+  },
+  "stats": {
+    "activeJobs": "Active Jobs",
+    "applicants": "Applicants",
+    "interviews": "Interviews",
+    "messages": "Messages",
+    "views": "Views",
+    "hired": "Hired",
+    "pending": "Pending",
+    "rejected": "Rejected"
+  },
+  "sections": {
+    "attention": "Requiring Attention",
+    "activeJobs": "Active Jobs",
+    "recentContacts": "Recent Contacts",
+    "quickActions": "Quick Actions"
+  },
+  "quickActions": {
+    "postJob": "Post New Job",
+    "findCandidates": "Find Candidates",
+    "scheduleInterview": "Schedule Interview",
+    "viewAnalytics": "View Analytics",
+    "manageJobs": "Manage Jobs",
+    "viewApplications": "View Applications"
+  },
+  "applicantStatus": {
+    "new": "New",
+    "reviewing": "Reviewing",
+    "shortlisted": "Shortlisted",
+    "interview": "Interview",
+    "offered": "Offered",
+    "hired": "Hired",
+    "rejected": "Rejected"
+  },
+  "priority": {
+    "high": "High Priority",
+    "medium": "Medium Priority",
+    "low": "Low Priority"
+  },
+  "emptyStates": {
+    "noJobs": "No active jobs yet",
+    "noApplicants": "No applicants yet",
+    "noMessages": "No messages yet",
+    "noRecentContacts": "No recent contacts"
+  },
+  "messages": {
+    "loadingDashboard": "Loading dashboard...",
+    "refreshSuccess": "Dashboard refreshed successfully",
+    "errorLoading": "Error loading dashboard data"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "greetings": {
+    "goodMorning": "Mwaramutse",
+    "goodAfternoon": "Mwiriwe", 
+    "goodEvening": "Mwanyire"
+  },
+  "stats": {
+    "activeJobs": "Akazi akora",
+    "applicants": "Abashakwaho",
+    "interviews": "Ibiganiro",
+    "messages": "Ubutumwa",
+    "views": "Ireba",
+    "hired": "Abashyizweho akazi",
+    "pending": "Biteganyijwe",
+    "rejected": "Bakiriye"
+  },
+  "sections": {
+    "attention": "Ukeneye kureberwa",
+    "activeJobs": "Akazi akora",
+    "recentContacts": "Abo wahuriye hafi",
+    "quickActions": "Ibikorwa byihuse"
+  },
+  "quickActions": {
+    "postJob": "Shakira akazi gashya",
+    "findCandidates": "Gushaka abashakwaho",
+    "scheduleInterview": "Gutegekanya iganiro",
+    "viewAnalytics": "Kureba analitiki",
+    "manageJobs": "Gukora akazi",
+    "viewApplications": "Kureba abashakwaho"
+  },
+  "applicantStatus": {
+    "new": "Gashya",
+    "reviewing": "Ireba",
+    "shortlisted": "Yarushijwe",
+    "interview": "Iganiro",
+    "offered": "Yahawe",
+    "hired": "Yashyizweho akazi",
+    "rejected": "Yakiriwe"
+  },
+  "priority": {
+    "high": "By'ingirakamaro",
+    "medium": "Hagati",
+    "low": "Hasi"
+  },
+  "emptyStates": {
+    "noJobs": "Nta kazi ikora kuri none",
+    "noApplicants": "Nta muntu wize kuri none",
+    "noMessages": "Nta butumwa kuri none",
+    "noRecentContacts": "Nta muntu wahuriye hafi"
+  },
+  "messages": {
+    "loadingDashboard": "Ikorwa bijyanye n'ibikorwa...",
+    "refreshSuccess": "Ibijyanye n'ibikorwa byongewe neza",
+    "errorLoading": "Ikosa mu gukurikirana amakuru ajyananye n'ibikorwa"
+  }
+}

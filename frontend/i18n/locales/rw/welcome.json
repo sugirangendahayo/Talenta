@@ -1,0 +1,32 @@
+{
+  "step1": {
+    "title": "Gushaka akazi kawe ku buryo bworoshye hamwe na Talenta!",
+    "subtitle": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid repudiandae voluptas magni esse explicabo assumenda quam tempore fuga numquam expedita? fugit totam!",
+    "nextButton": "Ikurikira"
+  },
+  "step2": {
+    "title": "Kuki wahitamo Talenta?",
+    "subtitle": "Byose ukeneye mu gushaka akazi",
+    "features": {
+      "browseJobs": {
+        "title": "Gushakisha akazi",
+        "description": "Shakisha ibihumbi by'imbaga z'akazi zihujwe n'ubwenge bwo"
+      },
+      "applyOneClick": {
+        "title": "Kwizihizwa ukanda kumwe",
+        "description": "Ohereza kwizihizwa byihuse hamwe n'uburyo bwacu bwo kwizihizwa bwihuse"
+      },
+      "trackApplications": {
+        "title": "Kurikirana kwizihizwa",
+        "description": "Kurikirana imimerere y'ikizihizwa nawe utange amakuru y'igihe cya none"
+      }
+    },
+    "benefits": {
+      "title": "Nandi inyungu zirimo",
+      "personalizedRecommendations": "Incamake za akazi ihujwe n'ibyo ushaka",
+      "saveJobs": "Bika akazi ukazakomeza",
+      "getNotified": "Tangazwa amahirwe mashya"
+    },
+    "getStartedButton": "Tangira"
+  }
+}

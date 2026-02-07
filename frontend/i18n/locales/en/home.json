@@ -1,0 +1,54 @@
+{
+  "greeting": "Hey, {{firstName}}",
+  "welcome": "Welcome to Smarter Job Discovery",
+  "search": {
+    "placeholder": "Search for jobs, companies, or skills...",
+    "recentSearches": "Recent Searches",
+    "trending": "Trending Searches",
+    "noResults": "No results found"
+  },
+  "categories": {
+    "title": "Categories",
+    "all": "All",
+    "seeAll": "See All Categories"
+  },
+  "featuredJobs": {
+    "title": "Featured Jobs",
+    "new": "New",
+    "urgent": "Urgent",
+    "remote": "Remote",
+    "viewAll": "View All Jobs"
+  },
+  "recommended": {
+    "title": "Recommended for You",
+    "basedOnProfile": "Based on your profile",
+    "basedOnSkills": "Based on your skills"
+  },
+  "recentActivity": {
+    "title": "Recent Activity",
+    "applications": "Applications",
+    "views": "Profile Views",
+    "savedJobs": "Saved Jobs"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "updateProfile": "Update Profile",
+    "uploadResume": "Upload Resume",
+    "setAlerts": "Set Job Alerts"
+  },
+  "stats": {
+    "jobsAvailable": "Jobs Available",
+    "companiesHiring": "Companies Hiring",
+    "newToday": "New Today"
+  },
+  "emptyStates": {
+    "noJobs": "No jobs available at the moment",
+    "noRecommendations": "No recommendations yet",
+    "completeProfile": "Complete your profile to get better recommendations"
+  },
+  "messages": {
+    "loading": "Loading jobs...",
+    "error": "Error loading jobs",
+    "refresh": "Pull to refresh"
+  }
+}

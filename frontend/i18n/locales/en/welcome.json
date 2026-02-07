@@ -1,0 +1,32 @@
+{
+  "step1": {
+    "title": "Find your dream job easily with Talenta!",
+    "subtitle": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid repudiandae voluptas magni esse explicabo assumenda quam tempore fuga numquam expedita? fugit totam!",
+    "nextButton": "Next"
+  },
+  "step2": {
+    "title": "Why Choose Talenta?",
+    "subtitle": "Everything you need for your job search",
+    "features": {
+      "browseJobs": {
+        "title": "Browse Jobs",
+        "description": "Explore thousands of job opportunities tailored to your skills"
+      },
+      "applyOneClick": {
+        "title": "Apply with One Click",
+        "description": "Send your application instantly with our smart apply feature"
+      },
+      "trackApplications": {
+        "title": "Track Applications",
+        "description": "Monitor your application status and get real-time updates"
+      }
+    },
+    "benefits": {
+      "title": "Plus More Benefits",
+      "personalizedRecommendations": "Personalized job recommendations",
+      "saveJobs": "Save jobs for later",
+      "getNotified": "Get notified of new opportunities"
+    },
+    "getStartedButton": "Get Started"
+  }
+}

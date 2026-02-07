@@ -1,0 +1,66 @@
+{
+  "title": "Ibyinshiheho",
+  "subtitle": "Kugena igenamiterere z'konti yawe n'ibyo ushaka",
+  "stats": {
+    "activeJobs": "Akazi akora",
+    "applicants": "Abashakwaho", 
+    "hired": "Abashyizweho akazi"
+  },
+  "sections": {
+    "account": {
+      "title": "Konti",
+      "editProfile": "Hindura ibyinshiheho",
+      "teamManagement": "Kuyobora itsinda",
+      "verification": "Kugenzura",
+      "privacy": "Ibanga"
+    },
+    "language": {
+      "title": "Ururimi",
+      "appLanguage": "Ururimi rw'aporogaramu"
+    },
+    "preferences": {
+      "title": "Ibyahisemo",
+      "applicationAlerts": "Iburira ryo kwizihizwa",
+      "emailNotifications": "Amatangazo ya imeri",
+      "defaultFilters": "Muyunguruzo z'igenamiterere",
+      "autoReply": "Igisubizo cyihuse"
+    },
+    "billing": {
+      "title": "Kwishyura",
+      "currentPlan": "Plan ukoresha",
+      "paymentMethod": "Uburyo bwo kwishyura",
+      "billingHistory": "Amateka yo kwishyura",
+      "upgrade": "Kuvugurura"
+    },
+    "support": {
+      "title": "Gufasha",
+      "contactSupport": "Twandikire",
+      "resources": "Ibikoresho",
+      "terms": "Amategeko yo gukoresha",
+      "privacy": "Politiki y'ibanga"
+    }
+  },
+  "quickActions": {
+    "title": "Ibikorwa byihuse",
+    "postJob": "Shakira akazi",
+    "applicants": "Abashakwaho",
+    "analytics": "Analitiki"
+  },
+  "logout": {
+    "button": "Sohoka",
+    "confirm": "Uzi neza ko ushaka gusohoka?",
+    "error": "Kusohora byanze. Ongeraugerage."
+  },
+  "status": {
+    "verified": "Yagenwe neza",
+    "pending": "Biteganyijwe",
+    "loading": "Ikorwa ibyinshiheho..."
+  },
+  "companyInfo": {
+    "companyName": "Izina ry'isosiyete",
+    "email": "Imeri",
+    "verified": "Yagenwe neza",
+    "businessPro": "Business Pro"
+  },
+  "version": "Verisiyo 1.0.0"
+}

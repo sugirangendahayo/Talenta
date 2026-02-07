@@ -1,0 +1,56 @@
+{
+  "greetings": {
+    "goodMorning": "Bonjour",
+    "goodAfternoon": "Bon après-midi", 
+    "goodEvening": "Bonsoir"
+  },
+  "stats": {
+    "activeJobs": "Emplois actifs",
+    "applicants": "Candidats",
+    "interviews": "Entretiens",
+    "messages": "Messages",
+    "views": "Vues",
+    "hired": "Embauchés",
+    "pending": "En attente",
+    "rejected": "Rejetés"
+  },
+  "sections": {
+    "attention": "Requiert une attention",
+    "activeJobs": "Emplois actifs",
+    "recentContacts": "Contacts récents",
+    "quickActions": "Actions rapides"
+  },
+  "quickActions": {
+    "postJob": "Publier un nouvel emploi",
+    "findCandidates": "Trouver des candidats",
+    "scheduleInterview": "Planifier un entretien",
+    "viewAnalytics": "Voir les analyses",
+    "manageJobs": "Gérer les emplois",
+    "viewApplications": "Voir les candidatures"
+  },
+  "applicantStatus": {
+    "new": "Nouveau",
+    "reviewing": "En cours d'examen",
+    "shortlisted": "Présélectionné",
+    "interview": "Entretien",
+    "offered": "Offert",
+    "hired": "Embauché",
+    "rejected": "Rejeté"
+  },
+  "priority": {
+    "high": "Haute priorité",
+    "medium": "Priorité moyenne",
+    "low": "Faible priorité"
+  },
+  "emptyStates": {
+    "noJobs": "Aucun emploi actif pour le moment",
+    "noApplicants": "Aucun candidat pour le moment",
+    "noMessages": "Aucun message pour le moment",
+    "noRecentContacts": "Aucun contact récent"
+  },
+  "messages": {
+    "loadingDashboard": "Chargement du tableau de bord...",
+    "refreshSuccess": "Tableau de bord actualisé avec succès",
+    "errorLoading": "Erreur lors du chargement des données du tableau de bord"
+  }
+}
