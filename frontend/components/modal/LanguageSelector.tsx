@@ -1,15 +1,15 @@
+import { saveLanguage } from "@/i18n/config";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  Modal,
+  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  Modal,
-  StyleSheet,
-  ScrollView,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTranslation } from "react-i18next";
-import { saveLanguage } from "@/i18n/config";
 
 interface Language {
   code: string;
@@ -33,7 +33,7 @@ export default function LanguageSelector({
   visible,
   onClose,
 }: LanguageSelectorProps) {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("profile");
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
   const handleSelectLanguage = async (languageCode: string) => {
@@ -56,7 +56,7 @@ export default function LanguageSelector({
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>{t("profile.selectLanguage")}</Text>
+            <Text style={styles.title}>{t("language.selectLanguage")}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color="#6B7280" />
             </TouchableOpacity>
@@ -66,7 +66,7 @@ export default function LanguageSelector({
           <View style={styles.currentLanguageContainer}>
             <Ionicons name="globe-outline" size={20} color="#0E7490" />
             <Text style={styles.currentLanguageText}>
-              {t("profile.currentLanguage")}:{" "}
+              {t("currentLanguage")}:{" "}
               {LANGUAGES.find((l) => l.code === i18n.language)?.nativeName}
             </Text>
           </View>
