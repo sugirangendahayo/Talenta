@@ -7,7 +7,16 @@
     "postJob": "Post Job",
     "posting": "Posting...",
     "draftSaved": "Draft saved successfully",
-    "jobPosted": "Job posted successfully"
+    "jobPosted": "Job posted successfully",
+    "untitledJob": "Untitled Job",
+    "quickOptions": {
+      "7days": "7 days",
+      "14days": "14 days",
+      "30days": "30 days",
+      "60days": "60 days",
+      "90days": "90 days"
+    },
+    "expiryInfo": "Job will automatically expire on this date and become hidden from jobseekers. You can renew it later."
   },
   "sections": {
     "basicInfo": {
@@ -58,7 +67,8 @@
     "recent": "Recent",
     "relevant": "Most Relevant",
     "salaryHigh": "Salary: High to Low",
-    "salaryLow": "Salary: Low to High"
+    "salaryLow": "Salary: Low to High",
+    "selectAtLeastOne": "Select all that apply"
   },
   "categories": {
     "all": "All",
@@ -92,6 +102,7 @@
   "messages": {
     "validationError": "Validation Error",
     "loginRequired": "You must be logged in to post a job",
+    "loginRequiredDraft": "You must be logged in to save a draft",
     "errorPosting": "Failed to post job. Please try again.",
     "errorSaving": "Failed to save draft. Please try again."
   }

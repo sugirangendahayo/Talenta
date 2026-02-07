@@ -1,7 +1,7 @@
 {
   "greetings": {
     "goodMorning": "Good Morning",
-    "goodAfternoon": "Good Afternoon", 
+    "goodAfternoon": "Good Afternoon",
     "goodEvening": "Good Evening"
   },
   "stats": {
@@ -12,17 +12,32 @@
     "views": "Views",
     "hired": "Hired",
     "pending": "Pending",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "shortlisted": "Shortlisted",
+    "new": "new"
   },
   "sections": {
-    "attention": "Requiring Attention",
-    "activeJobs": "Active Jobs",
-    "recentContacts": "Recent Contacts",
+    "attention": {
+      "title": "Requiring Attention",
+      "highPriorityApplicant": "high-priority applicant",
+      "plural": "s"
+    },
+    "activeJobs": {
+      "title": "Active Jobs"
+    },
+    "recentContacts": {
+      "title": "Contact Candidates",
+      "candidate": "candidate",
+      "plural": "s",
+      "toReach": "to reach"
+    },
     "quickActions": "Quick Actions"
   },
   "quickActions": {
-    "postJob": "Post New Job",
+    "postJob": "Post Job",
     "findCandidates": "Find Candidates",
+    "viewStats": "View Stats",
+    "teamManage": "Team Manage",
     "scheduleInterview": "Schedule Interview",
     "viewAnalytics": "View Analytics",
     "manageJobs": "Manage Jobs",
@@ -40,7 +55,9 @@
   "priority": {
     "high": "High Priority",
     "medium": "Medium Priority",
-    "low": "Low Priority"
+    "low": "Low Priority",
+    "new": "NEW",
+    "match": "match"
   },
   "emptyStates": {
     "noJobs": "No active jobs yet",
@@ -48,6 +65,47 @@
     "noMessages": "No messages yet",
     "noRecentContacts": "No recent contacts"
   },
+  "jobs": {
+    "notSpecified": "Not specified",
+    "day": "day",
+    "plural": "s",
+    "active": "active",
+    "applicant": "applicant",
+    "open": "open",
+    "position": "position",
+    "pause": "Pause",
+    "pausedSuccess": "Job paused successfully",
+    "pauseError": "Failed to pause job"
+  },
+  "alerts": {
+    "noPhone": {
+      "title": "No Phone Number",
+      "message": "This candidate hasn't provided a phone number."
+    },
+    "whatsapp": {
+      "message": "Hi {{candidateName}}, I'm reaching out regarding your application for {{jobTitle}}.",
+      "notInstalled": {
+        "title": "WhatsApp Not Installed",
+        "message": "Please install WhatsApp to use this feature, or use the call option instead."
+      }
+    },
+    "email": {
+      "subject": "Regarding: {{jobTitle}}",
+      "body": "Hi {{candidateName}},\n\nI'm reaching out regarding your application for {{jobTitle}}.\n\nBest regards"
+    }
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{days}} days ago",
+    "weeksAgo": "{{weeks}} weeks ago",
+    "monthsAgo": "{{months}} months ago"
+  },
+  "status": {
+    "hired": "Hired",
+    "shortlisted": "Shortlisted"
+  },
+  "lastContact": "Last contact",
   "messages": {
     "loadingDashboard": "Loading dashboard...",
     "refreshSuccess": "Dashboard refreshed successfully",

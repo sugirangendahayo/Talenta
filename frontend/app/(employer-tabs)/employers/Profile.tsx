@@ -1,28 +1,28 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Image,
-  Alert,
-  ActivityIndicator,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-} from "react-native";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useState, useRef } from "react";
+import LanguageSelector from "@/components/modal/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "expo-router";
-import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
+import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "@/components/employer/LanguageSelector";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function EmployerProfile() {
   const { profile, role, signOut, loading } = useAuth();
   const { setIsVisible } = useTabBarVisibility();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(["profile", "common"]);
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(true);
@@ -35,13 +35,13 @@ export default function EmployerProfile() {
     role === "employer" && profile ? (profile as EmployerProfileType) : null;
 
   const handleLogout = () => {
-    Alert.alert(t("profile.logout.button"), t("profile.logout.confirm"), [
+    Alert.alert(t("logout.button"), t("logout.confirm"), [
       {
-        text: t("common.cancel"),
+        text: t("buttons.cancel", { ns: "common" }),
         style: "cancel",
       },
       {
-        text: t("profile.logout.button"),
+        text: t("logout.button"),
         style: "destructive",
         onPress: async () => {
           setIsLoggingOut(true);
@@ -50,7 +50,7 @@ export default function EmployerProfile() {
             router.replace("/auth/signin");
           } catch (error) {
             console.error("Logout error:", error);
-            Alert.alert(t("common.error"), t("profile.logout.error"));
+            Alert.alert(t("common.error"), t("logout.error"));
           } finally {
             setIsLoggingOut(false);
           }
@@ -75,50 +75,50 @@ export default function EmployerProfile() {
 
   const getCurrentLanguageName = () => {
     const languages: { [key: string]: string } = {
-      en: t("languages.en"),
-      fr: t("languages.fr"),
-      rw: t("languages.rw"),
+      en: t("sections.language.name"),
+      fr: t("sections.language.name"),
+      rw: t("sections.language.name"),
     };
     return languages[i18n.language] || "English";
   };
 
   const settingsSections = [
     {
-      title: t("profile.sections.account.title"),
+      title: t("sections.account.title"),
       icon: "business-outline",
       items: [
         {
           icon: "edit",
-          label: t("profile.sections.account.editProfile"),
+          label: t("sections.account.editProfile"),
           type: "link",
         },
         {
           icon: "people",
-          label: t("profile.sections.account.teamManagement"),
+          label: t("sections.account.teamManagement"),
           type: "link",
         },
         {
           icon: "verified-user",
-          label: t("profile.sections.account.verification"),
+          label: t("sections.account.verification"),
           value: employerData?.is_verified
-            ? t("profile.verified")
-            : t("profile.pending"),
+            ? t("status.verified")
+            : t("status.pending"),
           type: "link",
         },
         {
           icon: "lock",
-          label: t("profile.sections.account.privacy"),
+          label: t("sections.account.privacy"),
           type: "link",
         },
       ],
     },
     {
-      title: t("profile.sections.language.title"),
+      title: t("sections.language.title"),
       icon: "language",
       items: [
         {
           icon: "translate",
-          label: t("profile.sections.language.appLanguage"),
+          label: t("sections.language.appLanguage"),
           value: getCurrentLanguageName(),
           type: "link",
           onPress: () => setLanguageSelectorVisible(true),
@@ -126,84 +126,84 @@ export default function EmployerProfile() {
       ],
     },
     {
-      title: t("profile.sections.preferences.title"),
+      title: t("sections.preferences.title"),
       icon: "settings-outline",
       items: [
         {
           icon: "notifications",
-          label: t("profile.sections.preferences.applicationAlerts"),
+          label: t("sections.preferences.applicationAlerts"),
           type: "toggle",
           value: notifications,
           onValueChange: setNotifications,
         },
         {
           icon: "email",
-          label: t("profile.sections.preferences.emailNotifications"),
+          label: t("sections.preferences.emailNotifications"),
           type: "toggle",
           value: emailUpdates,
           onValueChange: setEmailUpdates,
         },
         {
           icon: "filter-list",
-          label: t("profile.sections.preferences.defaultFilters"),
+          label: t("sections.preferences.defaultFilters"),
           type: "link",
         },
         {
           icon: "schedule",
-          label: t("profile.sections.preferences.autoReply"),
+          label: t("sections.preferences.autoReply"),
           type: "link",
         },
       ],
     },
     {
-      title: t("profile.sections.billing.title"),
+      title: t("sections.billing.title"),
       icon: "card-outline",
       items: [
         {
           icon: "workspace-premium",
-          label: t("profile.sections.billing.currentPlan"),
+          label: t("sections.billing.currentPlan"),
           value: "Business Pro",
           type: "link",
         },
         {
           icon: "payment",
-          label: t("profile.sections.billing.paymentMethod"),
+          label: t("sections.billing.paymentMethod"),
           type: "link",
         },
         {
           icon: "receipt-long",
-          label: t("profile.sections.billing.billingHistory"),
+          label: t("sections.billing.billingHistory"),
           type: "link",
         },
         {
           icon: "upgrade",
-          label: t("profile.sections.billing.upgrade"),
+          label: t("sections.billing.upgrade"),
           type: "link",
         },
       ],
     },
     {
-      title: t("profile.sections.support.title"),
+      title: t("sections.support.title"),
       icon: "help-outline",
       items: [
         {
           icon: "support-agent",
-          label: t("profile.sections.support.contactSupport"),
+          label: t("sections.support.contactSupport"),
           type: "link",
         },
         {
           icon: "school",
-          label: t("profile.sections.support.resources"),
+          label: t("sections.support.resources"),
           type: "link",
         },
         {
           icon: "description",
-          label: t("profile.sections.support.terms"),
+          label: t("sections.support.terms"),
           type: "link",
         },
         {
           icon: "privacy-tip",
-          label: t("profile.sections.support.privacy"),
+          label: t("sections.support.privacy"),
           type: "link",
         },
       ],
@@ -223,10 +223,10 @@ export default function EmployerProfile() {
       {/* Header */}
       <View className="bg-white px-6 pt-16 pb-6">
         <Text className="text-3xl font-quicksandBold text-gray-800">
-          {t("profile.title")}
+          {t("title")}
         </Text>
         <Text className="text-gray-500 font-quicksandMedium mt-1">
-          {t("profile.subtitle")}
+          {t("subtitle")}
         </Text>
       </View>
 
@@ -267,8 +267,8 @@ export default function EmployerProfile() {
                   />
                   <Text className="text-cyan-700 text-xs font-quicksandBold">
                     {employerData?.is_verified
-                      ? t("profile.verified")
-                      : t("profile.pending")}
+                      ? t("status.verified")
+                      : t("status.pending")}
                   </Text>
                 </View>
                 <View className="bg-purple-100 px-3 py-1 rounded-full">
@@ -290,7 +290,7 @@ export default function EmployerProfile() {
                 12
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
-                {t("profile.stats.activeJobs")}
+                {t("stats.activeJobs")}
               </Text>
             </View>
             <View className="w-px bg-gray-200" />
@@ -299,7 +299,7 @@ export default function EmployerProfile() {
                 156
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
-                {t("profile.stats.applicants")}
+                {t("stats.applicants")}
               </Text>
             </View>
             <View className="w-px bg-gray-200" />
@@ -308,7 +308,7 @@ export default function EmployerProfile() {
                 23
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
-                {t("profile.stats.hired")}
+                {t("stats.hired")}
               </Text>
             </View>
           </View>
@@ -390,7 +390,7 @@ export default function EmployerProfile() {
           <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
             <Ionicons name="flash-outline" size={20} color="#0E7490" />
             <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              {t("profile.quickActions.title")}
+              {t("quickActions.title")}
             </Text>
           </View>
           <View className="flex-row p-4">
@@ -399,7 +399,7 @@ export default function EmployerProfile() {
                 <Ionicons name="add-circle-outline" size={24} color="#0E7490" />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                {t("profile.quickActions.postJob")}
+                {t("quickActions.postJob")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity className="flex-1 items-center p-4">
@@ -407,7 +407,7 @@ export default function EmployerProfile() {
                 <Ionicons name="people-outline" size={24} color="#059669" />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                {t("profile.quickActions.applicants")}
+                {t("quickActions.applicants")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity className="flex-1 items-center p-4">
@@ -419,7 +419,7 @@ export default function EmployerProfile() {
                 />
               </View>
               <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                {t("profile.quickActions.analytics")}
+                {t("quickActions.analytics")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -437,7 +437,7 @@ export default function EmployerProfile() {
             <>
               <Ionicons name="log-out-outline" size={20} color="#DC2626" />
               <Text className="text-red-600 font-quicksandBold text-lg ml-2">
-                {t("profile.logout.button")}
+                {t("logout.button")}
               </Text>
             </>
           )}
@@ -446,7 +446,7 @@ export default function EmployerProfile() {
         {/* App Version */}
         <View className="items-center pb-8">
           <Text className="text-gray-400 font-quicksandMedium text-sm">
-            {t("profile.version")}
+            {t("version")}
           </Text>
         </View>
       </ScrollView>

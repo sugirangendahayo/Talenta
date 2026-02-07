@@ -28,10 +28,14 @@
     "reset": "Réinitialiser",
     "update": "Mettre à jour",
     "view": "Voir",
+    "viewAll": "Voir tout",
     "share": "Partager",
     "copy": "Copier",
     "download": "Télécharger",
-    "upload": "Téléverser"
+    "upload": "Téléverser",
+    "call": "Appeler",
+    "whatsapp": "WhatsApp",
+    "email": "E-mail"
   },
   "navigation": {
     "home": "Accueil",

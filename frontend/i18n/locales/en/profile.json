@@ -16,7 +16,10 @@
     },
     "language": {
       "title": "Language",
-      "appLanguage": "App Language"
+      "name": "English",
+      "appLanguage": "App Language",
+      "selectLanguage": "Select language",
+      "currentLanguage": "Current language"
     },
     "preferences": {
       "title": "Preferences",

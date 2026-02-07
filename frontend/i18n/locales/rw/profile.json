@@ -16,7 +16,10 @@
     },
     "language": {
       "title": "Ururimi",
-      "appLanguage": "Ururimi rw'aporogaramu"
+      "name": "Ikinyarwanda",
+      "appLanguage": "Ururimi rw'aporogaramu",
+      "selectLanguage": "Kugena ururimi",
+      "currentLanguage": "Ururimi rw'ibyo ushaka"
     },
     "preferences": {
       "title": "Ibyahisemo",

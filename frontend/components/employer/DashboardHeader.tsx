@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { EmployerProfile } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface DashboardHeaderProps {
@@ -13,12 +14,13 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   const { profile, role } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation("dashboard");
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 18) return "Good Afternoon";
-    return "Good Evening";
+    if (hour < 12) return t("greetings.goodMorning");
+    if (hour < 18) return t("greetings.goodAfternoon");
+    return t("greetings.goodEvening");
   };
 
   const companyName =

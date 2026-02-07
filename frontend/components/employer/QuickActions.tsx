@@ -1,5 +1,6 @@
-import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface ActionButtonProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -27,28 +28,30 @@ const ActionButton = ({ icon, label, color, onPress }: ActionButtonProps) => (
 );
 
 export default function QuickActions() {
+  const { t } = useTranslation("dashboard");
+
   const actions = [
     {
       icon: "add-circle" as keyof typeof Ionicons.glyphMap,
-      label: "Post Job",
+      label: t("quickActions.postJob"),
       color: "#0E7490",
       onPress: () => console.log("Post Job"),
     },
     {
       icon: "search" as keyof typeof Ionicons.glyphMap,
-      label: "Find Candidates",
+      label: t("quickActions.findCandidates"),
       color: "#10B981",
       onPress: () => console.log("Find Candidates"),
     },
     {
       icon: "stats-chart" as keyof typeof Ionicons.glyphMap,
-      label: "View Stats",
+      label: t("quickActions.viewStats"),
       color: "#F59E0B",
       onPress: () => console.log("View Stats"),
     },
     {
       icon: "people" as keyof typeof Ionicons.glyphMap,
-      label: "Team Manage",
+      label: t("quickActions.teamManage"),
       color: "#8B5CF6",
       onPress: () => console.log("Team Manage"),
     },

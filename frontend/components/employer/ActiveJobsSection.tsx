@@ -1,9 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Text, TouchableOpacity, View, Alert } from "react-native";
-import { useRouter } from "expo-router";
-import { supabase } from "@/lib/supabase";
-import { toast } from "sonner-native";
 import type { ActiveJob } from "@/hooks/useDashboard";
+import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { toast } from "sonner-native";
 
 interface JobCardProps {
   job: ActiveJob;
@@ -12,6 +13,8 @@ interface JobCardProps {
 
 const JobCard = ({ job, onRefresh }: JobCardProps) => {
   const router = useRouter();
+ const { t } = useTranslation(["dashboard", "common"]);
+
 
   // Calculate days until expiry
   const getDaysUntilExpiry = () => {
@@ -36,7 +39,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
   const daysActive = getDaysActive();
 
   const formatSalary = () => {
-    if (!job.salary_min && !job.salary_max) return "Not specified";
+    if (!job.salary_min && !job.salary_max) return t("jobs.notSpecified");
     if (job.salary_min && job.salary_max) {
       const formatNum = (num: number) =>
         num >= 1000 ? `$${(num / 1000).toFixed(0)}k` : `$${num}`;
@@ -64,11 +67,11 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
 
               if (error) throw error;
 
-              toast.success("Job paused successfully");
+              toast.success(t("jobs.pausedSuccess"));
               onRefresh();
             } catch (error: any) {
               console.error("Error pausing job:", error);
-              toast.error(error.message || "Failed to pause job");
+              toast.error(error.message || t("jobs.pauseError"));
             }
           },
         },
@@ -116,7 +119,8 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
                   daysUntilExpiry < 7 ? "text-red-600" : "text-orange-600"
                 }`}
               >
-                Expires in {daysUntilExpiry} day{daysUntilExpiry > 1 ? "s" : ""}
+                Expires in {daysUntilExpiry} {t("jobs.day")}
+                {daysUntilExpiry > 1 ? t("jobs.plural") : ""}
               </Text>
             </View>
           )}
@@ -124,7 +128,8 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
             <View className="flex flex-row items-center gap-1">
               <Ionicons name="time-outline" size={14} color="#6B7280" />
               <Text className="text-xs font-quicksandMedium text-gray-600">
-                {daysActive} day{daysActive > 1 ? "s" : ""} active
+                {daysActive} {t("jobs.day")}
+                {daysActive > 1 ? t("jobs.plural") : ""} {t("jobs.active")}
               </Text>
             </View>
           )}
@@ -146,8 +151,8 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
           >
             <Ionicons name="people-outline" size={16} color="#0E7490" />
             <Text className="text-xs font-quicksandBold text-gray-700">
-              {job.applicants_count} applicant
-              {job.applicants_count !== 1 ? "s" : ""}
+              {job.applicants_count} {t("jobs.applicant")}
+              {job.applicants_count !== 1 ? t("jobs.plural") : ""}
             </Text>
           </TouchableOpacity>
         </View>
@@ -160,7 +165,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
         >
           <Ionicons name="pause" size={14} color="#6B7280" />
           <Text className="text-xs font-quicksandBold text-gray-700">
-            Pause
+            {t("jobs.pause")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -178,6 +183,8 @@ export default function ActiveJobsSection({
   onRefresh,
 }: ActiveJobsSectionProps) {
   const router = useRouter();
+ const { t } = useTranslation(["dashboard", "common"]);
+
 
   if (jobs.length === 0) return null;
 
@@ -192,10 +199,11 @@ export default function ActiveJobsSection({
             </View>
             <View>
               <Text className="text-base font-quicksandBold text-gray-800">
-                Active Jobs
+                {t("sections.activeJobs.title")}
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-500">
-                {jobs.length} position{jobs.length > 1 ? "s" : ""} open
+                {jobs.length} {t("jobs.position")}
+                {jobs.length > 1 ? t("jobs.plural") : ""} {t("jobs.open")}
               </Text>
             </View>
           </View>
@@ -204,7 +212,7 @@ export default function ActiveJobsSection({
             onPress={() => router.push("/(employer-tabs)/employers/Jobs")}
           >
             <Text className="text-sm font-quicksandBold text-cyan-700">
-              View All
+              {t("buttons.viewAll", { ns: "common" })}
             </Text>
             <Ionicons name="arrow-forward" size={14} color="#0E7490" />
           </TouchableOpacity>
@@ -220,3 +228,4 @@ export default function ActiveJobsSection({
     </View>
   );
 }
+

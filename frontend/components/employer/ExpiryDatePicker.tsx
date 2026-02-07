@@ -1,8 +1,9 @@
 // components/employer/ExpiryDatePicker.tsx
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
 interface ExpiryDatePickerProps {
   label: string;
@@ -17,6 +18,7 @@ export default function ExpiryDatePicker({
   onDateChange,
   required = false,
 }: ExpiryDatePickerProps) {
+  const { t } = useTranslation("jobs");
   const [showPicker, setShowPicker] = useState(false);
 
   const handleDateChange = (event: any, date?: Date) => {
@@ -49,11 +51,11 @@ export default function ExpiryDatePicker({
 
   // Quick select options (7, 14, 30, 60, 90 days)
   const quickOptions = [
-    { label: "7 days", days: 7 },
-    { label: "14 days", days: 14 },
-    { label: "30 days", days: 30 },
-    { label: "60 days", days: 60 },
-    { label: "90 days", days: 90 },
+    { label: t("postJob.quickOptions.7days"), days: 7 },
+    { label: t("postJob.quickOptions.14days"), days: 14 },
+    { label: t("postJob.quickOptions.30days"), days: 30 },
+    { label: t("postJob.quickOptions.60days"), days: 60 },
+    { label: t("postJob.quickOptions.90days"), days: 90 },
   ];
 
   const handleQuickSelect = (days: number) => {
@@ -111,8 +113,8 @@ export default function ExpiryDatePicker({
                 daysLeft < 7
                   ? "bg-red-100"
                   : daysLeft < 30
-                  ? "bg-yellow-100"
-                  : "bg-green-100"
+                    ? "bg-yellow-100"
+                    : "bg-green-100"
               }`}
             >
               <Text
@@ -120,8 +122,8 @@ export default function ExpiryDatePicker({
                   daysLeft < 7
                     ? "text-red-700"
                     : daysLeft < 30
-                    ? "text-yellow-700"
-                    : "text-green-700"
+                      ? "text-yellow-700"
+                      : "text-green-700"
                 }`}
               >
                 {daysLeft} days active
@@ -136,7 +138,7 @@ export default function ExpiryDatePicker({
       <View className="mt-2 flex flex-row items-start gap-2">
         <Ionicons name="information-circle-outline" size={16} color="#6B7280" />
         <Text className="flex-1 text-xs font-quicksandMedium text-gray-500">
-          Job will automatically expire on this date and become hidden from jobseekers. You can renew it later.
+          {t("postJob.expiryInfo")}
         </Text>
       </View>
 

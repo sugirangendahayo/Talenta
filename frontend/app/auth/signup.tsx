@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Text, View } from "react-native";
 
 // Shared Components
@@ -16,6 +17,7 @@ import useSignupForm from "@/hooks/useSignupForm";
 
 export default function Signup() {
   const router = useRouter();
+  const { t } = useTranslation("auth");
 
   const {
     role,
@@ -32,8 +34,8 @@ export default function Signup() {
       {/* Header - Index 0 */}
       <AuthHeader
         icon="login"
-        title="Create Account"
-        subtitle={`Join as ${role === "jobseeker" ? "Job Seeker" : "Employer"}`}
+        title={t("signup.title")}
+        subtitle={t("signup.subtitle", { role: t(`signup.roles.${role}`) })}
       />
 
       {/* Role Selector - Index 1 (Sticky) */}
@@ -56,7 +58,9 @@ export default function Signup() {
             {/* Inline content inside the button */}
             <View className="flex flex-row items-center justify-center">
               <Text className="text-white font-bold">
-                {isLoading ? "Creating Account..." : "Create Account"}
+                {isLoading
+                  ? t("signup.creatingAccount")
+                  : t("signup.createAccountButton")}
               </Text>
               {isLoading && (
                 <ActivityIndicator className="ml-2" size="small" color="#fff" />
@@ -67,8 +71,8 @@ export default function Signup() {
 
         {/* Login Link */}
         <AuthLink
-          text="Already have an account?"
-          linkText="Sign In"
+          text={t("signup.hasAccount")}
+          linkText={t("signup.signInLink")}
           onPress={() => router.push("/auth/signin")}
         />
       </View>

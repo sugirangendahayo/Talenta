@@ -1,13 +1,22 @@
 {
   "postJob": {
     "title": "Shakira akazi gashya",
-    "subtitle": "Andiza amakuru kugirango wabashe kubona umushakwaho mwiza",
+    "subtitle": "Andiza amakuru kugirango kubona umushakwaho mwiza",
     "saveDraft": "Bika mu ibika",
     "cancel": "Kureka",
     "postJob": "Shakira akazi",
     "posting": "Ishakira...",
     "draftSaved": "Ibika byabitswe neza",
-    "jobPosted": "Akazi kashyizweho neza"
+    "jobPosted": "Akazi kashyizweho neza",
+    "untitledJob": "Akazi atitwaye",
+    "quickOptions": {
+      "7days": "iminsi 7",
+      "14days": "iminsi 14",
+      "30days": "iminsi 30",
+      "60days": "iminsi 60",
+      "90days": "iminsi 90"
+    },
+    "expiryInfo": "Akazi kazarangira ku itariki iyi kizaza ahagaragara ku bashakwaho. Urashobora kongera kandi nyuma y'igihe."
   },
   "sections": {
     "basicInfo": {

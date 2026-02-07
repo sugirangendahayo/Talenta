@@ -1,7 +1,8 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import type { HighPriorityApplicant } from "@/hooks/useDashboard";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import type { HighPriorityApplicant } from "@/hooks/useDashboard";
+import { useTranslation } from "react-i18next";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface ApplicantItemProps {
   applicant: HighPriorityApplicant;
@@ -9,6 +10,9 @@ interface ApplicantItemProps {
 
 const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
   const router = useRouter();
+  const { t } = useTranslation(["dashboard", "common"]);
+
+  
 
   return (
     <TouchableOpacity
@@ -27,7 +31,9 @@ const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
           </Text>
           {applicant.is_new && (
             <View className="bg-red-500 px-2 py-0.5 rounded-full">
-              <Text className="text-xs font-quicksandBold text-white">NEW</Text>
+              <Text className="text-xs font-quicksandBold text-white">
+                {t("priority.new")}
+              </Text>
             </View>
           )}
         </View>
@@ -38,7 +44,7 @@ const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
       <View className="flex flex-row items-center gap-2">
         <View className="bg-green-100 px-2 py-1 rounded-full">
           <Text className="text-xs font-quicksandBold text-green-700">
-            {applicant.match_score}% match
+            {applicant.match_score}% {t("priority.match")}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
@@ -51,8 +57,12 @@ interface AttentionSectionProps {
   applicants: HighPriorityApplicant[];
 }
 
-export default function AttentionSection({ applicants }: AttentionSectionProps) {
+export default function AttentionSection({
+  applicants,
+}: AttentionSectionProps) {
   const router = useRouter();
+  const { t } = useTranslation(["dashboard", "common"]);
+
 
   if (applicants.length === 0) return null;
 
@@ -67,10 +77,12 @@ export default function AttentionSection({ applicants }: AttentionSectionProps) 
             </View>
             <View>
               <Text className="text-base font-quicksandBold text-gray-800">
-                Requiring Attention
+                {t("sections.attention.title")}
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-500">
-                {applicants.length} high-priority applicant{applicants.length > 1 ? "s" : ""}
+                {applicants.length}{" "}
+                {t("sections.attention.highPriorityApplicant")}
+                {applicants.length > 1 ? t("sections.attention.plural") : ""}
               </Text>
             </View>
           </View>
@@ -79,7 +91,7 @@ export default function AttentionSection({ applicants }: AttentionSectionProps) 
             onPress={() => router.push("/(employer-tabs)/employers/Applicants")}
           >
             <Text className="text-sm font-quicksandBold text-cyan-700">
-              View All
+              {t("buttons.viewAll", { ns: "common" })}
             </Text>
             <Ionicons name="arrow-forward" size={14} color="#0E7490" />
           </TouchableOpacity>

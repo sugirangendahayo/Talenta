@@ -1,6 +1,7 @@
-import { Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface StatCardProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -31,9 +32,7 @@ const StatCard = ({
       >
         <Ionicons name={icon} size={24} color={iconColor} />
       </View>
-      <Text className="text-2xl font-quicksandBold text-gray-800">
-        {value}
-      </Text>
+      <Text className="text-2xl font-quicksandBold text-gray-800">{value}</Text>
       <Text className="text-xs font-quicksandMedium text-gray-500 text-center mt-1">
         {label}
       </Text>
@@ -59,35 +58,39 @@ interface StatsCardsProps {
 
 export default function StatCards({ stats }: StatsCardsProps) {
   const router = useRouter();
+  const { t } = useTranslation("dashboard");
 
   const statCards = [
     {
       icon: "briefcase" as keyof typeof Ionicons.glyphMap,
       iconColor: "#0E7490",
       value: stats.activeJobs,
-      label: "Active Jobs",
+      label: t("stats.activeJobs"),
       onPress: () => router.push("/(employer-tabs)/employers/Jobs"),
     },
     {
       icon: "people" as keyof typeof Ionicons.glyphMap,
       iconColor: "#10B981",
       value: stats.totalApplicants,
-      label: "Total Applicants",
+      label: t("stats.applicants"),
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
       icon: "star" as keyof typeof Ionicons.glyphMap,
       iconColor: "#F59E0B",
       value: stats.shortlistedApplicants,
-      label: "Shortlisted",
+      label: t("stats.shortlisted"),
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
       icon: "mail" as keyof typeof Ionicons.glyphMap,
       iconColor: "#8B5CF6",
       value: stats.unreadMessages,
-      label: "Messages",
-      badge: stats.unreadMessages > 0 ? `${stats.unreadMessages} new` : undefined,
+      label: t("stats.messages"),
+      badge:
+        stats.unreadMessages > 0
+          ? `${stats.unreadMessages} ${t("stats.new")}`
+          : undefined,
       onPress: () => router.push("/(employer-tabs)/employers/Profile"),
     },
   ];

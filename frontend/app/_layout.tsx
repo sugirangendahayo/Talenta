@@ -8,6 +8,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/quicksand";
 // REMOVED: AsyncStorage import (no longer needed here)
+import "@/i18n/config"; // Import i18n configuration
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import {

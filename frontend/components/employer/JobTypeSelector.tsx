@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 
 interface JobTypeSelectorProps {
@@ -14,13 +15,15 @@ export default function JobTypeSelector({
   onSelect,
   required = false,
 }: JobTypeSelectorProps) {
+  const { t } = useTranslation("jobs");
+
   const types = [
-    { id: "Full-time", icon: "briefcase" },
-    { id: "Part-time", icon: "time" },
-    { id: "Contract", icon: "document-text" },
-    { id: "Remote", icon: "home" },
-    { id: "On-site", icon: "business" },
-    { id: "Hybrid", icon: "git-network" },
+    { id: "fullTime", icon: "briefcase" },
+    { id: "partTime", icon: "time" },
+    { id: "contract", icon: "document-text" },
+    { id: "remote", icon: "home" },
+    { id: "onsite", icon: "business" },
+    { id: "hybrid", icon: "git-network" },
   ];
 
   const isSelected = (type: string) => selected.includes(type);
@@ -36,7 +39,7 @@ export default function JobTypeSelector({
         {required && <Text className="text-red-500 font-quicksandBold">*</Text>}
       </View>
       <Text className="text-xs font-quicksandMedium text-gray-500 mb-2">
-        Select all that apply
+        {t("search.selectAtLeastOne")}
       </Text>
 
       {/* Types Grid */}
@@ -61,7 +64,7 @@ export default function JobTypeSelector({
                 isSelected(type.id) ? "text-white" : "text-gray-700"
               }`}
             >
-              {type.id}
+              {t("jobTypes." + type.id)}
             </Text>
           </TouchableOpacity>
         ))}

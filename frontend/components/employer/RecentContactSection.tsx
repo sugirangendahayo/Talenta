@@ -1,7 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Text, TouchableOpacity, View, Linking, Alert, Platform } from "react-native";
-import { useRouter } from "expo-router";
 import type { RecentContact } from "@/hooks/useDashboard";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  Linking,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ContactCardProps {
   contact: RecentContact;
@@ -9,10 +17,11 @@ interface ContactCardProps {
 
 const ContactCard = ({ contact }: ContactCardProps) => {
   const router = useRouter();
+  const { t } = useTranslation(["dashboard", "common"]);
 
   const handleCall = () => {
     if (!contact.phone) {
-      Alert.alert("No Phone Number", "This candidate hasn't provided a phone number.");
+      Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
       return;
     }
     const phoneNumber = contact.phone.replace(/[^0-9+]/g, "");
@@ -21,12 +30,15 @@ const ContactCard = ({ contact }: ContactCardProps) => {
 
   const handleWhatsApp = () => {
     if (!contact.phone) {
-      Alert.alert("No Phone Number", "This candidate hasn't provided a phone number.");
+      Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
       return;
     }
     const phoneNumber = contact.phone.replace(/[^0-9+]/g, "");
-    const message = `Hi ${contact.candidate_name}, I'm reaching out regarding your application for ${contact.job_title}.`;
-    
+    const message = t("alerts.whatsapp.message", {
+      candidateName: contact.candidate_name,
+      jobTitle: contact.job_title,
+    });
+
     // WhatsApp URL schemes
     const whatsappURL = Platform.select({
       ios: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
@@ -39,27 +51,44 @@ const ContactCard = ({ contact }: ContactCardProps) => {
         Linking.openURL(whatsappURL!);
       } else {
         Alert.alert(
-          "WhatsApp Not Installed",
-          "Please install WhatsApp to use this feature, or use the call option instead."
+          t("alerts.whatsapp.notInstalled.title"),
+          t("alerts.whatsapp.notInstalled.message"),
         );
       }
     });
   };
 
   const handleEmail = () => {
-    const subject = `Regarding: ${contact.job_title}`;
-    const body = `Hi ${contact.candidate_name},\n\nI'm reaching out regarding your application for ${contact.job_title}.\n\nBest regards`;
-    Linking.openURL(`mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    const subject = t("alerts.email.subject", { jobTitle: contact.job_title });
+    const body = t("alerts.email.body", {
+      candidateName: contact.candidate_name,
+      jobTitle: contact.job_title,
+    });
+    Linking.openURL(
+      `mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    );
   };
 
   const getStatusBadge = () => {
     switch (contact.status) {
       case "hired":
-        return { text: "Hired", bgColor: "bg-green-100", textColor: "text-green-700" };
+        return {
+          text: t("status.hired"),
+          bgColor: "bg-green-100",
+          textColor: "text-green-700",
+        };
       case "shortlisted":
-        return { text: "Shortlisted", bgColor: "bg-blue-100", textColor: "text-blue-700" };
+        return {
+          text: t("status.shortlisted"),
+          bgColor: "bg-blue-100",
+          textColor: "text-blue-700",
+        };
       default:
-        return { text: contact.status, bgColor: "bg-gray-100", textColor: "text-gray-700" };
+        return {
+          text: contact.status,
+          bgColor: "bg-gray-100",
+          textColor: "text-gray-700",
+        };
     }
   };
 
@@ -71,11 +100,12 @@ const ContactCard = ({ contact }: ContactCardProps) => {
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return `${Math.floor(diffDays / 30)} months ago`;
+    if (diffDays === 0) return t("time.today");
+    if (diffDays === 1) return t("time.yesterday");
+    if (diffDays < 7) return t("time.daysAgo", { days: diffDays });
+    if (diffDays < 30)
+      return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
+    return t("time.monthsAgo", { months: Math.floor(diffDays / 30) });
   };
 
   return (
@@ -100,13 +130,15 @@ const ContactCard = ({ contact }: ContactCardProps) => {
             </Text>
           </View>
           <View className={`${statusBadge.bgColor} px-2 py-1 rounded-full`}>
-            <Text className={`${statusBadge.textColor} text-xs font-quicksandBold`}>
+            <Text
+              className={`${statusBadge.textColor} text-xs font-quicksandBold`}
+            >
               {statusBadge.text}
             </Text>
           </View>
         </View>
         <Text className="text-xs font-quicksandMedium text-gray-400">
-          Last contact: {formatLastContact()}
+          {t("lastContact")}: {formatLastContact()}
         </Text>
       </TouchableOpacity>
 
@@ -119,7 +151,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
               onPress={handleCall}
             >
               <Ionicons name="call" size={16} color="#fff" />
-              <Text className="text-xs font-quicksandBold text-white">Call</Text>
+              <Text className="text-xs font-quicksandBold text-white">
+                {t("buttons.call", {ns: "common"})}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -127,7 +161,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
               onPress={handleWhatsApp}
             >
               <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-              <Text className="text-xs font-quicksandBold text-white">WhatsApp</Text>
+              <Text className="text-xs font-quicksandBold text-white">
+                {t("buttons.whatsapp", {ns: "common"})}
+              </Text>
             </TouchableOpacity>
           </>
         )}
@@ -137,7 +173,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
           onPress={handleEmail}
         >
           <Ionicons name="mail" size={16} color="#fff" />
-          <Text className="text-xs font-quicksandBold text-white">Email</Text>
+          <Text className="text-xs font-quicksandBold text-white">
+            {t("buttons.email", {ns: "common"})}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -148,8 +186,11 @@ interface RecentContactsSectionProps {
   contacts: RecentContact[];
 }
 
-export default function RecentContactsSection({ contacts }: RecentContactsSectionProps) {
+export default function RecentContactsSection({
+  contacts,
+}: RecentContactsSectionProps) {
   const router = useRouter();
+  const { t } = useTranslation(["dashboard", "common"]);
 
   if (contacts.length === 0) return null;
 
@@ -164,10 +205,14 @@ export default function RecentContactsSection({ contacts }: RecentContactsSectio
             </View>
             <View>
               <Text className="text-base font-quicksandBold text-gray-800">
-                Contact Candidates
+                {t("sections.recentContacts.title")}
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-500">
-                {contacts.length} candidate{contacts.length > 1 ? "s" : ""} to reach
+                {contacts.length} {t("sections.recentContacts.candidate")}
+                {contacts.length > 1
+                  ? t("sections.recentContacts.plural")
+                  : ""}{" "}
+                {t("sections.recentContacts.toReach")}
               </Text>
             </View>
           </View>
@@ -176,7 +221,7 @@ export default function RecentContactsSection({ contacts }: RecentContactsSectio
             onPress={() => router.push("/(employer-tabs)/employers/Applicants")}
           >
             <Text className="text-sm font-quicksandBold text-cyan-700">
-              View All
+              {t("buttons.viewAll", { ns: "common" })}
             </Text>
             <Ionicons name="arrow-forward" size={14} color="#0E7490" />
           </TouchableOpacity>

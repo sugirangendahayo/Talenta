@@ -1,7 +1,7 @@
 {
   "greetings": {
     "goodMorning": "Mwaramutse",
-    "goodAfternoon": "Mwiriwe", 
+    "goodAfternoon": "Mwiriwe",
     "goodEvening": "Mwanyire"
   },
   "stats": {
@@ -12,17 +12,32 @@
     "views": "Ireba",
     "hired": "Abashyizweho akazi",
     "pending": "Biteganyijwe",
-    "rejected": "Bakiriye"
+    "rejected": "Bakiriye",
+    "shortlisted": "Barushijwe",
+    "new": "gashya"
   },
   "sections": {
-    "attention": "Ukeneye kureberwa",
-    "activeJobs": "Akazi akora",
-    "recentContacts": "Abo wahuriye hafi",
+    "attention": {
+      "title": "Ukeneye kureberwa",
+      "highPriorityApplicant": "umushakwaho w'ingirakamaro",
+      "plural": ""
+    },
+    "activeJobs": {
+      "title": "Akazi akora"
+    },
+    "recentContacts": {
+      "title": "Twandikize abashakwaho",
+      "candidate": "umushakwaho",
+      "plural": "",
+      "toReach": "gusaba"
+    },
     "quickActions": "Ibikorwa byihuse"
   },
   "quickActions": {
     "postJob": "Shakira akazi gashya",
     "findCandidates": "Gushaka abashakwaho",
+    "viewStats": "Kureba statistiki",
+    "teamManage": "Gukora itsinda",
     "scheduleInterview": "Gutegekanya iganiro",
     "viewAnalytics": "Kureba analitiki",
     "manageJobs": "Gukora akazi",
@@ -37,11 +52,54 @@
     "hired": "Yashyizweho akazi",
     "rejected": "Yakiriwe"
   },
+  "jobs": {
+    "notSpecified": "Ntibisobwa",
+    "day": "unsi",
+    "plural": "",
+    "active": "akora",
+    "applicant": "umushakwaho",
+    "open": "ufunze",
+    "position": "ahantu",
+    "pause": "Guhagarika",
+    "pausedSuccess": "Akazi kahisemo neza",
+    "pauseError": "Kwihangana mu guhagarika akazi"
+  },
   "priority": {
     "high": "By'ingirakamaro",
     "medium": "Hagati",
-    "low": "Hasi"
+    "low": "Hasi",
+    "new": "GASHYA",
+    "match": "bihuye ne"
   },
+  "alerts": {
+    "noPhone": {
+      "title": "Nta nomero ya telefoni",
+      "message": "Uyu mushakwaho ntabwo yatanze nomero ya telefoni."
+    },
+    "whatsapp": {
+      "message": "Mwaramutse {{candidateName}}, nkugerageze ku gusaba {{jobTitle}}.",
+      "notInstalled": {
+        "title": "WhatsApp ntabwo yakorewe",
+        "message": "Shyiramo WhatsApp ukoreshe iyi gahunda, cyangwa se koresha ihuriro rya telefoni."
+      }
+    },
+    "email": {
+      "subject": "Ibyerekeye: {{jobTitle}}",
+      "body": "Mwaramutse {{candidateName}},\n\nNkugerageze ku gusaba {{jobTitle}}.\n\nMurakoze"
+    }
+  },
+  "time": {
+    "today": "Uyu munsi",
+    "yesterday": "Ejo",
+    "daysAgo": "iminsi {{days}} ishize",
+    "weeksAgo": "ibyumbe {{weeks}} ishize",
+    "monthsAgo": "amezi {{months}} ishize"
+  },
+  "status": {
+    "hired": "Yashyizweho akazi",
+    "shortlisted": "Yarushijwe"
+  },
+  "lastContact": "Igihe cyanyuma wahuriye",
   "emptyStates": {
     "noJobs": "Nta kazi ikora kuri none",
     "noApplicants": "Nta muntu wize kuri none",
