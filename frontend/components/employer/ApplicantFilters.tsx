@@ -72,7 +72,7 @@ export default function ApplicantFilters({
     <View className="bg-white border-b border-gray-200 pb-3">
       {/* Search Bar */}
       <View className="px-4 pt-3 pb-2">
-        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
+        <View className="flex-row items-center bg-gray-100 rounded-xl p-4">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           <TextInput
             placeholder={t("filters.searchPlaceholder")}
