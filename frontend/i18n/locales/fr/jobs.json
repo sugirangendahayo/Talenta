@@ -1,6 +1,6 @@
 {
   "header": {
-    "title": "Gérer les emplois",
+    "title": "Vos emplois",
     "subtitle": "Gérez vos annonces"
   },
   "buttons": {
@@ -25,6 +25,7 @@
     "security": "Sécurité et droit"
   },
   "filters": {
+    "allJobs": "Tous les emplois",
     "searchPlaceholder": "Rechercher des emplois par titre ou lieu...",
     "category": "Catégorie",
     "allCategories": "Toutes les catégories"

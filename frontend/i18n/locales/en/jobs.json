@@ -25,6 +25,7 @@
     "security": "Security & Law"
   },
   "filters": {
+    "allJobs": "All Jobs",
     "searchPlaceholder": "Search jobs by title or location...",
     "category": "Category",
     "allCategories": "All Categories"
