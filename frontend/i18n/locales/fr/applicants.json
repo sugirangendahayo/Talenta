@@ -1,0 +1,68 @@
+{
+  "header": { "title": "Candidats" },
+  "filters": {
+    "all": "Tous",
+    "searchPlaceholder": "Rechercher par nom, email ou téléphone..."
+  },
+  "status": {
+    "pending": "En attente",
+    "shortlisted": "Présélectionné",
+    "hired": "Embauché",
+    "rejected": "Rejeté"
+  },
+  "time": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "daysAgo": "il y a {{days}} jours",
+    "weeksAgo": "il y a {{weeks}} semaines"
+  },
+  "applied": "Candidature",
+  "more": "plus",
+  "quickContact": { "title": "Contact rapide" },
+  "buttons": {
+    "tryAgain": "Réessayer",
+    "shortlist": "Présélectionner",
+    "reject": "Rejeter",
+    "hire": "Embaucher",
+    "call": "Appeler",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "viewDetails": "Voir détails",
+    "viewCV": "Voir CV"
+  },
+  "alerts": {
+    "error": {
+      "title": "Erreur",
+      "updateStatus": "Échec de la mise à jour du statut. Veuillez réessayer."
+    },
+    "noPhone": {
+      "title": "Aucun numéro de téléphone",
+      "message": "Ce candidat n'a pas fourni de numéro de téléphone."
+    },
+    "whatsapp": {
+      "title": "WhatsApp non installé",
+      "message": "Veuillez installer WhatsApp pour utiliser cette fonctionnalité."
+    },
+    "noCV": {
+      "title": "Aucun CV",
+      "message": "Ce candidat n'a pas téléchargé de CV."
+    }
+  },
+  "messages": {
+    "whatsapp": "Bonjour {{candidateName}}, je vous contacte concernant votre candidature pour {{jobTitle}}.",
+    "email": {
+      "subject": "Concernant : {{jobTitle}}",
+      "body": "Bonjour {{candidateName}},\n\nJe vous contacte concernant votre candidature pour {{jobTitle}}.\n\nCordialement"
+    }
+  },
+  "errors": {
+    "title": "Quelque chose s'est mal passé",
+    "loadFailed": "Échec du chargement des candidats"
+  },
+  "empty": {
+    "title": "Candidats",
+    "allApplications": "Les candidatures apparaîtront ici lorsque les candidats postuleront.",
+    "noStatusApplications": "Aucune candidature {{status}} pour le moment."
+  },
+  "states": { "loading": "Chargement des candidats..." }
+}

@@ -1,7 +1,10 @@
 // components/employer/ApplicantCard.tsx - IMPROVED VERSION
+import { supabase } from "@/lib/supabase";
+import type { Applicant } from "@/types/job.types";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Linking,
@@ -10,8 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "@/lib/supabase";
-import type { Applicant } from "@/types/job.types";
 
 interface ApplicantCardProps {
   applicant: Applicant;
@@ -23,6 +24,7 @@ export default function ApplicantCard({
   onStatusUpdated,
 }: ApplicantCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const { t } = useTranslation("applicants");
 
   const candidateName = `${applicant.jobseeker_profiles.first_name} ${applicant.jobseeker_profiles.last_name}`;
   const phone = applicant.jobseeker_profiles.phone;
@@ -33,28 +35,28 @@ export default function ApplicantCard({
     switch (applicant.status) {
       case "hired":
         return {
-          text: "Hired",
+          text: t("status.hired"),
           bgColor: "bg-green-100",
           textColor: "text-green-700",
           icon: "checkmark-circle" as const,
         };
       case "shortlisted":
         return {
-          text: "Shortlisted",
+          text: t("status.shortlisted"),
           bgColor: "bg-blue-100",
           textColor: "text-blue-700",
           icon: "star" as const,
         };
       case "rejected":
         return {
-          text: "Rejected",
+          text: t("status.rejected"),
           bgColor: "bg-red-100",
           textColor: "text-red-700",
           icon: "close-circle" as const,
         };
       default:
         return {
-          text: "Pending",
+          text: t("status.pending"),
           bgColor: "bg-amber-100",
           textColor: "text-amber-700",
           icon: "time" as const,
@@ -71,10 +73,11 @@ export default function ApplicantCard({
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays === 0) return t("time.today");
+    if (diffDays === 1) return t("time.yesterday");
+    if (diffDays < 7) return t("time.daysAgo", { days: diffDays });
+    if (diffDays < 30)
+      return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -95,8 +98,8 @@ export default function ApplicantCard({
       if (error) throw error;
 
       onStatusUpdated();
-    } catch (error) {
-      Alert.alert("Error", "Failed to update status. Please try again.");
+    } catch {
+      Alert.alert(t("alerts.error.title"), t("alerts.error.updateStatus"));
     } finally {
       setIsUpdating(false);
     }
@@ -105,10 +108,7 @@ export default function ApplicantCard({
   // Contact handlers
   const handleCall = () => {
     if (!phone) {
-      Alert.alert(
-        "No Phone Number",
-        "This candidate hasn't provided a phone number.",
-      );
+      Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
       return;
     }
     const phoneNumber = phone.replace(/[^0-9+]/g, "");
@@ -117,14 +117,14 @@ export default function ApplicantCard({
 
   const handleWhatsApp = () => {
     if (!phone) {
-      Alert.alert(
-        "No Phone Number",
-        "This candidate hasn't provided a phone number.",
-      );
+      Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
       return;
     }
     const phoneNumber = phone.replace(/[^0-9+]/g, "");
-    const message = `Hi ${candidateName}, I'm reaching out regarding your application for ${applicant.jobs.title}.`;
+    const message = t("messages.whatsapp", {
+      candidateName,
+      jobTitle: applicant.jobs.title,
+    });
 
     const whatsappURL = Platform.select({
       ios: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
@@ -136,17 +136,19 @@ export default function ApplicantCard({
       if (supported) {
         Linking.openURL(whatsappURL!);
       } else {
-        Alert.alert(
-          "WhatsApp Not Installed",
-          "Please install WhatsApp to use this feature.",
-        );
+        Alert.alert(t("alerts.whatsapp.title"), t("alerts.whatsapp.message"));
       }
     });
   };
 
   const handleEmail = () => {
-    const subject = `Regarding: ${applicant.jobs.title}`;
-    const body = `Hi ${candidateName},\n\nI'm reaching out regarding your application for ${applicant.jobs.title}.\n\nBest regards`;
+    const subject = t("messages.email.subject", {
+      jobTitle: applicant.jobs.title,
+    });
+    const body = t("messages.email.body", {
+      candidateName,
+      jobTitle: applicant.jobs.title,
+    });
     Linking.openURL(
       `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
     );
@@ -156,7 +158,7 @@ export default function ApplicantCard({
     if (applicant.jobseeker_profiles.cv_document_url) {
       Linking.openURL(applicant.jobseeker_profiles.cv_document_url);
     } else {
-      Alert.alert("No CV", "This candidate hasn't uploaded a CV.");
+      Alert.alert(t("alerts.noCV.title"), t("alerts.noCV.message"));
     }
   };
 
@@ -215,7 +217,7 @@ export default function ApplicantCard({
           <View className="flex-row items-center gap-1">
             <Ionicons name="calendar-outline" size={14} color="#6B7280" />
             <Text className="text-xs font-quicksandMedium text-gray-600">
-              Applied {formatDate(applicant.created_at)}
+              {t("applied")} {formatDate(applicant.created_at)}
             </Text>
           </View>
         </View>
@@ -239,7 +241,8 @@ export default function ApplicantCard({
               {applicant.jobseeker_profiles.skills.length > 3 && (
                 <View className="bg-gray-100 px-2.5 py-1 rounded-full">
                   <Text className="text-xs font-quicksandMedium text-gray-600">
-                    +{applicant.jobseeker_profiles.skills.length - 3} more
+                    +{applicant.jobseeker_profiles.skills.length - 3}{" "}
+                    {t("more")}
                   </Text>
                 </View>
               )}
@@ -260,7 +263,7 @@ export default function ApplicantCard({
                 activeOpacity={0.7}
               >
                 <Text className="text-blue-700 text-xs font-quicksandBold text-center">
-                  Shortlist
+                  {t("buttons.shortlist")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -272,7 +275,7 @@ export default function ApplicantCard({
                 activeOpacity={0.7}
               >
                 <Text className="text-red-700 text-xs font-quicksandBold text-center">
-                  Reject
+                  {t("buttons.reject")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -284,7 +287,7 @@ export default function ApplicantCard({
                 activeOpacity={0.7}
               >
                 <Text className="text-green-700 text-xs font-quicksandBold text-center">
-                  Hire
+                  {t("buttons.hire")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -295,7 +298,7 @@ export default function ApplicantCard({
         {applicant.status === "hired" && (
           <View className="mb-3">
             <Text className="text-xs font-quicksandBold text-gray-600 mb-2">
-              Quick Contact
+              {t("quickContact.title")}
             </Text>
             <View className="flex-row gap-2">
               {phone && (
@@ -307,7 +310,7 @@ export default function ApplicantCard({
                   >
                     <Ionicons name="call" size={16} color="#fff" />
                     <Text className="text-xs font-quicksandBold text-white">
-                      Call
+                      {t("buttons.call")}
                     </Text>
                   </TouchableOpacity>
 
@@ -318,7 +321,7 @@ export default function ApplicantCard({
                   >
                     <Ionicons name="logo-whatsapp" size={16} color="#fff" />
                     <Text className="text-xs font-quicksandBold text-white">
-                      WhatsApp
+                      {t("buttons.whatsapp")}
                     </Text>
                   </TouchableOpacity>
                 </>
@@ -331,7 +334,7 @@ export default function ApplicantCard({
               >
                 <Ionicons name="mail" size={16} color="#fff" />
                 <Text className="text-xs font-quicksandBold text-white">
-                  Email
+                  {t("buttons.email")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -347,7 +350,7 @@ export default function ApplicantCard({
           >
             <Ionicons name="document-text-outline" size={16} color="#374151" />
             <Text className="text-gray-700 text-xs font-quicksandBold">
-              View Details
+              {t("buttons.viewDetails")}
             </Text>
           </TouchableOpacity>
 
@@ -359,7 +362,7 @@ export default function ApplicantCard({
             >
               <Ionicons name="document-outline" size={16} color="#0E7490" />
               <Text className="text-cyan-700 text-xs font-quicksandBold">
-                View CV
+                {t("buttons.viewCV")}
               </Text>
             </TouchableOpacity>
           )}

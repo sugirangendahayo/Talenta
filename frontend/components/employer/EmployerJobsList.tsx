@@ -3,6 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   FlatList,
@@ -31,6 +32,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   onScroll,
 }) => {
   const router = useRouter();
+  const { t } = useTranslation("jobs");
   const [refreshing, setRefreshing] = useState(false);
 
   // Handle refresh
@@ -96,31 +98,31 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     switch (status) {
       case "active":
         return {
-          text: "Active",
+          text: t("status.active"),
           bgColor: "bg-green-100",
           textColor: "text-green-700",
         };
       case "expired":
         return {
-          text: "Expired",
+          text: t("status.expired"),
           bgColor: "bg-red-100",
           textColor: "text-red-700",
         };
       case "closed":
         return {
-          text: "Closed",
+          text: t("status.closed"),
           bgColor: "bg-gray-200",
           textColor: "text-gray-700",
         };
       case "paused":
         return {
-          text: "Paused",
+          text: t("status.paused"),
           bgColor: "bg-yellow-100",
           textColor: "text-yellow-700",
         };
       case "draft":
         return {
-          text: "Draft",
+          text: t("status.draft"),
           bgColor: "bg-blue-100",
           textColor: "text-blue-700",
         };
@@ -135,7 +137,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
   // Format salary
   const formatSalary = (min?: number, max?: number) => {
-    if (!min && !max) return "Salary not specified";
+    if (!min && !max) return t("salary.notSpecified");
     if (min && max) {
       return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
     }
@@ -151,11 +153,13 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    if (diffDays === 0) return t("time.today");
+    if (diffDays === 1) return t("time.yesterday");
+    if (diffDays < 7) return t("time.daysAgo", { days: diffDays });
+    if (diffDays < 30)
+      return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
+    if (diffDays < 365)
+      return t("time.monthsAgo", { months: Math.floor(diffDays / 30) });
     return date.toLocaleDateString();
   };
 
@@ -179,12 +183,12 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
       if (error) throw error;
 
-      toast.success("Job paused successfully");
+      toast.success(t("messages.jobPaused"));
       console.log("Job paused, refreshing list...");
       await onRefresh();
     } catch (error: any) {
       console.error("Error pausing job:", error);
-      toast.error(error.message || "Failed to pause job");
+      toast.error(error.message || t("errors.pauseJobFailed"));
     }
   };
 
@@ -194,41 +198,37 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
       if (error) throw error;
 
-      toast.success("Job reactivated successfully");
+      toast.success(t("messages.jobReactivated"));
       await onRefresh();
     } catch (error: any) {
       console.error("Error reactivating job:", error);
-      toast.error(error.message || "Failed to reactivate job");
+      toast.error(error.message || t("errors.reactivateJobFailed"));
     }
   };
 
   const handleCloseJob = async (jobId: string) => {
-    Alert.alert(
-      "Close Job",
-      "Are you sure you want to close this job? This action will hide it from jobseekers.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Close Job",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const { error } = await supabase.rpc("close_job", {
-                job_id: jobId,
-              });
+    Alert.alert(t("alerts.closeJob.title"), t("alerts.closeJob.message"), [
+      { text: t("buttons.cancel"), style: "cancel" },
+      {
+        text: t("buttons.closeJob"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const { error } = await supabase.rpc("close_job", {
+              job_id: jobId,
+            });
 
-              if (error) throw error;
+            if (error) throw error;
 
-              toast.success("Job closed successfully");
-              await onRefresh();
-            } catch (error: any) {
-              console.error("Error closing job:", error);
-              toast.error(error.message || "Failed to close job");
-            }
-          },
+            toast.success(t("messages.jobClosed"));
+            await onRefresh();
+          } catch (error: any) {
+            console.error("Error closing job:", error);
+            toast.error(error.message || t("errors.closeJobFailed"));
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const handleRenewJob = async (jobId: string) => {
@@ -245,11 +245,11 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
       if (error) throw error;
 
-      toast.success("Job renewed for 30 days");
+      toast.success(t("messages.jobRenewed"));
       await onRefresh();
     } catch (error: any) {
       console.error("Error renewing job:", error);
-      toast.error(error.message || "Failed to renew job");
+      toast.error(error.message || t("errors.renewJobFailed"));
     }
   };
 
@@ -340,7 +340,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       return (
         <View className="bg-gray-100 px-3 py-2 rounded-full">
           <Text className="text-gray-500 text-xs font-quicksandBold">
-            Hiring Complete
+            {t("status.hiringComplete")}
           </Text>
         </View>
       );
@@ -443,10 +443,10 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
                   }`}
                 >
                   {daysLeft > 0
-                    ? `${daysLeft} days left`
+                    ? `${daysLeft} ${t("time.daysLeft")}`
                     : daysLeft === 0
-                      ? "Expires today"
-                      : "Expired"}
+                      ? t("time.expiresToday")
+                      : t("time.expired")}
                 </Text>
               </View>
             )}
@@ -490,12 +490,12 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     <View className="flex-1 items-center justify-center flex py-20 px-8">
       <Ionicons name="briefcase-outline" size={64} color="#D1D5DB" />
       <Text className="text-xl font-quicksandBold text-gray-800 mt-4 text-center">
-        No jobs found
+        {t("empty.noJobsFound")}
       </Text>
       <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center">
         {jobs.length === 0
-          ? "Start by posting your first job"
-          : `Try adjusting your filters (Current: ${statusFilter})`}
+          ? t("empty.startByPosting")
+          : t("empty.tryAdjustingFilters", { status: statusFilter })}
       </Text>
     </View>
   );
@@ -507,7 +507,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
         ListHeaderComponent={
           <View className="px-4 py-2 flex flex-row justify-between items-center">
             <Text className="text-xl font-quicksandBold text-gray-800">
-              Your Job Posts ({filteredJobs.length})
+              {t("list.yourJobPosts", { count: filteredJobs.length })}
             </Text>
           </View>
         }

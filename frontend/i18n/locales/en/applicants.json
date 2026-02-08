@@ -1,0 +1,68 @@
+{
+  "header": { "title": "Applicants" },
+  "filters": {
+    "all": "All",
+    "searchPlaceholder": "Search by name, email, or phone..."
+  },
+  "status": {
+    "pending": "Pending",
+    "shortlisted": "Shortlisted",
+    "hired": "Hired",
+    "rejected": "Rejected"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{days}} days ago",
+    "weeksAgo": "{{weeks}} weeks ago"
+  },
+  "applied": "Applied",
+  "more": "more",
+  "quickContact": { "title": "Quick Contact" },
+  "buttons": {
+    "tryAgain": "Try Again",
+    "shortlist": "Shortlist",
+    "reject": "Reject",
+    "hire": "Hire",
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "viewDetails": "View Details",
+    "viewCV": "View CV"
+  },
+  "alerts": {
+    "error": {
+      "title": "Error",
+      "updateStatus": "Failed to update status. Please try again."
+    },
+    "noPhone": {
+      "title": "No Phone Number",
+      "message": "This candidate has not provided a phone number."
+    },
+    "whatsapp": {
+      "title": "WhatsApp Not Installed",
+      "message": "Please install WhatsApp to use this feature."
+    },
+    "noCV": {
+      "title": "No CV",
+      "message": "This candidate has not uploaded a CV."
+    }
+  },
+  "messages": {
+    "whatsapp": "Hi {{candidateName}}, I am reaching out regarding your application for {{jobTitle}}.",
+    "email": {
+      "subject": "Regarding: {{jobTitle}}",
+      "body": "Hi {{candidateName}},\n\nI am reaching out regarding your application for {{jobTitle}}.\n\nBest regards"
+    }
+  },
+  "errors": {
+    "title": "Something Went Wrong",
+    "loadFailed": "Failed to load applicants"
+  },
+  "empty": {
+    "title": "Applicants",
+    "allApplications": "Applications will appear here when candidates apply.",
+    "noStatusApplications": "No {{status}} applications at the moment."
+  },
+  "states": { "loading": "Loading applicants..." }
+}

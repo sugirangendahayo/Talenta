@@ -22,6 +22,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import "../global.css";
 
+
 export const unstable_settings = { anchor: "(jobseeker-tabs)" };
 
 function useAppBackground() {

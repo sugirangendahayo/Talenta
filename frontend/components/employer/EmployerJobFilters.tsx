@@ -1,12 +1,13 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 interface Category {
   id: string;
@@ -25,27 +26,37 @@ interface EmployerJobFiltersProps {
 
 // Status filter options
 const STATUS_FILTERS = [
-  { id: "all", label: "All Jobs", icon: "apps-outline" },
+  { id: "all", label: "filters.allJobs", icon: "apps-outline" },
   {
     id: "active",
-    label: "Active",
+    label: "status.active",
     icon: "checkmark-circle-outline",
     color: "#10B981",
   },
-  { id: "expired", label: "Expired", icon: "time-outline", color: "#EF4444" },
+  {
+    id: "expired",
+    label: "status.expired",
+    icon: "time-outline",
+    color: "#EF4444",
+  },
   {
     id: "paused",
-    label: "Paused",
+    label: "status.paused",
     icon: "pause-circle-outline",
     color: "#F59E0B",
   },
   {
     id: "closed",
-    label: "Closed",
+    label: "status.closed",
     icon: "close-circle-outline",
     color: "#6B7280",
   },
-  { id: "draft", label: "Draft", icon: "create-outline", color: "#3B82F6" },
+  {
+    id: "draft",
+    label: "status.draft",
+    icon: "create-outline",
+    color: "#3B82F6",
+  },
 ];
 
 export default function EmployerJobFilters({
@@ -57,16 +68,17 @@ export default function EmployerJobFilters({
   selectedStatus,
   onStatusChange,
 }: EmployerJobFiltersProps) {
+  const { t } = useTranslation("jobs");
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
 
   return (
     <View className="bg-white border-b border-gray-200 pb-3">
       {/* Search Bar */}
       <View className="px-4 pt-3 pb-2">
-        <View className="flex flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
+        <View className="flex flex-row items-center bg-gray-100 rounded-xl p-4">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           <TextInput
-            placeholder="Search jobs by title or location..."
+            placeholder={t("filters.searchPlaceholder")}
             value={searchQuery}
             onChangeText={onSearchChange}
             className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
@@ -109,7 +121,7 @@ export default function EmployerJobFilters({
                     isSelected ? "text-white" : "text-gray-700"
                   }`}
                 >
-                  {status.label}
+                  {t(status.label)}
                 </Text>
               </TouchableOpacity>
             );
@@ -126,10 +138,10 @@ export default function EmployerJobFilters({
           <View className="flex flex-row items-center gap-2">
             <Ionicons name="grid-outline" size={18} color="#0E7490" />
             <Text className="text-sm font-quicksandBold text-gray-700">
-              Category:{" "}
+              {t("filters.category")}:{" "}
               <Text className="text-cyan-700">
                 {categories.find((c) => c.id === selectedCategory)?.name ||
-                  "All Categories"}
+                  t("filters.allCategories")}
               </Text>
             </Text>
           </View>

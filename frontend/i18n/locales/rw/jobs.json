@@ -1,89 +1,67 @@
 {
-  "postJob": {
-    "title": "Shakira akazi gashya",
-    "subtitle": "Andiza amakuru kugirango kubona umushakwaho mwiza",
-    "saveDraft": "Bika mu ibika",
-    "cancel": "Kureka",
-    "postJob": "Shakira akazi",
-    "posting": "Ishakira...",
-    "draftSaved": "Ibika byabitswe neza",
-    "jobPosted": "Akazi kashyizweho neza",
-    "untitledJob": "Akazi atitwaye",
-    "quickOptions": {
-      "7days": "iminsi 7",
-      "14days": "iminsi 14",
-      "30days": "iminsi 30",
-      "60days": "iminsi 60",
-      "90days": "iminsi 90"
-    },
-    "expiryInfo": "Akazi kazarangira ku itariki iyi kizaza ahagaragara ku bashakwaho. Urashobora kongera kandi nyuma y'igihe."
+  "header": {
+    "title": "Kureka akazi",
+    "subtitle": "Kureka ibintiko byawe"
   },
-  "sections": {
-    "basicInfo": {
-      "title": "Amakuru ya mbere",
-      "jobTitle": "Umutwe w'akazi",
-      "jobTitlePlaceholder": "ex: Umuhanga wa React Senior",
-      "location": "Ahantu",
-      "locationPlaceholder": "ex: Kuri interineti, New York, USA",
-      "salaryRange": "Imbibi y'umushahara",
-      "minSalary": "Gato (ex: 120000)",
-      "maxSalary": "Hejuru (ex: 180000)",
-      "expiryDate": "Itariki yo guhera akazi"
-    },
-    "jobDetails": {
-      "title": "Ibisobanuro by'akazi",
-      "category": "Itsinda",
-      "jobType": "Ubwoko bw'akazi",
-      "description": "Ubusobanuro bw'akazi",
-      "descriptionPlaceholder": "Vugurura inshingano, inshingano, n'ibyo utanga akazi kaba akeneye..."
-    },
-    "requirements": {
-      "title": "Ibikorwa n'ubwenge",
-      "requirements": "Ibikorwa",
-      "requirementsPlaceholder": "ex: Imyaka 3+ y'ubunararibonye",
-      "skills": "Ubwenge",
-      "skillsPlaceholder": "ex: React, TypeScript"
+  "buttons": {
+    "postJob": "Shakira akazi",
+    "cancel": "Kureka",
+    "closeJob": "Gufunga akazi"
+  },
+  "filters": {
+    "allJobs": "Amakazi yose",
+    "searchPlaceholder": "Shakisha akazi ku mutwe w'izina cyangwa aho...",
+    "category": "Itsinda",
+    "allCategories": "Amakuru yose"
+  },
+  "status": {
+    "active": "Akora",
+    "expired": "Byaragiye",
+    "closed": "Bifunze",
+    "paused": "Bihagwe",
+    "draft": "Ibyangirisho",
+    "hiringComplete": "Gukoraho abashakwaho byarangiye"
+  },
+  "salary": {
+    "notSpecified": "Umushahara w'akazi ntibisobwa"
+  },
+  "time": {
+    "today": "Uyu munsi",
+    "yesterday": "Ejo",
+    "daysAgo": "iminsi {{days}} ishize",
+    "weeksAgo": "ibyumbe {{weeks}} ishize",
+    "monthsAgo": "amezi {{months}} ishize",
+    "daysLeft": "iminsi zisigaye",
+    "expiresToday": "Byaragiye uyu munsi",
+    "expired": "Byaragiye"
+  },
+  "alerts": {
+    "closeJob": {
+      "title": "Gufunga akazi",
+      "message": "Uzanye kuba ufite gufunga aka akazi? Iyi gahunda izashakwaho bagenze kubona."
     }
   },
-  "jobTypes": {
-    "fullTime": "Akazi k'igihe cyose",
-    "partTime": "Akazi akanya gato",
-    "contract": "Amasezerano",
-    "freelance": "Freelance",
-    "internship": "Stage",
-    "temporary": "Akazi ya gato",
-    "remote": "Kuri interineti",
-    "onsite": "Ku murimo",
-    "hybrid": "Himbere"
+  "messages": {
+    "jobPaused": "Akazi kahisemo neza",
+    "jobReactivated": "Akazi kongewe neza",
+    "jobClosed": "Akazi bifunze neza",
+    "jobRenewed": "Akazi kongerwaho iminsi 30"
   },
-  "search": {
-    "title": "Gushaka akazi",
-    "searchPlaceholder": "Shakisha akazi...",
-    "searchResults": "Ibisubizo by'ishakisha",
-    "noResults": "Nta kazi zabonetse",
-    "tryDifferent": "Gerageza amagambo atandukanye cyangwa muyunguruzo",
-    "filters": "Muyunguruzo",
-    "sortBy": "Itonura",
-    "recent": "Zashize hafi",
-    "relevant": "Zihujwe n'ibyo ushaka",
-    "salaryHigh": "Umushahara: Hejujuru k'hasi",
-    "salaryLow": "Umushahara: Hasi k'hejuru"
+  "errors": {
+    "loginRequired": "Wagombira kongera kureba akazi!",
+    "fetchFailed": "Kwihangana mu kureka akazi",
+    "pauseJobFailed": "Kwihangana mu guhagarika akazi",
+    "reactivateJobFailed": "Kwihangana mu kongera akazi",
+    "closeJobFailed": "Kwihangana mu gufunga akazi",
+    "renewJobFailed": "Kwihangana mu kongera akazi"
   },
-  "categories": {
-    "all": "Byose",
-    "it": "Ikoranabuhanga na Porogaramu",
-    "design": "Ishusho",
-    "business": "Ubucuruzi",
-    "construction": "Uwubaka",
-    "finance": "Imari",
-    "healthcare": "Ubuvuzi",
-    "education": "Amashuri",
-    "sales": "Icya mu bicuruzwa na Marketing",
-    "hospitality": "Ukwegereza",
-    "transport": "Gutwara",
-    "creative": "Ukora mu buryo bwihuse",
-    "agriculture": "Ubuhinzi",
-    "security": "Umutekano n'Amategeko"
+  "empty": {
+    "noJobsFound": "Nta kazi zabonetse",
+    "startByPosting": "Tangira no kureka akazi ya mbere",
+    "tryAdjustingFilters": "Gerageza guhindura amafiltera (Ubu : {{status}})"
+  },
+  "list": {
+    "yourJobPosts": "Amakazi yawe ({{count}})"
   },
   "validation": {
     "titleRequired": "Umutwe w'akazi ukenewe",
@@ -97,11 +75,5 @@
     "descriptionRequired": "Ubusobanuro bw'akazi bikenewe",
     "requirementsRequired": "Ongera kimwe cyangwa byinshi mubikorwa",
     "expiryDateFuture": "Itariki yo guhera akazi igomba kuba mu gihe kizaza"
-  },
-  "messages": {
-    "validationError": "Ikosa rigenzura",
-    "loginRequired": "Ukeneye kwinjira kugirango ushakishe akazi",
-    "errorPosting": "Kwishakira akazi byanze. Ongeraugerage.",
-    "errorSaving": "Kubika mu bika byanze. Ongeraugerage."
   }
 }
