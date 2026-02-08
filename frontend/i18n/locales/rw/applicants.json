@@ -1,0 +1,65 @@
+{
+  "header": { "title": "Abashakwaho" },
+  "filters": {
+    "all": "Byose",
+    "searchPlaceholder": "Shakisha ku izina, email cyangwa telefoni..."
+  },
+  "status": {
+    "pending": "Biteganyiwe",
+    "shortlisted": "Batoranyijwe",
+    "hired": "Bakoreye",
+    "rejected": "Bakiriye"
+  },
+  "time": {
+    "today": "Uyu munsi",
+    "yesterday": "Ejo",
+    "daysAgo": "iminsi {{days}} ishize",
+    "weeksAgo": "ibyumbe {{weeks}} ishize"
+  },
+  "applied": "Kwishakira",
+  "more": "birenzeho",
+  "quickContact": { "title": "Twandikire vuba" },
+  "buttons": {
+    "tryAgain": "Ongeraugerage",
+    "shortlist": "Toranya",
+    "reject": "Kira",
+    "hire": "Akora",
+    "call": "Hagara",
+    "whatsapp": "WhatsApp",
+    "email": "Ibaruwa",
+    "viewDetails": "Reba amakuru",
+    "viewCV": "Reba CV"
+  },
+  "alerts": {
+    "error": {
+      "title": "Ikosa",
+      "updateStatus": "Byanze guhindura imiterere. Ongeraugerage."
+    },
+    "noPhone": {
+      "title": "Nta nomero ya telefoni",
+      "message": "Uyu muntu atayisemo nomero ya telefoni."
+    },
+    "whatsapp": {
+      "title": "WhatsApp ntishizwe",
+      "message": "Shyiramo WhatsApp ukoreshe iyi gahunda."
+    },
+    "noCV": { "title": "Nta CV", "message": "Uyu muntu ntabwo yashizemo CV." }
+  },
+  "messages": {
+    "whatsapp": "Mwaramutse {{candidateName}}, ndakwandikira ku buryo bwo kubona ibyo ushaka kuri {{jobTitle}}.",
+    "email": {
+      "subject": "Ibyerekeye: {{jobTitle}}",
+      "body": "Mwaramutse {{candidateName}},\n\nNdakwandikira ku buryo bwo kubona ibyo ushaka kuri {{jobTitle}}.\n\nMurakoze"
+    }
+  },
+  "errors": {
+    "title": "Ibyo byanze",
+    "loadFailed": "Kwishakira abashakwaho byanze"
+  },
+  "empty": {
+    "title": "Abashakwaho",
+    "allApplications": "Ibyo ushakaho bizagaragara hano aba bantu baza kwishakira.",
+    "noStatusApplications": "Nta byo ushakaho {{status}} ubu."
+  },
+  "states": { "loading": "Gushaka abashakwaho..." }
+}

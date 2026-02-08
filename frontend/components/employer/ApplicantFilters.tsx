@@ -1,13 +1,14 @@
 // components/employer/ApplicantFilters.tsx
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 type FilterStatus = "all" | "pending" | "shortlisted" | "hired" | "rejected";
 
@@ -29,31 +30,31 @@ interface ApplicantFiltersProps {
 const STATUS_FILTERS = [
   {
     id: "all" as FilterStatus,
-    label: "All",
+    label: "filters.all",
     icon: "apps-outline",
     color: "#6B7280",
   },
   {
     id: "pending" as FilterStatus,
-    label: "Pending",
+    label: "status.pending",
     icon: "time-outline",
     color: "#F59E0B",
   },
   {
     id: "shortlisted" as FilterStatus,
-    label: "Shortlisted",
+    label: "status.shortlisted",
     icon: "star",
     color: "#3B82F6",
   },
   {
     id: "hired" as FilterStatus,
-    label: "Hired",
+    label: "status.hired",
     icon: "checkmark-circle",
     color: "#10B981",
   },
   {
     id: "rejected" as FilterStatus,
-    label: "Rejected",
+    label: "status.rejected",
     icon: "close-circle",
     color: "#EF4444",
   },
@@ -66,6 +67,7 @@ export default function ApplicantFilters({
   onStatusChange,
   counts,
 }: ApplicantFiltersProps) {
+  const { t } = useTranslation("applicants");
   return (
     <View className="bg-white border-b border-gray-200 pb-3">
       {/* Search Bar */}
@@ -73,7 +75,7 @@ export default function ApplicantFilters({
         <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           <TextInput
-            placeholder="Search by name, email, or phone..."
+            placeholder={t("filters.searchPlaceholder")}
             value={searchQuery}
             onChangeText={onSearchChange}
             className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
@@ -119,7 +121,7 @@ export default function ApplicantFilters({
                     isSelected ? "text-white" : "text-gray-700"
                   }`}
                 >
-                  {status.label} ({count})
+                  {t(status.label)} ({count})
                 </Text>
               </TouchableOpacity>
             );

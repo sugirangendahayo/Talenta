@@ -7,6 +7,7 @@ import { Applicant } from "@/types/job.types";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
@@ -44,6 +45,7 @@ type RawApplication = {
 
 export default function ApplicantsScreen() {
   const { user } = useAuth();
+  const { t } = useTranslation("applicants");
   const params = useLocalSearchParams();
   const jobId = params.jobId as string | undefined;
 
@@ -135,9 +137,7 @@ export default function ApplicantsScreen() {
       setApplicants(transformedData);
       applyFilter(transformedData, selectedFilter);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load applicants",
-      );
+      setError(err instanceof Error ? err.message : t("errors.loadFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -211,12 +211,15 @@ export default function ApplicantsScreen() {
         <Ionicons name="people-outline" size={40} color="#9CA3AF" />
       </View>
       <Text className="font-quicksandBold text-lg text-gray-900 mb-2">
-        No {selectedFilter !== "all" ? selectedFilter : ""} Applicants
+        {selectedFilter !== "all" ? t(`status.${selectedFilter}`) : ""}{" "}
+        {t("empty.title")}
       </Text>
       <Text className="font-quicksandMedium text-sm text-gray-500 text-center">
         {selectedFilter === "all"
-          ? "Applications will appear here when candidates apply."
-          : `No ${selectedFilter} applications at the moment.`}
+          ? t("empty.allApplications")
+          : t("empty.noStatusApplications", {
+              status: t(`status.${selectedFilter}`),
+            })}
       </Text>
     </View>
   );
@@ -227,7 +230,7 @@ export default function ApplicantsScreen() {
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
           <Text className="font-quicksandBold text-xl text-gray-900 mt-4 mb-2">
-            Something Went Wrong
+            {t("errors.title")}
           </Text>
           <Text className="font-quicksandMedium text-sm text-gray-500 text-center mb-6">
             {error}
@@ -237,7 +240,9 @@ export default function ApplicantsScreen() {
             className="px-6 py-3 bg-cyan-700 rounded-xl"
             activeOpacity={0.7}
           >
-            <Text className="font-quicksandBold text-white">Try Again</Text>
+            <Text className="font-quicksandBold text-white">
+              {t("buttons.tryAgain")}
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -259,7 +264,7 @@ export default function ApplicantsScreen() {
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="font-quicksandBold text-xl text-gray-900">
-                Applicants
+                {t("header.title")}
               </Text>
               {jobTitle && (
                 <Text className="font-quicksandMedium text-xs text-gray-500 mt-0.5">
@@ -291,7 +296,7 @@ export default function ApplicantsScreen() {
         <View className="flex-1 items-center justify-center flex">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="font-quicksandMedium text-gray-500 mt-4">
-            Loading applicants...
+            {t("states.loading")}
           </Text>
         </View>
       ) : (
