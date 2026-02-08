@@ -296,7 +296,7 @@ export default function ApplicantsScreen() {
         <View className="flex-1 items-center justify-center flex">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="font-quicksandMedium text-gray-500 mt-4">
-            {t("states.loading")}
+            {t("states.loading", {ns: "applicants"})}
           </Text>
         </View>
       ) : (

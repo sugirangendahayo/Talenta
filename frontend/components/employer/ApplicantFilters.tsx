@@ -1,7 +1,11 @@
 // components/employer/ApplicantFilters.tsx
+
 import { Ionicons } from "@expo/vector-icons";
+
 import React from "react";
+
 import { useTranslation } from "react-i18next";
+
 import {
   ScrollView,
   Text,
@@ -14,73 +18,109 @@ type FilterStatus = "all" | "pending" | "shortlisted" | "hired" | "rejected";
 
 interface ApplicantFiltersProps {
   searchQuery: string;
+
   onSearchChange: (query: string) => void;
+
   selectedStatus: FilterStatus;
+
   onStatusChange: (status: FilterStatus) => void;
+
   counts: {
     all: number;
+
     pending: number;
+
     shortlisted: number;
+
     hired: number;
+
     rejected: number;
   };
 }
 
 // Status filter options with icons and colors
+
 const STATUS_FILTERS = [
   {
     id: "all" as FilterStatus,
+
     label: "filters.all",
+
     icon: "apps-outline",
+
     color: "#6B7280",
   },
+
   {
     id: "pending" as FilterStatus,
+
     label: "status.pending",
+
     icon: "time-outline",
+
     color: "#F59E0B",
   },
+
   {
     id: "shortlisted" as FilterStatus,
+
     label: "status.shortlisted",
+
     icon: "star",
+
     color: "#3B82F6",
   },
+
   {
     id: "hired" as FilterStatus,
+
     label: "status.hired",
+
     icon: "checkmark-circle",
+
     color: "#10B981",
   },
+
   {
     id: "rejected" as FilterStatus,
+
     label: "status.rejected",
+
     icon: "close-circle",
+
     color: "#EF4444",
   },
 ];
 
 export default function ApplicantFilters({
   searchQuery,
+
   onSearchChange,
+
   selectedStatus,
+
   onStatusChange,
+
   counts,
 }: ApplicantFiltersProps) {
   const { t } = useTranslation("applicants");
+
   return (
     <View className="bg-white border-b border-gray-200 pb-3">
       {/* Search Bar */}
+
       <View className="px-4 pt-3 pb-2">
-        <View className="flex-row items-center bg-gray-100 rounded-xl p-4">
+        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+
           <TextInput
-            placeholder={t("filters.searchPlaceholder")}
+            placeholder={t("filters.searchPlaceholder", { ns: "applicants" })}
             value={searchQuery}
             onChangeText={onSearchChange}
             className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
             placeholderTextColor="#9CA3AF"
           />
+
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => onSearchChange("")}>
               <Ionicons name="close-circle" size={20} color="#9CA3AF" />
@@ -90,6 +130,7 @@ export default function ApplicantFilters({
       </View>
 
       {/* Status Filters */}
+
       <View className="px-4">
         <ScrollView
           horizontal
@@ -98,6 +139,7 @@ export default function ApplicantFilters({
         >
           {STATUS_FILTERS.map((status) => {
             const isSelected = selectedStatus === status.id;
+
             const count = counts[status.id];
 
             return (
@@ -116,6 +158,7 @@ export default function ApplicantFilters({
                   size={16}
                   color={isSelected ? "#fff" : status.color}
                 />
+
                 <Text
                   className={`text-sm font-quicksandBold ${
                     isSelected ? "text-white" : "text-gray-700"
