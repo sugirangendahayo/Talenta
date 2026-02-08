@@ -1,6 +1,7 @@
 // i18n/locales/en/index.ts
 import auth from './auth.json';
 import categories from './categories.json';
+import applicants from './applicants.json'
 import common from './common.json';
 import dashboard from './dashboard.json';
 import errors from './errors.json';
@@ -13,6 +14,7 @@ export default {
   translation: {  // ← Add this wrapper
     auth,
     categories,
+    applicants,
     common,
     dashboard,
     errors,
