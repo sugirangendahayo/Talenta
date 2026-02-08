@@ -1,77 +1,15 @@
 {
-  "postJob": {
-    "title": "Post New Job",
-    "subtitle": "Fill in details to find your perfect candidate",
-    "saveDraft": "Save Draft",
-    "cancel": "Cancel",
+  "header": {
+    "title": "Manage Jobs",
+    "subtitle": "Manage your postings"
+  },
+  "buttons": {
     "postJob": "Post Job",
-    "posting": "Posting...",
-    "draftSaved": "Draft saved successfully",
-    "jobPosted": "Job posted successfully",
-    "untitledJob": "Untitled Job",
-    "quickOptions": {
-      "7days": "7 days",
-      "14days": "14 days",
-      "30days": "30 days",
-      "60days": "60 days",
-      "90days": "90 days"
-    },
-    "expiryInfo": "Job will automatically expire on this date and become hidden from jobseekers. You can renew it later."
-  },
-  "sections": {
-    "basicInfo": {
-      "title": "Basic Information",
-      "jobTitle": "Job Title",
-      "jobTitlePlaceholder": "e.g., Senior React Developer",
-      "location": "Location",
-      "locationPlaceholder": "e.g., Remote, New York, USA",
-      "salaryRange": "Salary Range",
-      "minSalary": "Min (e.g., 120000)",
-      "maxSalary": "Max (e.g., 180000)",
-      "expiryDate": "Job Expiry Date"
-    },
-    "jobDetails": {
-      "title": "Job Details",
-      "category": "Category",
-      "jobType": "Job Type",
-      "description": "Job Description",
-      "descriptionPlaceholder": "Describe role, responsibilities, and what makes this opportunity great..."
-    },
-    "requirements": {
-      "title": "Requirements & Skills",
-      "requirements": "Requirements",
-      "requirementsPlaceholder": "e.g., 3+ years experience",
-      "skills": "Skills",
-      "skillsPlaceholder": "e.g., React, TypeScript"
-    }
-  },
-  "jobTypes": {
-    "fullTime": "Full Time",
-    "partTime": "Part Time",
-    "contract": "Contract",
-    "freelance": "Freelance",
-    "internship": "Internship",
-    "temporary": "Temporary",
-    "remote": "Remote",
-    "onsite": "On-site",
-    "hybrid": "Hybrid"
-  },
-  "search": {
-    "title": "Find Jobs",
-    "searchPlaceholder": "Search jobs...",
-    "searchResults": "Search Results",
-    "noResults": "No jobs found",
-    "tryDifferent": "Try different keywords or filters",
-    "filters": "Filters",
-    "sortBy": "Sort by",
-    "recent": "Recent",
-    "relevant": "Most Relevant",
-    "salaryHigh": "Salary: High to Low",
-    "salaryLow": "Salary: Low to High",
-    "selectAtLeastOne": "Select all that apply"
+    "cancel": "Cancel",
+    "closeJob": "Close Job"
   },
   "categories": {
-    "all": "All",
+    "all": "All Categories",
     "it": "IT & Software",
     "design": "Design",
     "business": "Business",
@@ -86,24 +24,58 @@
     "agriculture": "Agriculture",
     "security": "Security & Law"
   },
-  "validation": {
-    "titleRequired": "Job title is required",
-    "locationRequired": "Location is required",
-    "minSalaryRequired": "Minimum salary is required",
-    "maxSalaryRequired": "Maximum salary is required",
-    "validSalary": "Please enter valid salary amounts",
-    "salaryRange": "Maximum salary must be greater than minimum salary",
-    "categoryRequired": "Please select a category",
-    "jobTypeRequired": "Please select at least one job type",
-    "descriptionRequired": "Job description is required",
-    "requirementsRequired": "Please add at least one requirement",
-    "expiryDateFuture": "Expiry date must be in future"
+  "filters": {
+    "searchPlaceholder": "Search jobs by title or location...",
+    "category": "Category",
+    "allCategories": "All Categories"
+  },
+  "status": {
+    "active": "Active",
+    "expired": "Expired",
+    "closed": "Closed",
+    "paused": "Paused",
+    "draft": "Draft",
+    "hiringComplete": "Hiring Complete"
+  },
+  "salary": {
+    "notSpecified": "Salary not specified"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{days}} days ago",
+    "weeksAgo": "{{weeks}} weeks ago",
+    "monthsAgo": "{{months}} months ago",
+    "daysLeft": "days left",
+    "expiresToday": "Expires today",
+    "expired": "Expired"
+  },
+  "alerts": {
+    "closeJob": {
+      "title": "Close Job",
+      "message": "Are you sure you want to close this job? This action will hide it from jobseekers."
+    }
   },
   "messages": {
-    "validationError": "Validation Error",
-    "loginRequired": "You must be logged in to post a job",
-    "loginRequiredDraft": "You must be logged in to save a draft",
-    "errorPosting": "Failed to post job. Please try again.",
-    "errorSaving": "Failed to save draft. Please try again."
+    "jobPaused": "Job paused successfully",
+    "jobReactivated": "Job reactivated successfully",
+    "jobClosed": "Job closed successfully",
+    "jobRenewed": "Job renewed for 30 days"
+  },
+  "errors": {
+    "loginRequired": "You must be logged in to view jobs!",
+    "fetchFailed": "Failed to fetch jobs",
+    "pauseJobFailed": "Failed to pause job",
+    "reactivateJobFailed": "Failed to reactivate job",
+    "closeJobFailed": "Failed to close job",
+    "renewJobFailed": "Failed to renew job"
+  },
+  "empty": {
+    "noJobsFound": "No jobs found",
+    "startByPosting": "Start by posting your first job",
+    "tryAdjustingFilters": "Try adjusting your filters (Current: {{status}})"
+  },
+  "list": {
+    "yourJobPosts": "Your Job Posts ({{count}})"
   }
 }

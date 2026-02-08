@@ -1,12 +1,13 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 interface Category {
   id: string;
@@ -57,6 +58,7 @@ export default function EmployerJobFilters({
   selectedStatus,
   onStatusChange,
 }: EmployerJobFiltersProps) {
+  const { t } = useTranslation("jobs");
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
 
   return (
@@ -66,7 +68,7 @@ export default function EmployerJobFilters({
         <View className="flex flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           <TextInput
-            placeholder="Search jobs by title or location..."
+            placeholder={t("filters.searchPlaceholder")}
             value={searchQuery}
             onChangeText={onSearchChange}
             className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
@@ -126,10 +128,10 @@ export default function EmployerJobFilters({
           <View className="flex flex-row items-center gap-2">
             <Ionicons name="grid-outline" size={18} color="#0E7490" />
             <Text className="text-sm font-quicksandBold text-gray-700">
-              Category:{" "}
+              {t("filters.category")}:{" "}
               <Text className="text-cyan-700">
                 {categories.find((c) => c.id === selectedCategory)?.name ||
-                  "All Categories"}
+                  t("filters.allCategories")}
               </Text>
             </Text>
           </View>

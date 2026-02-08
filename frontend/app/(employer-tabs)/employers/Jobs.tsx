@@ -1,19 +1,19 @@
-import { useState, useEffect, useRef } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
+import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
+import EmployerJobsList from "@/components/employer/EmployerJobsList";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
   ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Text,
+  View,
 } from "react-native";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
-import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
-import EmployerJobsList from "@/components/employer/EmployerJobsList";
-import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
-import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Category {
   id: string;
@@ -38,6 +38,7 @@ const categoryNames: { [key: string]: string } = {
 
 export default function Jobs() {
   const { user } = useAuth();
+  const { t } = useTranslation("jobs");
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,8 +46,8 @@ export default function Jobs() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-    const { setIsVisible } = useTabBarVisibility();
-    const lastScrollY = useRef(0);
+  const { setIsVisible } = useTabBarVisibility();
+  const lastScrollY = useRef(0);
 
   // Fetch jobs from Supabase
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function Jobs() {
 
   const fetchJobs = async () => {
     if (!user) {
-      setError("You must be logged in to view jobs!");
+      setError(t("errors.loginRequired"));
       setLoading(false);
       return;
     }
@@ -75,7 +76,7 @@ export default function Jobs() {
       setJobs(data || []);
     } catch (err: any) {
       console.error("Error fetching jobs:", err);
-      setError(err.message || "Failed to fetch jobs");
+      setError(err.message || t("errors.fetchFailed"));
     } finally {
       setLoading(false);
     }
@@ -84,26 +85,26 @@ export default function Jobs() {
   // Compute unique categories dynamically from jobs data
   const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
   const categories: Category[] = [
-    { id: "all", name: "All Categories" },
+    { id: "all", name: t("categories.all") },
     ...uniqueCategories.map((cat) => ({
       id: cat,
       name: categoryNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
     })),
   ];
 
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const currentScrollY = event.nativeEvent.contentOffset.y;
-      const scrollDirection =
-        currentScrollY > lastScrollY.current ? "down" : "up";
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
 
-      if (scrollDirection === "down" && currentScrollY > 50) {
-        setIsVisible(false);
-      } else if (scrollDirection === "up") {
-        setIsVisible(true);
-      }
+    if (scrollDirection === "down" && currentScrollY > 50) {
+      setIsVisible(false);
+    } else if (scrollDirection === "up") {
+      setIsVisible(true);
+    }
 
-      lastScrollY.current = currentScrollY;
-    };
+    lastScrollY.current = currentScrollY;
+  };
   // Loading state
   if (loading) {
     return (
@@ -112,7 +113,7 @@ export default function Jobs() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="mt-4 text-gray-600 font-quicksandMedium">
-            Loading your jobs...
+            {t("states.loading")}
           </Text>
         </View>
       </SafeAreaView>
@@ -129,7 +130,7 @@ export default function Jobs() {
             {error}
           </Text>
           <Text className="mt-2 text-gray-500 font-quicksandMedium text-center">
-            Please try again later or contact support
+            {t("errors.tryAgainOrContact")}
           </Text>
         </View>
       </SafeAreaView>

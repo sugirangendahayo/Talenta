@@ -1,49 +1,17 @@
 {
-  "postJob": {
-    "title": "Shakira akazi gashya",
-    "subtitle": "Andiza amakuru kugirango kubona umushakwaho mwiza",
-    "saveDraft": "Bika mu ibika",
-    "cancel": "Kureka",
-    "postJob": "Shakira akazi",
-    "posting": "Ishakira...",
-    "draftSaved": "Ibika byabitswe neza",
-    "jobPosted": "Akazi kashyizweho neza",
-    "untitledJob": "Akazi atitwaye",
-    "quickOptions": {
-      "7days": "iminsi 7",
-      "14days": "iminsi 14",
-      "30days": "iminsi 30",
-      "60days": "iminsi 60",
-      "90days": "iminsi 90"
-    },
-    "expiryInfo": "Akazi kazarangira ku itariki iyi kizaza ahagaragara ku bashakwaho. Urashobora kongera kandi nyuma y'igihe."
+  "header": {
+    "title": "Kureka akazi",
+    "subtitle": "Kureka ibintiko byawe"
   },
-  "sections": {
-    "basicInfo": {
-      "title": "Amakuru ya mbere",
-      "jobTitle": "Umutwe w'akazi",
-      "jobTitlePlaceholder": "ex: Umuhanga wa React Senior",
-      "location": "Ahantu",
-      "locationPlaceholder": "ex: Kuri interineti, New York, USA",
-      "salaryRange": "Imbibi y'umushahara",
-      "minSalary": "Gato (ex: 120000)",
-      "maxSalary": "Hejuru (ex: 180000)",
-      "expiryDate": "Itariki yo guhera akazi"
-    },
-    "jobDetails": {
-      "title": "Ibisobanuro by'akazi",
-      "category": "Itsinda",
-      "jobType": "Ubwoko bw'akazi",
-      "description": "Ubusobanuro bw'akazi",
-      "descriptionPlaceholder": "Vugurura inshingano, inshingano, n'ibyo utanga akazi kaba akeneye..."
-    },
-    "requirements": {
-      "title": "Ibikorwa n'ubwenge",
-      "requirements": "Ibikorwa",
-      "requirementsPlaceholder": "ex: Imyaka 3+ y'ubunararibonye",
-      "skills": "Ubwenge",
-      "skillsPlaceholder": "ex: React, TypeScript"
-    }
+  "buttons": {
+    "postJob": "Shakira akazi",
+    "cancel": "Kureka",
+    "closeJob": "Gufunga akazi"
+  },
+  "filters": {
+    "searchPlaceholder": "Shakisha akazi ku mutwe w'izina cyangwa aho...",
+    "category": "Itsinda",
+    "allCategories": "Amakuru yose"
   },
   "jobTypes": {
     "fullTime": "Akazi k'igihe cyose",

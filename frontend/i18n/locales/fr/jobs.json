@@ -1,76 +1,15 @@
 {
-  "postJob": {
-    "title": "Publier un nouvel emploi",
-    "subtitle": "Remplissez les détails pour trouver votre candidat idéal",
-    "saveDraft": "Enregistrer le brouillon",
+  "header": {
+    "title": "Gérer les emplois",
+    "subtitle": "Gérez vos annonces"
+  },
+  "buttons": {
+    "postJob": "Publier un emploi",
     "cancel": "Annuler",
-    "postJob": "Publier l'emploi",
-    "posting": "Publication...",
-    "draftSaved": "Brouillon enregistré avec succès",
-    "jobPosted": "Emploi publié avec succès",
-    "untitledJob": "Emploi sans titre",
-    "quickOptions": {
-      "7days": "7 jours",
-      "14days": "14 jours",
-      "30days": "30 jours",
-      "60days": "60 jours",
-      "90days": "90 jours"
-    },
-    "expiryInfo": "L'emploi expirera automatiquement à cette date et deviendra caché pour les chercheurs d'emploi. Vous pouvez le renouveler plus tard."
-  },
-  "sections": {
-    "basicInfo": {
-      "title": "Informations de base",
-      "jobTitle": "Titre de l'emploi",
-      "jobTitlePlaceholder": "ex: Développeur React Senior",
-      "location": "Lieu",
-      "locationPlaceholder": "ex: Télétravail, New York, USA",
-      "salaryRange": "Fourchette salariale",
-      "minSalary": "Min (ex: 120000)",
-      "maxSalary": "Max (ex: 180000)",
-      "expiryDate": "Date d'expiration de l'emploi"
-    },
-    "jobDetails": {
-      "title": "Détails de l'emploi",
-      "category": "Catégorie",
-      "jobType": "Type d'emploi",
-      "description": "Description de l'emploi",
-      "descriptionPlaceholder": "Décrivez le rôle, les responsabilités et ce qui rend cette opportunité excellente..."
-    },
-    "requirements": {
-      "title": "Exigences et compétences",
-      "requirements": "Exigences",
-      "requirementsPlaceholder": "ex: 3+ ans d'expérience",
-      "skills": "Compétences",
-      "skillsPlaceholder": "ex: React, TypeScript"
-    }
-  },
-  "jobTypes": {
-    "fullTime": "Temps plein",
-    "partTime": "Temps partiel",
-    "contract": "Contrat",
-    "freelance": "Freelance",
-    "internship": "Stage",
-    "temporary": "Temporaire",
-    "remote": "Télétravail",
-    "onsite": "Sur site",
-    "hybrid": "Hybride"
-  },
-  "search": {
-    "title": "Trouver des emplois",
-    "searchPlaceholder": "Rechercher des emplois...",
-    "searchResults": "Résultats de recherche",
-    "noResults": "Aucun emploi trouvé",
-    "tryDifferent": "Essayez des mots-clés ou des filtres différents",
-    "filters": "Filtres",
-    "sortBy": "Trier par",
-    "recent": "Récent",
-    "relevant": "Le plus pertinent",
-    "salaryHigh": "Salaire: Élevé à faible",
-    "salaryLow": "Salaire: Faible à élevé"
+    "closeJob": "Fermer l'emploi"
   },
   "categories": {
-    "all": "Tous",
+    "all": "Toutes les catégories",
     "it": "Informatique et logiciels",
     "design": "Design",
     "business": "Affaires",
@@ -79,29 +18,64 @@
     "healthcare": "Santé",
     "education": "Éducation",
     "sales": "Ventes et marketing",
-    "hospitality": "Hôtellerie",
+    "hospitality": "Hospitalité",
     "transport": "Transport",
     "creative": "Créatif",
     "agriculture": "Agriculture",
     "security": "Sécurité et droit"
   },
-  "validation": {
-    "titleRequired": "Le titre de l'emploi est obligatoire",
-    "locationRequired": "Le lieu est obligatoire",
-    "minSalaryRequired": "Le salaire minimum est obligatoire",
-    "maxSalaryRequired": "Le salaire maximum est obligatoire",
-    "validSalary": "Veuillez entrer des montants de salaire valides",
-    "salaryRange": "Le salaire maximum doit être supérieur au salaire minimum",
-    "categoryRequired": "Veuillez sélectionner une catégorie",
-    "jobTypeRequired": "Veuillez sélectionner au moins un type d'emploi",
-    "descriptionRequired": "La description de l'emploi est obligatoire",
-    "requirementsRequired": "Veuillez ajouter au moins une exigence",
-    "expiryDateFuture": "La date d'expiration doit être dans le futur"
+  "filters": {
+    "searchPlaceholder": "Rechercher des emplois par titre ou lieu...",
+    "category": "Catégorie",
+    "allCategories": "Toutes les catégories"
+  },
+  "status": {
+    "active": "Actif",
+    "expired": "Expiré",
+    "closed": "Fermé",
+    "paused": "En pause",
+    "draft": "Brouillon",
+    "hiringComplete": "Embauche terminée"
+  },
+  "salary": {
+    "notSpecified": "Salaire non spécifié"
+  },
+  "time": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "daysAgo": "il y a {{days}} jours",
+    "weeksAgo": "il y a {{weeks}} semaines",
+    "monthsAgo": "il y a {{months}} mois",
+    "daysLeft": "jours restants",
+    "expiresToday": "Expire aujourd'hui",
+    "expired": "Expiré"
+  },
+  "alerts": {
+    "closeJob": {
+      "title": "Fermer l'emploi",
+      "message": "Êtes-vous sûr de vouloir fermer cet emploi? Cette action le masquera aux chercheurs d'emploi."
+    }
   },
   "messages": {
-    "validationError": "Erreur de validation",
-    "loginRequired": "Vous devez être connecté pour publier un emploi",
-    "errorPosting": "Échec de la publication de l'emploi. Veuillez réessayer.",
-    "errorSaving": "Échec de l'enregistrement du brouillon. Veuillez réessayer."
+    "jobPaused": "Emploi mis en pause avec succès",
+    "jobReactivated": "Emploi réactivé avec succès",
+    "jobClosed": "Emploi fermé avec succès",
+    "jobRenewed": "Emploi renouvelé pour 30 jours"
+  },
+  "errors": {
+    "loginRequired": "Vous devez être connecté pour voir les emplois!",
+    "fetchFailed": "Échec de la récupération des emplois",
+    "pauseJobFailed": "Échec de la mise en pause de l'emploi",
+    "reactivateJobFailed": "Échec de la réactivation de l'emploi",
+    "closeJobFailed": "Échec de la fermeture de l'emploi",
+    "renewJobFailed": "Échec du renouvellement de l'emploi"
+  },
+  "empty": {
+    "noJobsFound": "Aucun emploi trouvé",
+    "startByPosting": "Commencez par publier votre premier emploi",
+    "tryAdjustingFilters": "Essayez d'ajuster vos filtres (Actuel : {{status}})"
+  },
+  "list": {
+    "yourJobPosts": "Vos annonces d'emploi ({{count}})"
   }
 }
