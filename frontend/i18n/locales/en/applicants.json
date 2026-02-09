@@ -33,7 +33,7 @@
   "alerts": {
     "error": {
       "title": "Error",
-      "updateStatus": "Failed to update status. Please try again."
+      "updateStatus": "Failed to update status. Please try again!"
     },
     "noPhone": {
       "title": "No Phone Number",
