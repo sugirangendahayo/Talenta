@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Talenta",
+    "slug": "talenta",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/android-icon-foreground.png",
-    "scheme": "frontend",
+    "scheme": "talenta",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "updates": {
@@ -24,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.salomonelisha.frontend"
+      "package": "com.salomonlegend.talenta"
     },
     "web": {
       "output": "static",
@@ -57,11 +57,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "bee08ab4-5574-4e25-b625-48b07d6260ce"
+        "projectId": "7d69bcfb-2f80-48b0-a0aa-c4387a00af8f"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    }
+    },
+    "owner": "salomonlegend"
   }
 }
