@@ -43,6 +43,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
@@ -191,6 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    
     initAuth();
 
     // Listen for auth changes
@@ -199,6 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isMounted.current) return;
 
+      
       console.log("Auth state changed:", event);
 
       setSession(newSession);
