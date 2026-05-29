@@ -1,9 +1,11 @@
-import "react-native-url-polyfill/auto";
-import { createClient } from "@supabase/supabase-js";
-import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient } from "@supabase/supabase-js";
 import * as Crypto from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
+import "react-native-url-polyfill/auto";
 
+
+console.log('SUPABASE URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || "YOUR_SUPABASE_URL";
 const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
@@ -28,7 +30,7 @@ const supabaseAnonKey =
  * ✓ Production-ready (used by major apps)
  */
 
-const ENCRYPTION_KEY_STORAGE_KEY = "supabase-encryption-key";
+  const ENCRYPTION_KEY_STORAGE_KEY = "supabase-encryption-key";
 const SESSION_STORAGE_KEY = "supabase-session";
 
 class EncryptedStorage {
