@@ -5,7 +5,7 @@ import QuickActions from "@/components/employer/QuickActions";
 import RecentContactsSection from "@/components/employer/RecentContactSection";
 import StatCards from "@/components/employer/StatsCards";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import { useDashboard } from "@/hooks/useDashboard";
+import { useDashboard } from "@/hooks/UseDashboard";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
