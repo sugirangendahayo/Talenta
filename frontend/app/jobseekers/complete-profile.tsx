@@ -2,17 +2,260 @@ import { useProfileCompletion } from "@/hooks/useProfileCompletion";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  FlatList,
 } from "react-native";
-import PhoneInput from "react-native-phone-number-input";
+
+// Common countries list — extend as needed
+const COUNTRIES = [
+  { code: "RW", name: "Rwanda", dialCode: "+250", flag: "🇷🇼" },
+  { code: "UG", name: "Uganda", dialCode: "+256", flag: "🇺🇬" },
+  { code: "KE", name: "Kenya", dialCode: "+254", flag: "🇰🇪" },
+  { code: "TZ", name: "Tanzania", dialCode: "+255", flag: "🇹🇿" },
+  { code: "BI", name: "Burundi", dialCode: "+257", flag: "🇧🇮" },
+  { code: "CD", name: "DR Congo", dialCode: "+243", flag: "🇨🇩" },
+  { code: "NG", name: "Nigeria", dialCode: "+234", flag: "🇳🇬" },
+  { code: "ZA", name: "South Africa", dialCode: "+27", flag: "🇿🇦" },
+  { code: "ET", name: "Ethiopia", dialCode: "+251", flag: "🇪🇹" },
+  { code: "GH", name: "Ghana", dialCode: "+233", flag: "🇬🇭" },
+  { code: "US", name: "United States", dialCode: "+1", flag: "🇺🇸" },
+  { code: "GB", name: "United Kingdom", dialCode: "+44", flag: "🇬🇧" },
+  { code: "FR", name: "France", dialCode: "+33", flag: "🇫🇷" },
+  { code: "DE", name: "Germany", dialCode: "+49", flag: "🇩🇪" },
+  { code: "IN", name: "India", dialCode: "+91", flag: "🇮🇳" },
+  { code: "CN", name: "China", dialCode: "+86", flag: "🇨🇳" },
+  { code: "BR", name: "Brazil", dialCode: "+55", flag: "🇧🇷" },
+  { code: "CA", name: "Canada", dialCode: "+1", flag: "🇨🇦" },
+  { code: "AU", name: "Australia", dialCode: "+61", flag: "🇦🇺" },
+  { code: "AE", name: "UAE", dialCode: "+971", flag: "🇦🇪" },
+];
+
+type Country = (typeof COUNTRIES)[number];
+
+function PhoneInputField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (fullNumber: string) => void;
+}) {
+  const [selectedCountry, setSelectedCountry] = useState<Country>(
+    COUNTRIES[0] // Default: Rwanda
+  );
+  const [nationalNumber, setNationalNumber] = useState("");
+  const [showPicker, setShowPicker] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const filteredCountries = COUNTRIES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.dialCode.includes(search)
+  );
+
+  const handleNumberChange = (text: string) => {
+    // Strip non-numeric characters
+    const cleaned = text.replace(/[^0-9]/g, "");
+    setNationalNumber(cleaned);
+    onChange(`${selectedCountry.dialCode}${cleaned}`);
+  };
+
+  const handleCountrySelect = (country: Country) => {
+    setSelectedCountry(country);
+    setShowPicker(false);
+    setSearch("");
+    onChange(`${country.dialCode}${nationalNumber}`);
+  };
+
+  return (
+    <>
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: "#F9FAFB",
+          borderRadius: 16,
+          overflow: "hidden",
+        }}
+      >
+        {/* Country Picker Button */}
+        <TouchableOpacity
+          onPress={() => setShowPicker(true)}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 12,
+            paddingVertical: 14,
+            borderRightWidth: 1,
+            borderRightColor: "#E5E7EB",
+            gap: 6,
+          }}
+        >
+          <Text style={{ fontSize: 20 }}>{selectedCountry.flag}</Text>
+          <Text
+            style={{
+              fontFamily: "Quicksand-SemiBold",
+              fontSize: 15,
+              color: "#1F2937",
+            }}
+          >
+            {selectedCountry.dialCode}
+          </Text>
+          <Ionicons name="chevron-down" size={14} color="#6B7280" />
+        </TouchableOpacity>
+
+        {/* Number Input */}
+        <TextInput
+          value={nationalNumber}
+          onChangeText={handleNumberChange}
+          placeholder="e.g. 78 000 0000"
+          placeholderTextColor="#9CA3AF"
+          keyboardType="phone-pad"
+          style={{
+            flex: 1,
+            fontFamily: "Quicksand-Medium",
+            fontSize: 15,
+            color: "#1F2937",
+            paddingHorizontal: 12,
+            paddingVertical: 14,
+          }}
+        />
+      </View>
+
+      {/* Country Picker Modal */}
+      <Modal
+        visible={showPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowPicker(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.4)",
+            justifyContent: "flex-end",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "white",
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+              paddingTop: 16,
+              maxHeight: "70%",
+            }}
+          >
+            {/* Modal Header */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: 20,
+                marginBottom: 12,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Quicksand-Bold",
+                  fontSize: 18,
+                  color: "#1F2937",
+                }}
+              >
+                Select Country
+              </Text>
+              <TouchableOpacity onPress={() => setShowPicker(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Search */}
+            <View
+              style={{
+                marginHorizontal: 20,
+                marginBottom: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#F3F4F6",
+                borderRadius: 12,
+                paddingHorizontal: 12,
+              }}
+            >
+              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search country..."
+                placeholderTextColor="#9CA3AF"
+                style={{
+                  flex: 1,
+                  fontFamily: "Quicksand-Medium",
+                  fontSize: 14,
+                  color: "#1F2937",
+                  paddingVertical: 10,
+                  paddingHorizontal: 8,
+                }}
+              />
+            </View>
+
+            {/* Country List */}
+            <FlatList
+              data={filteredCountries}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => handleCountrySelect(item)}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 20,
+                    paddingVertical: 12,
+                    backgroundColor:
+                      selectedCountry.code === item.code
+                        ? "#ECFEFF"
+                        : "transparent",
+                    gap: 12,
+                  }}
+                >
+                  <Text style={{ fontSize: 24 }}>{item.flag}</Text>
+                  <Text
+                    style={{
+                      flex: 1,
+                      fontFamily: "Quicksand-SemiBold",
+                      fontSize: 15,
+                      color: "#1F2937",
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "Quicksand-Medium",
+                      fontSize: 14,
+                      color: "#6B7280",
+                    }}
+                  >
+                    {item.dialCode}
+                  </Text>
+                  {selectedCountry.code === item.code && (
+                    <Ionicons name="checkmark" size={18} color="#0E7490" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+}
 
 export default function CompleteProfileScreen() {
   const router = useRouter();
@@ -29,7 +272,6 @@ export default function CompleteProfileScreen() {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newSkill, setNewSkill] = useState("");
-  const phoneInput = useRef<PhoneInput>(null);
 
   const genderOptions = ["Male", "Female", "Other", "Prefer not to say"];
   const educationLevels = [
@@ -151,48 +393,15 @@ export default function CompleteProfileScreen() {
             />
           </View>
 
-          {/* Phone Number with Country Picker */}
+          {/* Phone Number */}
           <View className="mb-4">
             <Text className="text-gray-700 font-quicksandSemibold mb-2">
               Phone Number *
             </Text>
-            <View className="bg-gray-50 rounded-2xl overflow-hidden">
-              <PhoneInput
-                ref={phoneInput}
-                defaultValue={formData.phone}
-                defaultCode="RW"
-                layout="first"
-                onChangeFormattedText={(text) => {
-                  updateField("phone", text);
-                }}
-                containerStyle={{
-                  backgroundColor: "#F9FAFB",
-                  width: "100%",
-                  borderRadius: 16,
-                }}
-                textContainerStyle={{
-                  backgroundColor: "#F9FAFB",
-                  paddingVertical: 0,
-                }}
-                textInputStyle={{
-                  fontFamily: "Quicksand-Medium",
-                  fontSize: 15,
-                  color: "#1F2937",
-                  paddingVertical: 12,
-                }}
-                codeTextStyle={{
-                  fontFamily: "Quicksand-SemiBold",
-                  fontSize: 15,
-                  color: "#1F2937",
-                }}
-                flagButtonStyle={{
-                  paddingHorizontal: 12,
-                }}
-                countryPickerButtonStyle={{
-                  paddingHorizontal: 12,
-                }}
-              />
-            </View>
+            <PhoneInputField
+              value={formData.phone}
+              onChange={(fullNumber) => updateField("phone", fullNumber)}
+            />
           </View>
 
           {/* Date of Birth */}
@@ -247,9 +456,7 @@ export default function CompleteProfileScreen() {
                 >
                   <Text
                     className={`font-quicksandSemibold ${
-                      formData.gender === option
-                        ? "text-white"
-                        : "text-gray-700"
+                      formData.gender === option ? "text-white" : "text-gray-700"
                     }`}
                   >
                     {option}
@@ -373,7 +580,6 @@ export default function CompleteProfileScreen() {
             </Text>
           </View>
 
-          {/* Add Skill Input */}
           <View className="flex-row gap-2 mb-4">
             <TextInput
               value={newSkill}
@@ -391,7 +597,6 @@ export default function CompleteProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Skills List */}
           {formData.skills.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">
               {formData.skills.map((skill, index) => (
