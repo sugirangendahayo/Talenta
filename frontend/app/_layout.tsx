@@ -7,6 +7,7 @@ import {
   Quicksand_700Bold,
   useFonts,
 } from "@expo-google-fonts/quicksand";
+import "react-native-url-polyfill/auto";
 // REMOVED: AsyncStorage import (no longer needed here)
 import "@/i18n/config"; // Import i18n configuration
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -21,7 +22,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import "../global.css";
-
 
 export const unstable_settings = { anchor: "(jobseeker-tabs)" };
 
@@ -175,6 +175,26 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const response = await fetch(
+          "https://ssaqohliglvwqwialomg.supabase.co/auth/v1/health",
+          {
+            headers: {
+              apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
+            },
+          },
+        );
+        const text = await response.text();
+        console.log("Health check status:", response.status);
+        console.log("Health check body:", text);
+      } catch (e) {
+        console.log("Health check failed:", e);
+      }
+    };
+    testConnection();
+  }, []);
   const [fontsLoaded] = useFonts({
     Quicksand_400Regular,
     Quicksand_500Medium,
