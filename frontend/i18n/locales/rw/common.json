@@ -188,5 +188,13 @@
     "updated": "Byavuguruwe neza",
     "copied": "Byakoporowe muri clipboard",
     "shared": "Byasangiwe neza"
+  },
+  "notificationsScreen": {
+    "title": "Amatangazo",
+    "unreadCount": "{{count}} ntabwo isonwe",
+    "markAllRead": "Soma byose",
+    "emptyTitle": "Nta matangazo yariyo",
+    "emptyMessage": "Iyo uzabona amakuru mashya, azaboneka hano.",
+    "loading": "Ikarura amatangazo..."
   }
 }
