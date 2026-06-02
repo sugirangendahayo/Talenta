@@ -20,7 +20,7 @@ import {
 } from "react-native";
 
 export default function EmployerProfile() {
-  const { profile, role, signOut, loading } = useAuth();
+  const { profile, role, user, signOut, loading } = useAuth();
   const { setIsVisible } = useTabBarVisibility();
   const { t, i18n } = useTranslation(["profile", "common"]);
   const router = useRouter();
@@ -30,16 +30,12 @@ export default function EmployerProfile() {
   const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
   const lastScrollY = useRef(0);
 
-  // Get employer profile data
   const employerData =
     role === "employer" && profile ? (profile as EmployerProfileType) : null;
 
   const handleLogout = () => {
     Alert.alert(t("logout.button"), t("logout.confirm"), [
-      {
-        text: t("buttons.cancel", { ns: "common" }),
-        style: "cancel",
-      },
+      { text: t("buttons.cancel", { ns: "common" }), style: "cancel" },
       {
         text: t("logout.button"),
         style: "destructive",
@@ -61,23 +57,20 @@ export default function EmployerProfile() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDirection =
-      currentScrollY > lastScrollY.current ? "down" : "up";
-
+    const scrollDirection = currentScrollY > lastScrollY.current ? "down" : "up";
     if (scrollDirection === "down" && currentScrollY > 50) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
       setIsVisible(true);
     }
-
     lastScrollY.current = currentScrollY;
   };
 
   const getCurrentLanguageName = () => {
     const languages: { [key: string]: string } = {
-      en: t("sections.language.name"),
-      fr: t("sections.language.name"),
-      rw: t("sections.language.name"),
+      en: "English",
+      fr: "Français",
+      rw: "Ikinyarwanda",
     };
     return languages[i18n.language] || "English";
   };
@@ -91,11 +84,7 @@ export default function EmployerProfile() {
           icon: "edit",
           label: t("sections.account.editProfile"),
           type: "link",
-        },
-        {
-          icon: "people",
-          label: t("sections.account.teamManagement"),
-          type: "link",
+          onPress: undefined,
         },
         {
           icon: "verified-user",
@@ -104,11 +93,13 @@ export default function EmployerProfile() {
             ? t("status.verified")
             : t("status.pending"),
           type: "link",
+          onPress: undefined,
         },
         {
           icon: "lock",
           label: t("sections.account.privacy"),
           type: "link",
+          onPress: undefined,
         },
       ],
     },
@@ -127,7 +118,7 @@ export default function EmployerProfile() {
     },
     {
       title: t("sections.preferences.title"),
-      icon: "settings-outline",
+      icon: "notifications-outline",
       items: [
         {
           icon: "notifications",
@@ -143,43 +134,6 @@ export default function EmployerProfile() {
           value: emailUpdates,
           onValueChange: setEmailUpdates,
         },
-        {
-          icon: "filter-list",
-          label: t("sections.preferences.defaultFilters"),
-          type: "link",
-        },
-        {
-          icon: "schedule",
-          label: t("sections.preferences.autoReply"),
-          type: "link",
-        },
-      ],
-    },
-    {
-      title: t("sections.billing.title"),
-      icon: "card-outline",
-      items: [
-        {
-          icon: "workspace-premium",
-          label: t("sections.billing.currentPlan"),
-          value: "Business Pro",
-          type: "link",
-        },
-        {
-          icon: "payment",
-          label: t("sections.billing.paymentMethod"),
-          type: "link",
-        },
-        {
-          icon: "receipt-long",
-          label: t("sections.billing.billingHistory"),
-          type: "link",
-        },
-        {
-          icon: "upgrade",
-          label: t("sections.billing.upgrade"),
-          type: "link",
-        },
       ],
     },
     {
@@ -190,21 +144,19 @@ export default function EmployerProfile() {
           icon: "support-agent",
           label: t("sections.support.contactSupport"),
           type: "link",
-        },
-        {
-          icon: "school",
-          label: t("sections.support.resources"),
-          type: "link",
+          onPress: undefined,
         },
         {
           icon: "description",
           label: t("sections.support.terms"),
           type: "link",
+          onPress: undefined,
         },
         {
           icon: "privacy-tip",
           label: t("sections.support.privacy"),
           type: "link",
+          onPress: undefined,
         },
       ],
     },
@@ -271,11 +223,6 @@ export default function EmployerProfile() {
                       : t("status.pending")}
                   </Text>
                 </View>
-                <View className="bg-purple-100 px-3 py-1 rounded-full">
-                  <Text className="text-purple-700 text-xs font-quicksandBold">
-                    Business Pro
-                  </Text>
-                </View>
               </View>
             </View>
             <TouchableOpacity className="bg-gray-100 p-3 rounded-2xl">
@@ -286,27 +233,21 @@ export default function EmployerProfile() {
           {/* Company Stats */}
           <View className="flex-row mt-6 pt-6 border-t border-gray-100">
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800">
-                0
-              </Text>
+              <Text className="text-2xl font-quicksandBold text-gray-800">0</Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.activeJobs")}
               </Text>
             </View>
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800">
-                0
-              </Text>
+              <Text className="text-2xl font-quicksandBold text-gray-800">0</Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.applicants")}
               </Text>
             </View>
             <View className="w-px bg-gray-200" />
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800">
-                0
-              </Text>
+              <Text className="text-2xl font-quicksandBold text-gray-800">0</Text>
               <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
                 {t("stats.hired")}
               </Text>
@@ -318,17 +259,15 @@ export default function EmployerProfile() {
         {settingsSections.map((section, sectionIndex) => (
           <View
             key={sectionIndex}
-            className="mx-6 mb-6 bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden"
+            className="mx-6 mb-4 bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden"
           >
-            {/* Section Header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
               <Ionicons name={section.icon as any} size={20} color="#0E7490" />
-              <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
+              <Text className="text-base font-quicksandBold text-gray-800 ml-3">
                 {section.title}
               </Text>
             </View>
 
-            {/* Section Items */}
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
@@ -337,22 +276,18 @@ export default function EmployerProfile() {
                     ? "border-b border-gray-100"
                     : ""
                 }`}
-                onPress={
-                  item.onPress || (item.type === "link" ? () => {} : undefined)
-                }
+                onPress={item.type === "link" ? (item as any).onPress : undefined}
+                disabled={item.type !== "link"}
+                activeOpacity={0.7}
               >
                 <View className="flex-row items-center flex-1">
-                  <MaterialIcons
-                    name={item.icon as any}
-                    size={22}
-                    color="#6B7280"
-                  />
+                  <MaterialIcons name={item.icon as any} size={22} color="#6B7280" />
                   <View className="ml-4 flex-1">
                     <Text className="text-gray-800 font-quicksandMedium">
                       {item.label}
                     </Text>
-                    {item.value && typeof item.value === "string" && (
-                      <Text className="text-gray-500 text-sm font-quicksandMedium mt-1">
+                    {item.value && typeof item.value === "string" && item.type !== "toggle" && (
+                      <Text className="text-gray-500 text-sm font-quicksandMedium mt-0.5">
                         {item.value}
                       </Text>
                     )}
@@ -362,68 +297,19 @@ export default function EmployerProfile() {
                 {item.type === "toggle" ? (
                   <Switch
                     value={item.value as boolean}
-                    onValueChange={item.onValueChange}
+                    onValueChange={(item as any).onValueChange}
                     trackColor={{ false: "#D1D5DB", true: "#0E7490" }}
                     thumbColor="#FFFFFF"
                   />
                 ) : (
-                  <View className="flex-row items-center">
-                    {item.value && (
-                      <Text className="text-gray-500 font-quicksandMedium mr-2">
-                        {item.value}
-                      </Text>
-                    )}
-                    <Ionicons
-                      name="chevron-forward"
-                      size={18}
-                      color="#9CA3AF"
-                    />
-                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
                 )}
               </TouchableOpacity>
             ))}
           </View>
         ))}
 
-        {/* Quick Actions */}
-        <View className="mx-6 mb-6 bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-          <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
-            <Ionicons name="flash-outline" size={20} color="#0E7490" />
-            <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              {t("quickActions.title")}
-            </Text>
-          </View>
-          <View className="flex-row p-4">
-            <TouchableOpacity className="flex-1 items-center p-4">
-              <View className="bg-cyan-100 p-3 rounded-2xl mb-2">
-                <Ionicons name="add-circle-outline" size={24} color="#0E7490" />
-              </View>
-              <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                {t("quickActions.postJob")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 items-center p-4">
-              <View className="bg-green-100 p-3 rounded-2xl mb-2">
-                <Ionicons name="people-outline" size={24} color="#059669" />
-              </View>
-              <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                {t("quickActions.applicants")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 items-center p-4">
-              <View className="bg-purple-100 p-3 rounded-2xl mb-2">
-                <Ionicons
-                  name="stats-chart-outline"
-                  size={24}
-                  color="#7C3AED"
-                />
-              </View>
-              <Text className="text-gray-700 font-quicksandMedium text-sm text-center">
-                {t("quickActions.analytics")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <View className="h-2" />
 
         {/* Logout Button */}
         <TouchableOpacity
@@ -455,6 +341,7 @@ export default function EmployerProfile() {
       <LanguageSelector
         visible={languageSelectorVisible}
         onClose={() => setLanguageSelectorVisible(false)}
+        userId={user?.id}
       />
     </View>
   );
