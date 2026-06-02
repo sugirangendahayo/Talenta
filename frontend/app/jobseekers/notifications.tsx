@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 
 export default function NotificationsScreen() {
@@ -24,6 +25,7 @@ export default function NotificationsScreen() {
     deleteNotification,
     refetch,
   } = useNotifications();
+  const { t } = useTranslation(["common", "jobs"]);
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -57,10 +59,10 @@ export default function NotificationsScreen() {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    if (seconds < 60) return t("jobs:time.justNow", { defaultValue: "Just now" });
+    if (seconds < 3600) return t("jobs:time.minutesAgo", { count: Math.floor(seconds / 60), defaultValue: `${Math.floor(seconds / 60)}m ago` });
+    if (seconds < 86400) return t("jobs:time.hoursAgo", { count: Math.floor(seconds / 3600), defaultValue: `${Math.floor(seconds / 3600)}h ago` });
+    if (seconds < 604800) return t("jobs:time.daysAgo", { days: Math.floor(seconds / 86400), defaultValue: `${Math.floor(seconds / 86400)}d ago` });
     return date.toLocaleDateString();
   };
 
@@ -163,10 +165,10 @@ export default function NotificationsScreen() {
         <Ionicons name="notifications-off-outline" size={48} color="#9CA3AF" />
       </View>
       <Text className="font-quicksandBold text-xl text-gray-900 mb-2">
-        No Notifications Yet
+        {t("common:notificationsScreen.emptyTitle", { defaultValue: "No Notifications Yet" })}
       </Text>
       <Text className="font-quicksandMedium text-sm text-gray-500 text-center">
-        When you receive updates about your applications, they&apos;ll appear here.
+        {t("common:notificationsScreen.emptyMessage", { defaultValue: "When you receive updates about your applications, they'll appear here." })}
       </Text>
     </View>
   );
@@ -177,7 +179,7 @@ export default function NotificationsScreen() {
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
           <Text className="font-quicksandBold text-xl text-gray-900 mt-4 mb-2">
-            Something Went Wrong
+            {t("common:messages.somethingWentWrong", { defaultValue: "Something went wrong. Please try again." })}
           </Text>
           <Text className="font-quicksandMedium text-sm text-gray-500 text-center mb-6">
             {error}
@@ -186,7 +188,7 @@ export default function NotificationsScreen() {
             onPress={refetch}
             className="px-6 py-3 bg-cyan-700 rounded-xl"
           >
-            <Text className="font-quicksandBold text-white">Try Again</Text>
+            <Text className="font-quicksandBold text-white">{t("common:buttons.retry", { defaultValue: "Try Again" })}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -204,11 +206,11 @@ export default function NotificationsScreen() {
             </TouchableOpacity>
             <View>
               <Text className="font-quicksandBold text-2xl text-gray-900">
-                Notifications
+                {t("common:notificationsScreen.title", { defaultValue: "Notifications" })}
               </Text>
               {unreadCount > 0 && (
                 <Text className="font-quicksandMedium text-sm text-cyan-600">
-                  {unreadCount} unread
+                  {t("common:notificationsScreen.unreadCount", { count: unreadCount, defaultValue: `${unreadCount} unread` })}
                 </Text>
               )}
             </View>
@@ -221,7 +223,7 @@ export default function NotificationsScreen() {
               className="px-4 py-2 bg-cyan-50 rounded-lg"
             >
               <Text className="font-quicksandBold text-sm text-cyan-700">
-                Mark all read
+                {t("common:notificationsScreen.markAllRead", { defaultValue: "Mark all read" })}
               </Text>
             </TouchableOpacity>
           )}
@@ -233,7 +235,7 @@ export default function NotificationsScreen() {
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="font-quicksandMedium text-gray-500 mt-4">
-            Loading notifications...
+            {t("common:notificationsScreen.loading", { defaultValue: "Loading notifications..." })}
           </Text>
         </View>
       ) : (
