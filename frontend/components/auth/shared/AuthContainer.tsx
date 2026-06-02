@@ -13,7 +13,7 @@ export default function AuthContainer({
 }: AuthContainerProps) {
   return (
     <KeyboardAwareScrollView
-      style={{ flex: 1 }} // Ensures it fills the screen
+      style={{ flex: 1, backgroundColor: 'white' }} // Ensures it fills the screen and has a white background
       contentContainerStyle={{ flexGrow: 1 }} // Allows content to grow/scroll
       enableOnAndroid={true} // Better Android support
       keyboardShouldPersistTaps="handled" // Dismiss on taps outside inputs
