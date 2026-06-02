@@ -39,7 +39,8 @@
   "stats": {
     "jobsAvailable": "Jobs Available",
     "companiesHiring": "Companies Hiring",
-    "newToday": "New Today"
+    "newToday": "New Today",
+    "newAvailable": "{{count}} new jobs available"
   },
   "emptyStates": {
     "noJobs": "No jobs available at the moment",
