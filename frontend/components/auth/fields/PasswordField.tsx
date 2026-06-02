@@ -130,7 +130,7 @@ export default function PasswordField({
 
           {/* Text Input */}
           <TextInput
-            className={`flex-1 py-3 font-quicksandMedium ${hasIcon ? "" : ""}`}
+            className={`flex-1 py-3 text-gray-800 ${showPassword ? "font-quicksandMedium" : ""} ${hasIcon ? "" : ""}`}
             secureTextEntry={!showPassword}
             autoCapitalize="none"
             value={value}
