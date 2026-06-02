@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface Category {
   id: string;
@@ -28,13 +29,14 @@ const SearchAndSort: React.FC<SearchAndSortProps> = ({
   searchQuery,
   categories,
 }) => {
+  const { t } = useTranslation(["home", "common"]);
   return (
     <View className="pb-3">
       <View className="px-4 py-3">
-        <View className="flex flex-row items-center bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
+        <View className="flex flex-row items-center bg-gray-50 rounded-full px-4 py-2 shadow-sm border border-gray-100">
           <Ionicons name="search" size={20} color="#6B7280" />
           <TextInput
-            placeholder="Search jobs , companies..."
+            placeholder={t("home:search.placeholder")}
             placeholderTextColor="#9CA3AF"
             className="flex-1 ml-3 text-gray-800 font-quicksandMedium text-base"
             onChangeText={onSearchChange}
@@ -44,7 +46,7 @@ const SearchAndSort: React.FC<SearchAndSortProps> = ({
           <TouchableOpacity className="flex flex-row items-center bg-cyan-700 rounded-xl px-3 py-2 shadow-sm">
             <Ionicons name="options-outline" size={16} color="white" />
             <Text className="text-white font-quicksandBold text-sm ml-1">
-              Filter
+              {t("common:buttons.filter")}
             </Text>
           </TouchableOpacity>
         </View>
