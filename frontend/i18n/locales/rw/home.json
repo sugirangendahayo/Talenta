@@ -39,7 +39,8 @@
   "stats": {
     "jobsAvailable": "Akazi ariho",
     "companiesHiring": "Isosiyete zishakaho",
-    "newToday": "Zashuye uyu munsi"
+    "newToday": "Zashuye uyu munsi",
+    "newAvailable": "Akazi {{count}} gashya gahari"
   },
   "emptyStates": {
     "noJobs": "Nta kazi kiriho kuri none",
