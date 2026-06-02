@@ -28,7 +28,7 @@ export default function HomeHeader() {
   };
 
   return (
-    <View className="my-1">
+    <View className="my-1 bg-white">
       <View className="flex flex-row justify-around items-center py-4">
         <View className="flex flex-row items-center gap-4">
           <View
@@ -51,7 +51,7 @@ export default function HomeHeader() {
             </Text>
           </View>
         </View>
-        <View className="p-2 rounded-full bg-white relative">
+        <View className="p-2 rounded-3xl bg-gray-100 relative">
           <TouchableOpacity onPress={handleNotificationsPress}>
             {/* Inner shadow */}
             <View
@@ -65,13 +65,13 @@ export default function HomeHeader() {
             />
             {/* Badge for unread count */}
             {/* {unreadCount > 0 && ( */}
-            <View className="absolute -right-1 -top-2 bg-red-500 rounded-full min-w-[15px] h-4 items-center justify-center flex px-1 z-10">
+            <View className="absolute -right-2 -top-4 bg-cyan-700 rounded-full min-w-[15px] h-4 items-center justify-center flex px-1 z-10">
               <Text className="text-white font-quicksandBold text-xs">
                 1{/* {unreadCount > 99 ? "99+" : unreadCount} */}
               </Text>
             </View>
             {/* )} */}
-            <Octicons name="bell" size={22} color="#0E7490" />
+            <Octicons name="bell" size={19} color="black" />
           </TouchableOpacity>
         </View>
       </View>
