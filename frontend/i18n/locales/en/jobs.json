@@ -44,6 +44,9 @@
   "time": {
     "today": "Today",
     "yesterday": "Yesterday",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} mins ago",
+    "hoursAgo": "{{count}} hours ago",
     "daysAgo": "{{days}} days ago",
     "weeksAgo": "{{weeks}} weeks ago",
     "monthsAgo": "{{months}} months ago",
@@ -61,7 +64,15 @@
     "jobPaused": "Job paused successfully",
     "jobReactivated": "Job reactivated successfully",
     "jobClosed": "Job closed successfully",
-    "jobRenewed": "Job renewed for 30 days"
+    "jobRenewed": "Job renewed for 30 days",
+    "validationError": "Validation Error",
+    "error": "Error",
+    "loginRequired": "You must be logged in to post a job.",
+    "loginRequiredDraft": "You must be logged in to save a draft.",
+    "jobPosted": "Job posted successfully!",
+    "errorPosting": "Failed to post job. Please try again.",
+    "draftSaved": "Draft saved successfully!",
+    "errorSaving": "Failed to save draft. Please try again."
   },
   "errors": {
     "loginRequired": "You must be logged in to view jobs!",
@@ -78,5 +89,118 @@
   },
   "list": {
     "yourJobPosts": "Your Job Posts ({{count}})"
-  }
+  },
+  "postJob": {
+    "title": "Post a Job",
+    "subtitle": "Fill in the details to attract the right candidates",
+    "saveDraft": "Save Draft",
+    "cancel": "Cancel",
+    "postJob": "Post Job",
+    "untitledJob": "Untitled Job",
+    "expiryInfo": "The job listing will automatically be hidden from candidates after this date.",
+    "quickOptions": {
+      "7days": "7 days",
+      "14days": "14 days",
+      "30days": "30 days",
+      "60days": "60 days",
+      "90days": "90 days"
+    }
+  },
+  "sections": {
+    "basicInfo": {
+      "title": "Basic Information",
+      "jobTitle": "Job Title",
+      "jobTitlePlaceholder": "e.g., Senior Software Engineer",
+      "location": "Location",
+      "locationPlaceholder": "e.g., Kigali, Rwanda",
+      "salaryRange": "Salary Range (RWF)",
+      "minSalary": "Min salary",
+      "maxSalary": "Max salary",
+      "expiryDate": "Application Deadline"
+    },
+    "jobDetails": {
+      "title": "Job Details",
+      "category": "Category",
+      "jobType": "Job Type",
+      "description": "Job Description",
+      "descriptionPlaceholder": "Describe the role, responsibilities, and what makes this opportunity unique..."
+    },
+    "requirementsAndSkills": {
+      "title": "Requirements & Skills"
+    },
+    "requirements": {
+      "title": "Requirements",
+      "requirementsPlaceholder": "e.g., 3+ years of experience",
+      "skills": "Required Skills",
+      "skillsPlaceholder": "e.g., React, TypeScript"
+    }
+  },
+  "validation": {
+    "titleRequired": "Job title is required.",
+    "locationRequired": "Location is required.",
+    "minSalaryRequired": "Minimum salary is required.",
+    "maxSalaryRequired": "Maximum salary is required.",
+    "validSalary": "Please enter valid salary amounts.",
+    "salaryRange": "Maximum salary must be greater than minimum salary.",
+    "categoryRequired": "Please select a category.",
+    "jobTypeRequired": "Please select at least one job type.",
+    "descriptionRequired": "Job description is required.",
+    "requirementsRequired": "Please add at least one requirement.",
+    "expiryDateFuture": "The application deadline must be a future date."
+  },
+  "jobTypes": {
+    "fullTime": "Full-time",
+    "partTime": "Part-time",
+    "contract": "Contract",
+    "remote": "Remote",
+    "onsite": "On-site",
+    "hybrid": "Hybrid"
+  },
+  "search": {
+    "selectAtLeastOne": "Select at least one"
+  },
+  "applications": {
+    "header": {
+      "title": "Applications",
+      "subtitle": "Track your job applications"
+    },
+    "filters": {
+      "all": "All",
+      "pending": "Pending",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected"
+    },
+    "status": {
+      "pending": "Pending",
+      "shortlisted": "Shortlisted",
+      "rejected": "Rejected",
+      "unknown": "Unknown"
+    },
+    "list": {
+      "showing": "Showing {{count}} application(s)",
+      "loading": "Loading applications...",
+      "applied": "Applied"
+    },
+    "buttons": {
+      "viewJob": "View Job",
+      "withdraw": "Withdraw",
+      "browseJobs": "Browse Jobs"
+    },
+    "empty": {
+      "title": "No applications found",
+      "noApplications": "You haven't applied to any jobs yet.",
+      "noFilteredApplications": "No {{status}} applications found."
+    },
+    "withdraw": {
+      "title": "Withdraw Application",
+      "message": "Are you sure you want to withdraw your application for {{jobTitle}}?",
+      "confirmBtn": "Withdraw",
+      "successTitle": "Success",
+      "successMessage": "Application withdrawn successfully",
+      "errorTitle": "Error",
+      "errorMessage": "Failed to withdraw application"
+    }
+  },
+  "exploreAll": "Explore All Jobs",
+  "allAvailable": "All Available Jobs"
 }
