@@ -1,3 +1,4 @@
+// components/jobseeker/HomeJobs.tsx
 import { useJobs } from "@/hooks/useJobs";
 import { supabase } from "@/lib/supabase";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -6,19 +7,15 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  RefreshControl,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface HomeJobsProps {
   selectedCategory: string;
   searchQuery: string;
-  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 }
 
 interface UserProfile {
@@ -26,30 +23,24 @@ interface UserProfile {
   experience_level?: string;
 }
 
-const HomeJobs: React.FC<HomeJobsProps> = ({
-  selectedCategory,
-  searchQuery,
-  onScroll,
-}) => {
+const PREVIEW_COUNT = 4;
+
+const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) => {
   const router = useRouter();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const { t } = useTranslation(["home", "jobs"]);
 
-  // Fetch user profile on mount
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
+        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
             .from("jobseeker_profiles")
             .select("skills, experience_level")
             .eq("id", user.id)
             .single();
-
           if (profile) {
             setUserProfile({
               skills: profile.skills || [],
@@ -63,241 +54,190 @@ const HomeJobs: React.FC<HomeJobsProps> = ({
         setProfileLoading(false);
       }
     };
-
     fetchUserProfile();
   }, []);
 
-  const {
-    jobs,
-    loading,
-    refreshing,
-    loadingMore,
-    hasMore,
-    error,
-    newJobsCount,
-    loadMore,
-    refresh,
-    loadNewJobs,
-  } = useJobs({
+  const { jobs, loading, newJobsCount, loadNewJobs } = useJobs({
     category: selectedCategory,
-    searchQuery: searchQuery,
-    pageSize: 10,
-    recommended: true, // Enable recommendations
-    userProfile: userProfile || undefined, // Pass user profile
+    searchQuery,
+    pageSize: PREVIEW_COUNT,
+    recommended: true,
+    userProfile: userProfile || undefined,
   });
 
   const handleJobPress = (jobId: string) => {
-    router.push({
-      pathname: "/jobseekers/job-details/[id]",
-      params: { id: jobId },
-    });
+    router.push({ pathname: "/jobseekers/job-details/[id]", params: { id: jobId } });
+  };
+
+  const handleViewAll = () => {
+    router.push("../../app/(jobseeker-tabs)/jobseekers/Jobs.tsx" as any);
   };
 
   const formatSalary = (min: number, max: number) => {
-    const formatNumber = (num: number) => {
-      if (num >= 1000) {
-        return `$${(num / 1000).toFixed(0)}k`;
-      }
-      return `$${num}`;
-    };
-    return `${formatNumber(min)} - ${formatNumber(max)}`;
+    const fmt = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`);
+    return `${fmt(min)} - ${fmt(max)}`;
   };
 
   const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-    return `${Math.floor(seconds / 604800)}w ago`;
+    const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+    if (seconds < 60) return t("jobs:time.justNow");
+    if (seconds < 3600) return t("jobs:time.minutesAgo", { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t("jobs:time.hoursAgo", { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t("jobs:time.daysAgo", { days: Math.floor(seconds / 86400) });
+    return t("jobs:time.weeksAgo", { weeks: Math.floor(seconds / 604800) });
   };
 
-  const renderJobItem = ({ item }: { item: any }) => {
-    const companyName = item.employer_profiles?.company_name || "Company";
-    const salary = formatSalary(item.salary_min, item.salary_max);
-    const timeAgo = getTimeAgo(item.created_at);
-    const jobTypes = item.job_type.split(",").map((t: string) => t.trim());
-
-    return (
-      <TouchableOpacity
-        className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
-        onPress={() => handleJobPress(item.id)}
-      >
-        <View className="flex-1">
-          <View className="flex flex-row items-start justify-between mb-3">
-            <View className="flex flex-row items-center flex-1 mr-3">
-              <View
-                className="w-16 h-16 rounded-full border border-gray-200 bg-white overflow-hidden p-2 items-center justify-center flex"
-                style={{
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 3,
-                }}
-              >
-                <Text className="text-2xl font-quicksandBold text-cyan-600">
-                  {companyName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <View className="flex-1 ml-3">
-                <View className="flex flex-row items-center gap-1">
-                  <Text className="text-gray-600 font-quicksandMedium text-sm">
-                    {companyName}
-                  </Text>
-                  <MaterialIcons name="verified" size={14} color="#0E7490" />
-                </View>
-
-                <Text className="text-lg font-quicksandBold text-gray-800">
-                  {item.title}
-                </Text>
-                <View className="flex flex-row items-center justify-start gap-1">
-                  <Ionicons name="location-sharp" size={13} color="#0E7490" />
-                  <Text className="text-gray-600 font-quicksandMedium text-sm">
-                    {item.location}
-                  </Text>
-                </View>
-              </View>
-            </View>
-            <View className="pt-1">
-              <TouchableOpacity className="bg-gray-100 p-2 rounded-full">
-                <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View className="flex flex-row flex-wrap gap-2 mb-3">
-            {jobTypes.slice(0, 2).map((type: string, index: number) => (
-              <View key={index} className="bg-gray-100 px-3 py-2 rounded-full">
-                <Text className="text-gray-700 text-xs font-quicksandMedium">
-                  {type}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          <Text className="text-gray-500 text-sm font-quicksandMedium mb-3">
-            {item.description.substring(0, 100)}...{"  "}
-            <Text className="text-cyan-600 text-xs font-quicksandMedium">
-              {timeAgo}
-            </Text>
-          </Text>
-
-          <View className="flex flex-row justify-between items-center">
-            <Text className="text-cyan-600 text-sm font-quicksandMedium p-2 bg-gray-100 rounded-full">
-              {salary}
-            </Text>
-            <TouchableOpacity className="bg-cyan-700 p-2 rounded-full">
-              <MaterialIcons name="arrow-outward" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderHeader = () => {
-    // Show recommendation badge only when conditions are met
-    const isRecommending =
-      userProfile &&
-      !searchQuery &&
-      selectedCategory === "all" &&
-      userProfile.skills &&
-      userProfile.skills.length > 0;
-
-    return (
-      <>
-        {/* New Jobs Banner (Twitter-style) */}
-        {newJobsCount > 0 && (
-          <TouchableOpacity
-            className="mx-4 mb-3 bg-cyan-600 p-3 rounded-2xl flex flex-row items-center justify-center"
-            onPress={loadNewJobs}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="arrow-up" size={16} color="white" />
-            <Text className="text-white font-quicksandBold text-sm ml-2">
-              {newJobsCount} new {newJobsCount === 1 ? "job" : "jobs"} available
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        <View className="px-4 pb-2">
-          <Text className="text-2xl font-quicksandBold text-gray-800">
-            {isRecommending ? "Recommended for you!" : "Available Jobs"}
-          </Text>
-          {isRecommending && (
-            <Text className="text-sm font-quicksandMedium text-gray-500 mt-1">
-              Based on your skills and experience
-            </Text>
-          )}
-        </View>
-      </>
-    );
-  };
-
-  const renderFooter = () => {
-    if (!loadingMore) return null;
-
-    return (
-      <View className="py-4">
-        <ActivityIndicator size="small" color="#0E7490" />
-      </View>
-    );
-  };
-
-  const renderEmptyState = () => {
-    if (loading || profileLoading) return null;
-
-    return (
-      <View className="flex-1 items-center justify-center flex py-20 px-8">
-        <Ionicons name="search-outline" size={64} color="#D1D5DB" />
-        <Text className="text-xl font-quicksandBold text-gray-800 mt-4 text-center">
-          No jobs found
-        </Text>
-        <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center">
-          {error ? error : "Try adjusting your filters or search terms"}
-        </Text>
-      </View>
-    );
-  };
+  const isRecommending =
+    userProfile && !searchQuery && selectedCategory === "all" &&
+    userProfile.skills && userProfile.skills.length > 0;
 
   if (loading || profileLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
+      <View className="py-10 items-center">
         <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-600 font-quicksandMedium mt-4">
-          Loading jobs...
-        </Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <FlatList
-        data={jobs}
-        renderItem={renderJobItem}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmptyState}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 8 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={refresh}
-            colors={["#0E7490"]}
-            tintColor="#0E7490"
-          />
-        }
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-      />
+    <View className="mb-6">
+      {/* Section header */}
+      <View className="flex-row items-center justify-between px-6 mb-4">
+        <View>
+          <Text className="text-xl font-quicksandBold text-gray-800">
+            {isRecommending
+              ? t("home:recommended.title", { defaultValue: "Recommended" })
+              : t("home:featuredJobs.title", { defaultValue: "Latest Jobs" })}
+          </Text>
+          {isRecommending && (
+            <Text className="text-xs font-quicksandMedium text-gray-400 mt-0.5">
+              {t("home:recommended.basedOnSkills", { defaultValue: "Based on your skills" })}
+            </Text>
+          )}
+        </View>
+        <TouchableOpacity
+          onPress={handleViewAll}
+          className="flex-row items-center gap-1"
+        >
+          <Text className="text-cyan-700 font-quicksandBold text-sm">
+            {t("home:featuredJobs.viewAll", { defaultValue: "View All" })}
+          </Text>
+          <Ionicons name="chevron-forward" size={14} color="#0E7490" />
+        </TouchableOpacity>
+      </View>
+
+      {/* New Jobs Banner */}
+      {newJobsCount > 0 && (
+        <TouchableOpacity
+          className="mx-6 mb-3 bg-cyan-600 p-3 rounded-2xl flex-row items-center justify-center"
+          onPress={loadNewJobs}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="arrow-up" size={16} color="white" />
+          <Text className="text-white font-quicksandBold text-sm ml-2">
+            {t("home:stats.newAvailable", { count: newJobsCount, defaultValue: `${newJobsCount} new jobs` })}
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Job Cards */}
+      {jobs.length === 0 ? (
+        <View className="items-center py-12 px-8">
+          <Ionicons name="search-outline" size={48} color="#D1D5DB" />
+          <Text className="text-gray-500 font-quicksandMedium text-sm mt-3 text-center">
+            {t("home:search.noResults", { defaultValue: "No jobs found. Try a different search." })}
+          </Text>
+        </View>
+      ) : (
+        <View className="gap-3 px-6">
+          {jobs.slice(0, PREVIEW_COUNT).map((item: any) => {
+            const companyName = item.employer_profiles?.company_name || "Company";
+            const salary = formatSalary(item.salary_min, item.salary_max);
+            const timeAgo = getTimeAgo(item.created_at);
+            const jobTypes = item.job_type.split(",").map((t: string) => t.trim());
+
+            return (
+              <TouchableOpacity
+                key={item.id}
+                className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100"
+                onPress={() => handleJobPress(item.id)}
+                activeOpacity={0.8}
+              >
+                <View className="flex-row items-start justify-between mb-3">
+                  <View className="flex-row items-center flex-1 mr-3">
+                    {/* Company initial avatar */}
+                    <View
+                      className="w-12 h-12 rounded-2xl border border-gray-100 bg-cyan-50 items-center justify-center"
+                    >
+                      <Text className="text-lg font-quicksandBold text-cyan-600">
+                        {companyName.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                    <View className="flex-1 ml-3">
+                      <View className="flex-row items-center gap-1">
+                        <Text className="text-gray-500 font-quicksandMedium text-xs">
+                          {companyName}
+                        </Text>
+                        <MaterialIcons name="verified" size={12} color="#0E7490" />
+                      </View>
+                      <Text className="text-base font-quicksandBold text-gray-800 mt-0.5">
+                        {item.title}
+                      </Text>
+                      <View className="flex-row items-center gap-1 mt-0.5">
+                        <Ionicons name="location-sharp" size={11} color="#0E7490" />
+                        <Text className="text-gray-500 font-quicksandMedium text-xs">
+                          {item.location}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  <TouchableOpacity className="bg-gray-100 p-2 rounded-full">
+                    <Ionicons name="bookmark-outline" size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Tags row */}
+                <View className="flex-row flex-wrap gap-2 mb-3">
+                  {jobTypes.slice(0, 2).map((type: string, index: number) => (
+                    <View key={index} className="bg-gray-100 px-3 py-1 rounded-full">
+                      <Text className="text-gray-600 text-xs font-quicksandMedium">{type}</Text>
+                    </View>
+                  ))}
+                  <View className="bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                    <Text className="text-gray-400 text-xs font-quicksandMedium">{timeAgo}</Text>
+                  </View>
+                </View>
+
+                {/* Footer */}
+                <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+                  <Text className="text-cyan-700 text-sm font-quicksandBold">
+                    {salary}
+                  </Text>
+                  <View className="bg-cyan-700 px-4 py-1.5 rounded-full">
+                    <Text className="text-white text-xs font-quicksandBold">
+                      {t("home:featuredJobs.apply", { defaultValue: "Apply" })}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
+      {/* View All button at bottom */}
+      {jobs.length > 0 && (
+        <TouchableOpacity
+          onPress={handleViewAll}
+          className="mx-6 mt-4 border border-cyan-200 bg-cyan-50 rounded-2xl p-4 flex-row items-center justify-center gap-2"
+          activeOpacity={0.8}
+        >
+          <Text className="text-cyan-700 font-quicksandBold text-sm">
+            {t("home:featuredJobs.viewAllJobs", { defaultValue: "View All Jobs" })}
+          </Text>
+          <Ionicons name="arrow-forward" size={16} color="#0E7490" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
