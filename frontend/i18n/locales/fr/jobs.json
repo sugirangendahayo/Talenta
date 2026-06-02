@@ -44,6 +44,9 @@
   "time": {
     "today": "Aujourd'hui",
     "yesterday": "Hier",
+    "justNow": "À l'instant",
+    "minutesAgo": "il y a {{count}} min",
+    "hoursAgo": "il y a {{count}} heures",
     "daysAgo": "il y a {{days}} jours",
     "weeksAgo": "il y a {{weeks}} semaines",
     "monthsAgo": "il y a {{months}} mois",
@@ -61,7 +64,15 @@
     "jobPaused": "Emploi mis en pause avec succès",
     "jobReactivated": "Emploi réactivé avec succès",
     "jobClosed": "Emploi fermé avec succès",
-    "jobRenewed": "Emploi renouvelé pour 30 jours"
+    "jobRenewed": "Emploi renouvelé pour 30 jours",
+    "validationError": "Erreur de validation",
+    "error": "Erreur",
+    "loginRequired": "Vous devez être connecté pour publier un emploi.",
+    "loginRequiredDraft": "Vous devez être connecté pour sauvegarder un brouillon.",
+    "jobPosted": "Emploi publié avec succès !",
+    "errorPosting": "Échec de la publication de l'emploi. Veuillez réessayer.",
+    "draftSaved": "Brouillon sauvegardé avec succès !",
+    "errorSaving": "Échec de la sauvegarde du brouillon. Veuillez réessayer."
   },
   "errors": {
     "loginRequired": "Vous devez être connecté pour voir les emplois!",
@@ -78,5 +89,118 @@
   },
   "list": {
     "yourJobPosts": "Vos annonces d'emploi ({{count}})"
-  }
+  },
+  "postJob": {
+    "title": "Publier un emploi",
+    "subtitle": "Remplissez les détails pour attirer les bons candidats",
+    "saveDraft": "Sauvegarder brouillon",
+    "cancel": "Annuler",
+    "postJob": "Publier",
+    "untitledJob": "Emploi sans titre",
+    "expiryInfo": "L'annonce sera automatiquement masquée aux candidats après cette date.",
+    "quickOptions": {
+      "7days": "7 jours",
+      "14days": "14 jours",
+      "30days": "30 jours",
+      "60days": "60 jours",
+      "90days": "90 jours"
+    }
+  },
+  "sections": {
+    "basicInfo": {
+      "title": "Informations de base",
+      "jobTitle": "Intitulé du poste",
+      "jobTitlePlaceholder": "ex. Ingénieur logiciel senior",
+      "location": "Lieu",
+      "locationPlaceholder": "ex. Kigali, Rwanda",
+      "salaryRange": "Fourchette salariale (RWF)",
+      "minSalary": "Salaire min.",
+      "maxSalary": "Salaire max.",
+      "expiryDate": "Date limite de candidature"
+    },
+    "jobDetails": {
+      "title": "Détails du poste",
+      "category": "Catégorie",
+      "jobType": "Type de contrat",
+      "description": "Description du poste",
+      "descriptionPlaceholder": "Décrivez le rôle, les responsabilités et ce qui rend cette opportunité unique..."
+    },
+    "requirementsAndSkills": {
+      "title": "Exigences et compétences"
+    },
+    "requirements": {
+      "title": "Exigences",
+      "requirementsPlaceholder": "ex. 3+ ans d'expérience",
+      "skills": "Compétences requises",
+      "skillsPlaceholder": "ex. React, TypeScript"
+    }
+  },
+  "validation": {
+    "titleRequired": "L'intitulé du poste est obligatoire.",
+    "locationRequired": "Le lieu est obligatoire.",
+    "minSalaryRequired": "Le salaire minimum est obligatoire.",
+    "maxSalaryRequired": "Le salaire maximum est obligatoire.",
+    "validSalary": "Veuillez saisir des montants de salaire valides.",
+    "salaryRange": "Le salaire maximum doit être supérieur au salaire minimum.",
+    "categoryRequired": "Veuillez sélectionner une catégorie.",
+    "jobTypeRequired": "Veuillez sélectionner au moins un type de contrat.",
+    "descriptionRequired": "La description du poste est obligatoire.",
+    "requirementsRequired": "Veuillez ajouter au moins une exigence.",
+    "expiryDateFuture": "La date limite de candidature doit être une date future."
+  },
+  "jobTypes": {
+    "fullTime": "Temps plein",
+    "partTime": "Temps partiel",
+    "contract": "Contrat",
+    "remote": "Télétravail",
+    "onsite": "Présentiel",
+    "hybrid": "Hybride"
+  },
+  "search": {
+    "selectAtLeastOne": "Sélectionnez au moins un"
+  },
+  "applications": {
+    "header": {
+      "title": "Candidatures",
+      "subtitle": "Suivez vos candidatures"
+    },
+    "filters": {
+      "all": "Toutes",
+      "pending": "En attente",
+      "shortlisted": "Présélectionné",
+      "rejected": "Rejeté"
+    },
+    "status": {
+      "pending": "En attente",
+      "shortlisted": "Présélectionné",
+      "rejected": "Rejeté",
+      "unknown": "Inconnu"
+    },
+    "list": {
+      "showing": "Affichage de {{count}} candidature(s)",
+      "loading": "Chargement des candidatures...",
+      "applied": "Candidaté"
+    },
+    "buttons": {
+      "viewJob": "Voir l'emploi",
+      "withdraw": "Retirer",
+      "browseJobs": "Parcourir les emplois"
+    },
+    "empty": {
+      "title": "Aucune candidature trouvée",
+      "noApplications": "Vous n'avez postulé à aucun emploi pour le moment.",
+      "noFilteredApplications": "Aucune candidature {{status}} trouvée."
+    },
+    "withdraw": {
+      "title": "Retirer la candidature",
+      "message": "Êtes-vous sûr de vouloir retirer votre candidature pour {{jobTitle}} ?",
+      "confirmBtn": "Retirer",
+      "successTitle": "Succès",
+      "successMessage": "Candidature retirée avec succès",
+      "errorTitle": "Erreur",
+      "errorMessage": "Échec du retrait de la candidature"
+    }
+  },
+  "exploreAll": "Explorer tous les emplois",
+  "allAvailable": "Tous les emplois disponibles"
 }
