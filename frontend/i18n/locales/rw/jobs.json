@@ -28,6 +28,9 @@
   "time": {
     "today": "Uyu munsi",
     "yesterday": "Ejo",
+    "justNow": "Nonaha",
+    "minutesAgo": "iminota {{count}} ishize",
+    "hoursAgo": "amasaha {{count}} ashize",
     "daysAgo": "iminsi {{days}} ishize",
     "weeksAgo": "ibyumbe {{weeks}} ishize",
     "monthsAgo": "amezi {{months}} ishize",
@@ -45,7 +48,15 @@
     "jobPaused": "Akazi kahisemo neza",
     "jobReactivated": "Akazi kongewe neza",
     "jobClosed": "Akazi bifunze neza",
-    "jobRenewed": "Akazi kongerwaho iminsi 30"
+    "jobRenewed": "Akazi kongerwaho iminsi 30",
+    "validationError": "Ikosa mu kuzuza",
+    "error": "Ikosa",
+    "loginRequired": "Ugomba kwinjira kugirango ushyireho akazi.",
+    "loginRequiredDraft": "Ugomba kwinjira kugirango ubike ibyangirisho.",
+    "jobPosted": "Akazi kashyizweho neza!",
+    "errorPosting": "Kwishyiraho akazi ntibyakunze. Ongera ugerageze.",
+    "draftSaved": "Ibyangirisho bibanziwe neza!",
+    "errorSaving": "Kubika ibyangirisho ntibyakunze. Ongera ugerageze."
   },
   "errors": {
     "loginRequired": "Wagombira kongera kureba akazi!",
@@ -63,17 +74,133 @@
   "list": {
     "yourJobPosts": "Amakazi yawe ({{count}})"
   },
+  "postJob": {
+    "title": "Shyiraho Akazi",
+    "subtitle": "Uzuza ibisobanuro kugirango uhakure abakandida bakwiye",
+    "saveDraft": "Bika ibyangirisho",
+    "cancel": "Kureka",
+    "postJob": "Shyiraho",
+    "untitledJob": "Akazi nta zina",
+    "expiryInfo": "Itangazo ry'akazi rizashyikirizwa abakandida nyuma y'iki gihe.",
+    "quickOptions": {
+      "7days": "Iminsi 7",
+      "14days": "Iminsi 14",
+      "30days": "Iminsi 30",
+      "60days": "Iminsi 60",
+      "90days": "Iminsi 90"
+    }
+  },
+  "sections": {
+    "basicInfo": {
+      "title": "Amakuru Shingiro",
+      "jobTitle": "Umutwe w'akazi",
+      "jobTitlePlaceholder": "urugero: Injeniya Mukuru wa Sofitiwari",
+      "location": "Ahantu",
+      "locationPlaceholder": "urugero: Kigali, Rwanda",
+      "salaryRange": "Urugero rw'umushahara (RWF)",
+      "minSalary": "Umushahara muto",
+      "maxSalary": "Umushahara munini",
+      "expiryDate": "Itariki Ntarengwa yo Gusaba"
+    },
+    "jobDetails": {
+      "title": "Ibisobanuro by'akazi",
+      "category": "Itsinda",
+      "jobType": "Ubwoko bw'akazi",
+      "description": "Ibisobanuro by'akazi",
+      "descriptionPlaceholder": "Sobanura umwanya, inshingano n'ibigize uyu mubare w'akazi..."
+    },
+    "requirementsAndSkills": {
+      "title": "Ibisabwa n'Ubuhanga"
+    },
+    "requirements": {
+      "title": "Ibisabwa",
+      "requirementsPlaceholder": "urugero: Imyaka 3+ y'uburambe",
+      "skills": "Ubuhanga busabwa",
+      "skillsPlaceholder": "urugero: React, TypeScript"
+    }
+  },
   "validation": {
-    "titleRequired": "Umutwe w'akazi ukenewe",
-    "locationRequired": "Ahantu hakenewe",
-    "minSalaryRequired": "Umushahara wa gato ukenewe",
-    "maxSalaryRequired": "Umushahara wa hejuru ukenewe",
-    "validSalary": "Andiza amafaranga y'umushahara y'ukuri",
-    "salaryRange": "Umushahara wa hejuru ugomba kuba munini ugereranyije n'uw'hasi",
-    "categoryRequired": "Hitamo itsinda",
-    "jobTypeRequired": "Hitamo kimwe cyangwa byinshi mubwoko bw'akazi",
-    "descriptionRequired": "Ubusobanuro bw'akazi bikenewe",
-    "requirementsRequired": "Ongera kimwe cyangwa byinshi mubikorwa",
-    "expiryDateFuture": "Itariki yo guhera akazi igomba kuba mu gihe kizaza"
-  }
+    "titleRequired": "Umutwe w'akazi ukenewe.",
+    "locationRequired": "Ahantu hakenewe.",
+    "minSalaryRequired": "Umushahara wa gato ukenewe.",
+    "maxSalaryRequired": "Umushahara wa hejuru ukenewe.",
+    "validSalary": "Andiza amafaranga y'umushahara y'ukuri.",
+    "salaryRange": "Umushahara wa hejuru ugomba kuba munini ugereranyije n'uw'hasi.",
+    "categoryRequired": "Hitamo itsinda.",
+    "jobTypeRequired": "Hitamo kimwe cyangwa byinshi mubwoko bw'akazi.",
+    "descriptionRequired": "Ubusobanuro bw'akazi bikenewe.",
+    "requirementsRequired": "Ongera kimwe cyangwa byinshi mubikorwa.",
+    "expiryDateFuture": "Itariki yo guhera akazi igomba kuba mu gihe kizaza."
+  },
+  "jobTypes": {
+    "fullTime": "Igihe cyose",
+    "partTime": "Igice cy'igihe",
+    "contract": "Amasezerano",
+    "remote": "Gukorera kure",
+    "onsite": "Gukorera ahagaragara",
+    "hybrid": "Uburyo bubiri"
+  },
+  "search": {
+    "selectAtLeastOne": "Hitamo nibura kimwe"
+  },
+  "categories": {
+    "all": "Amatsinda yose",
+    "it": "Ikoranabuhanga",
+    "design": "Imishinga",
+    "business": "Ubucuruzi",
+    "construction": "Ubwubatsi",
+    "finance": "Imari",
+    "healthcare": "Ubuzima",
+    "education": "Uburezi",
+    "sales": "Ubucuruzi n'Isoko",
+    "hospitality": "Ubunyamahanga",
+    "transport": "Gutwara",
+    "creative": "Ubuhanzi",
+    "agriculture": "Ubuhinzi",
+    "security": "Umutekano n'Amategeko"
+  },
+  "applications": {
+    "header": {
+      "title": "Ubusabe bwawe",
+      "subtitle": "Kurikirana ubusabe bwawe bw'akazi"
+    },
+    "filters": {
+      "all": "Byose",
+      "pending": "Bitegereje",
+      "shortlisted": "Byatoranyijwe",
+      "rejected": "Byanzwe"
+    },
+    "status": {
+      "pending": "Bitegereje",
+      "shortlisted": "Byatoranyijwe",
+      "rejected": "Byanzwe",
+      "unknown": "Ntibizwi"
+    },
+    "list": {
+      "showing": "Hagaragazwa ubusabe {{count}}",
+      "loading": "Gutegereza ubusabe...",
+      "applied": "Wasabye"
+    },
+    "buttons": {
+      "viewJob": "Reba Akazi",
+      "withdraw": "Kuramo",
+      "browseJobs": "Shaka Akazi"
+    },
+    "empty": {
+      "title": "Nta busabe bwabonetse",
+      "noApplications": "Nturagasaba akazi na kamwe.",
+      "noFilteredApplications": "Nta busabe {{status}} bwabonetse."
+    },
+    "withdraw": {
+      "title": "Kuramo Ubusabe",
+      "message": "Wizeye neza ko ushaka gukuramo ubusabe bwawe kuri {{jobTitle}}?",
+      "confirmBtn": "Kuramo",
+      "successTitle": "Byakunze",
+      "successMessage": "Ubusabe bwakuweho neza",
+      "errorTitle": "Ikosa",
+      "errorMessage": "Gukuramo ubusabe ntibyakunze"
+    }
+  },
+  "exploreAll": "Shakisha Akazi Kose",
+  "allAvailable": "Akazi Kose Gahari"
 }
