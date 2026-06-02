@@ -44,12 +44,9 @@ export default function JobDetailsScreen() {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Application modal state
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
 
-  // Use the apply job hook
   const {
     applying,
     checkingRequirements,
@@ -61,38 +58,21 @@ export default function JobDetailsScreen() {
 
   useEffect(() => {
     fetchJobDetails();
-    if (id) {
-      checkRequirements(id as string);
-    }
+    if (id) checkRequirements(id as string);
   }, [id]);
 
   const fetchJobDetails = async () => {
     try {
       setLoading(true);
       setError(null);
-
       const { data, error: fetchError } = await supabase
         .from("jobs")
-        .select(
-          `
-          *,
-          employer_profiles(
-            company_name,
-            email
-          )
-        `,
-        )
+        .select(`*, employer_profiles(company_name, email)`)
         .eq("id", id)
         .eq("status", "active")
         .single();
-
       if (fetchError) throw fetchError;
-
-      if (!data) {
-        setError("Job not found");
-        return;
-      }
-
+      if (!data) { setError("Job not found"); return; }
       setJob(data);
     } catch (err: any) {
       console.error("Error fetching job:", err);
@@ -104,59 +84,39 @@ export default function JobDetailsScreen() {
 
   const handleApplyClick = async () => {
     if (!id) return;
-
-    // Check requirements before showing modal
     const requirements = await checkRequirements(id as string);
-
     if (!requirements.hasProfile) {
       setInfoAlertTitle("Profile Not Found");
       setInfoAlertMessage("Please create your jobseeker profile first.");
       setShowInfoAlert(true);
       return;
     }
-
     if (requirements.missingFields.length > 0) {
       setInfoAlertTitle("Profile Incomplete");
       setInfoAlertMessage(
-        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`,
+        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`
       );
       setShowInfoAlert(true);
       return;
     }
-
-    // All requirements met, show apply modal
     setShowApplyModal(true);
   };
 
   const handleSubmitApplication = async () => {
     if (!id) return;
-
-    const success = await applyForJob({
-      jobId: id as string,
-      coverLetter,
-    });
-
-    if (success) {
-      setShowApplyModal(false);
-      setCoverLetter("");
-    }
+    const success = await applyForJob({ jobId: id as string, coverLetter });
+    if (success) { setShowApplyModal(false); setCoverLetter(""); }
   };
 
   const formatSalary = (min: number, max: number) => {
-    const formatNumber = (num: number) => {
-      if (num >= 1000) {
-        return `$${(num / 1000).toFixed(0)}k`;
-      }
-      return `$${num}`;
-    };
-    return `${formatNumber(min)} - ${formatNumber(max)}`;
+    const fmt = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
+    return `${fmt(min)} - ${fmt(max)}`;
   };
 
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
     if (seconds < 60) return "Just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -166,31 +126,20 @@ export default function JobDetailsScreen() {
 
   const getCategoryDisplay = (category: string) => {
     const categoryNames: { [key: string]: string } = {
-      it: "IT & Software",
-      design: "Design",
-      business: "Business",
-      construction: "Construction",
-      finance: "Finance",
-      healthcare: "Healthcare",
-      education: "Education",
-      sales: "Sales & Marketing",
-      hospitality: "Hospitality",
-      transport: "Transport",
-      creative: "Creative",
-      agriculture: "Agriculture",
+      it: "IT & Software", design: "Design", business: "Business",
+      construction: "Construction", finance: "Finance", healthcare: "Healthcare",
+      education: "Education", sales: "Sales & Marketing", hospitality: "Hospitality",
+      transport: "Transport", creative: "Creative", agriculture: "Agriculture",
       security: "Security & Law",
     };
-    return (
-      categoryNames[category] ||
-      category.charAt(0).toUpperCase() + category.slice(1)
-    );
+    return categoryNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
   };
 
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-100">
         <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-600 font-quicksandMedium mt-4">
+        <Text className="text-gray-500 font-quicksandMedium mt-3 text-sm">
           Loading job details...
         </Text>
       </View>
@@ -199,14 +148,19 @@ export default function JobDetailsScreen() {
 
   if (error || !job) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100 px-6">
-        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-        <Text className="text-lg font-quicksandBold text-gray-800 mt-4 text-center">
+      <View className="flex-1 justify-center items-center bg-gray-100 px-8">
+        <View className="w-16 h-16 rounded-2xl bg-red-50 items-center justify-center mb-4">
+          <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
+        </View>
+        <Text className="text-base font-quicksandBold text-gray-800 text-center mb-1">
           {error || "Job not found"}
+        </Text>
+        <Text className="text-sm font-quicksandMedium text-gray-400 text-center mb-6">
+          This listing may have been removed or expired.
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="mt-6 bg-cyan-700 px-6 py-3 rounded-2xl"
+          className="bg-cyan-700 px-6 py-3 rounded-2xl"
         >
           <Text className="text-white font-quicksandBold">Go Back</Text>
         </TouchableOpacity>
@@ -214,9 +168,6 @@ export default function JobDetailsScreen() {
     );
   }
 
-  // State hooks must be called at the top level
-
-  // Derived state can come after hooks
   const companyName = job.employer_profiles?.company_name || "Company";
   const salary = formatSalary(job.salary_min, job.salary_max);
   const timeAgo = getTimeAgo(job.created_at);
@@ -225,7 +176,7 @@ export default function JobDetailsScreen() {
 
   return (
     <View className="flex-1 bg-gray-100">
-      {/* Header */}
+      {/* ── TOP HERO — untouched ── */}
       <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700">
         <View className="flex flex-row items-center justify-between">
           <TouchableOpacity onPress={() => router.back()} className="p-2">
@@ -241,7 +192,7 @@ export default function JobDetailsScreen() {
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Job Header */}
+        {/* ── JOB HEADER — untouched ── */}
         <View className="px-4 pt-6">
           <View className="flex flex-row items-start justify-between mb-4">
             <View className="flex flex-row items-center flex-1 mr-3">
@@ -270,7 +221,7 @@ export default function JobDetailsScreen() {
             </View>
           </View>
 
-          {/* Quick Info */}
+          {/* Quick Info — untouched */}
           <View className="flex flex-row flex-wrap gap-3 mb-6">
             <View className="bg-cyan-100 px-4 py-3 rounded-2xl">
               <Text className="text-cyan-700 font-quicksandBold text-sm">
@@ -287,51 +238,57 @@ export default function JobDetailsScreen() {
           </View>
         </View>
 
-        {/* Job Description */}
-        <View className="p-4 m-3 bg-white rounded-2xl">
-          <Text className="text-xl font-quicksandBold text-gray-800 mb-3">
-            Job Description
-          </Text>
-          <Text className="text-gray-600 font-quicksandMedium text-base leading-6">
-            {job.description}
-          </Text>
+        {/* ── BELOW THE FOLD — reworked ── */}
+
+        {/* Description */}
+        <View className="mx-4 mb-3 bg-white rounded-2xl overflow-hidden">
+          <View className="px-4 pt-4 pb-2">
+            <Text className="font-quicksandBold text-[15px] text-gray-900 mb-3">
+              About the role
+            </Text>
+            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 leading-[22px]">
+              {job.description}
+            </Text>
+          </View>
+          {/* bottom accent strip */}
+          <View className="h-[3px] bg-cyan-50 mt-4" />
         </View>
 
-        {/* Experience Level */}
+        {/* Experience + Skills side-by-side context strip */}
         {job.experience_level && (
-          <View className="p-4 m-3 bg-white rounded-2xl">
-            <View className="flex flex-row items-center gap-2 mb-3">
-              <View className="p-3 bg-gray-200 rounded-full">
-                <Ionicons name="briefcase" size={22} color="black" />
+          <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
+            <View className="flex-row items-center gap-2 mb-2">
+              <View className="w-7 h-7 rounded-lg bg-cyan-50 items-center justify-center">
+                <Ionicons name="briefcase-outline" size={15} color="#0E7490" />
               </View>
-              <Text className="text-xl font-quicksandBold text-gray-800">
-                Experience Required
+              <Text className="font-quicksandBold text-[15px] text-gray-900">
+                Experience
               </Text>
             </View>
-            <Text className="text-gray-600 font-quicksandMedium text-base">
+            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 ml-9">
               {job.experience_level}
             </Text>
           </View>
         )}
 
-        {/* Skills Required */}
+        {/* Skills */}
         {job.skills_required && job.skills_required.length > 0 && (
-          <View className="p-4 m-3 bg-white rounded-2xl">
-            <View className="flex flex-row items-center gap-2 mb-3">
-              <View className="p-3 bg-gray-200 rounded-full">
-                <Octicons name="checklist" size={22} color="black" />
+          <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
+            <View className="flex-row items-center gap-2 mb-3">
+              <View className="w-7 h-7 rounded-lg bg-cyan-50 items-center justify-center">
+                <Octicons name="checklist" size={15} color="#0E7490" />
               </View>
-              <Text className="text-xl font-quicksandBold text-gray-800">
-                Required Skills
+              <Text className="font-quicksandBold text-[15px] text-gray-900">
+                Skills required
               </Text>
             </View>
-            <View className="flex flex-row flex-wrap gap-2">
+            <View className="flex-row flex-wrap gap-2">
               {job.skills_required.map((skill, index) => (
                 <View
                   key={index}
-                  className="bg-cyan-50 px-3 py-2 rounded-full border border-cyan-200"
+                  className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full"
                 >
-                  <Text className="text-cyan-700 font-quicksandSemibold text-sm">
+                  <Text className="font-quicksandSemiBold text-[12px] text-gray-700">
                     {skill}
                   </Text>
                 </View>
@@ -340,60 +297,57 @@ export default function JobDetailsScreen() {
           </View>
         )}
 
-        {/* Job Info */}
-        <View className="p-4 m-3 bg-white rounded-2xl">
-          <Text className="text-xl font-quicksandBold text-gray-800 mb-3">
-            Job Information
+        {/* Overview — clean key/value rows */}
+        <View className="mx-4 mb-3 bg-white rounded-2xl px-4 pt-4 pb-1">
+          <Text className="font-quicksandBold text-[15px] text-gray-900 mb-1">
+            Overview
           </Text>
-          <View className="bg-cyan-50 rounded-2xl p-4 space-y-3">
-            <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">Posted</Text>
-              <Text className="text-gray-800 font-quicksandBold">
-                {timeAgo}
-              </Text>
+          {[
+            { label: "Posted", value: timeAgo },
+            { label: "Category", value: categoryDisplay },
+            { label: "Job type", value: jobTypes.join(", ") },
+            { label: "Salary", value: salary },
+            ...(job.experience_level
+              ? [{ label: "Experience", value: job.experience_level }]
+              : []),
+          ].map((row, i, arr) => (
+            <View key={i}>
+              <View className="flex-row items-center justify-between py-3">
+                <Text className="font-quicksandMedium text-[13px] text-gray-400">
+                  {row.label}
+                </Text>
+                <Text className="font-quicksandBold text-[13px] text-gray-800">
+                  {row.value}
+                </Text>
+              </View>
+              {i < arr.length - 1 && (
+                <View className="h-px bg-gray-100" />
+              )}
             </View>
-            <View className="h-px bg-cyan-200" />
-            <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">
-                Category
-              </Text>
-              <Text className="text-gray-800 font-quicksandBold">
-                {categoryDisplay}
-              </Text>
-            </View>
-            <View className="h-px bg-cyan-200" />
-            <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">Type</Text>
-              <Text className="text-gray-800 font-quicksandBold">
-                {jobTypes.join(", ")}
-              </Text>
-            </View>
-            <View className="h-px bg-cyan-200" />
-            <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">Salary</Text>
-              <Text className="text-gray-800 font-quicksandBold">{salary}</Text>
-            </View>
-          </View>
+          ))}
         </View>
 
-        {/* Company Info */}
-        <View className="p-4 m-3 bg-white rounded-2xl">
-          <Text className="text-xl font-quicksandBold text-gray-800 mb-3">
-            About Company
+        {/* Company */}
+        <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
+          <Text className="font-quicksandBold text-[15px] text-gray-900 mb-3">
+            About the company
           </Text>
-          <View className="flex flex-row items-center gap-3 mb-3">
-            <View className="w-12 h-12 rounded-full bg-cyan-100 items-center justify-center flex">
-              <Text className="text-xl font-quicksandBold text-cyan-600">
+          <View className="flex-row items-center gap-3">
+            <View className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-100 items-center justify-center">
+              <Text className="font-quicksandBold text-lg text-cyan-600">
                 {companyName.charAt(0).toUpperCase()}
               </Text>
             </View>
             <View className="flex-1">
-              <Text className="text-lg font-quicksandBold text-gray-800">
-                {companyName}
-              </Text>
-              <View className="flex flex-row items-center gap-1 mt-1">
-                <Ionicons name="location" size={14} color="#6B7280" />
-                <Text className="text-gray-600 font-quicksandMedium text-sm">
+              <View className="flex-row items-center gap-1.5 mb-0.5">
+                <Text className="font-quicksandBold text-[14px] text-gray-900">
+                  {companyName}
+                </Text>
+                <MaterialIcons name="verified" size={14} color="#0E7490" />
+              </View>
+              <View className="flex-row items-center gap-1">
+                <Ionicons name="location-outline" size={13} color="#9CA3AF" />
+                <Text className="font-quicksandMedium text-[12px] text-gray-400">
                   {job.location}
                 </Text>
               </View>
@@ -401,143 +355,145 @@ export default function JobDetailsScreen() {
           </View>
         </View>
 
-        <View className="h-24" />
+        <View className="h-28" />
       </ScrollView>
 
-      {/* Apply Button */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-4">
+      {/* ── APPLY BAR ── */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4">
         {hasApplied ? (
-          <View className="bg-green-100 rounded-2xl py-4 flex flex-row justify-center items-center">
-            <Ionicons name="checkmark-circle" size={20} color="#059669" />
-            <Text className="text-green-700 font-quicksandBold text-lg ml-2">
-              Already Applied
+          <View className="flex-row items-center justify-center gap-2 bg-green-50 border border-green-100 rounded-2xl py-4">
+            <Ionicons name="checkmark-circle" size={18} color="#059669" />
+            <Text className="font-quicksandBold text-[15px] text-green-700">
+              Application submitted
             </Text>
           </View>
         ) : (
           <TouchableOpacity
             onPress={handleApplyClick}
             disabled={checkingRequirements}
-            className="bg-cyan-700 rounded-2xl py-4 flex flex-row justify-center items-center"
+            activeOpacity={0.85}
+            className="bg-gray-900 rounded-2xl py-4 flex-row items-center justify-center gap-2"
           >
             {checkingRequirements ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color="white" size="small" />
             ) : (
               <>
-                <Text className="text-white font-quicksandBold text-lg mr-2">
-                  Apply Now
+                <Text className="font-quicksandBold text-[15px] text-white">
+                  Apply now
                 </Text>
-                <MaterialIcons name="arrow-outward" size={20} color="white" />
+                <MaterialIcons name="arrow-outward" size={18} color="white" />
               </>
             )}
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Application Modal */}
+      {/* ── APPLY MODAL ── */}
       <Modal
         visible={showApplyModal}
         animationType="slide"
-        transparent={true}
+        transparent
         onRequestClose={() => setShowApplyModal(false)}
       >
-        <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl p-6 max-h-[80%]">
-            <View className="flex flex-row justify-between items-center mb-6">
-              <Text className="text-2xl font-quicksandBold text-gray-800">
-                Apply for this job
+        <View className="flex-1 justify-end bg-black/40">
+          <View className="bg-white rounded-t-3xl px-5 pt-4 pb-8 max-h-[85%]">
+            {/* Drag handle */}
+            <View className="w-10 h-1 rounded-full bg-gray-200 self-center mb-5" />
+
+            <View className="flex-row items-center justify-between mb-5">
+              <Text className="font-quicksandBold text-[20px] text-gray-900">
+                Apply for role
               </Text>
-              <TouchableOpacity onPress={() => setShowApplyModal(false)}>
-                <Ionicons name="close-circle" size={28} color="#6B7280" />
+              <TouchableOpacity
+                onPress={() => setShowApplyModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              >
+                <Ionicons name="close" size={16} color="#374151" />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Job Summary */}
-              <View className="bg-cyan-50 p-4 rounded-2xl mb-4">
-                <Text className="text-lg font-quicksandBold text-gray-800 mb-1">
-                  {job.title}
-                </Text>
-                <Text className="text-gray-600 font-quicksandMedium">
-                  {companyName}
-                </Text>
-                <Text className="text-cyan-700 font-quicksandSemibold mt-2">
-                  {salary}
-                </Text>
+              {/* Job summary */}
+              <View className="flex-row items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4">
+                <View className="w-10 h-10 rounded-xl bg-cyan-50 items-center justify-center">
+                  <Text className="font-quicksandBold text-[15px] text-cyan-700">
+                    {companyName.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="font-quicksandBold text-[14px] text-gray-900 leading-tight">
+                    {job.title}
+                  </Text>
+                  <Text className="font-quicksandMedium text-[12px] text-gray-400">
+                    {companyName} · {salary}
+                  </Text>
+                </View>
               </View>
 
-              {/* Profile Status */}
+              {/* Profile status */}
               {profile && (
-                <View className="bg-green-50 p-4 rounded-2xl mb-4 border border-green-200">
-                  <View className="flex flex-row items-center gap-2 mb-2">
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={20}
-                      color="#059669"
-                    />
-                    <Text className="text-green-800 font-quicksandBold">
-                      Profile Complete
+                <View className="flex-row items-center gap-2 bg-green-50 border border-green-100 rounded-2xl px-4 py-3 mb-4">
+                  <Ionicons name="checkmark-circle" size={16} color="#059669" />
+                  <Text className="font-quicksandMedium text-[13px] text-green-700 flex-1">
+                    Applying as{" "}
+                    <Text className="font-quicksandBold">
+                      {profile.first_name} {profile.last_name}
                     </Text>
-                  </View>
-                  <Text className="text-green-700 font-quicksandMedium text-sm">
-                    {profile.first_name} {profile.last_name}
-                  </Text>
-                  <Text className="text-green-700 font-quicksandMedium text-sm">
-                    {profile.email}
                   </Text>
                 </View>
               )}
 
-              {/* Cover Letter */}
-              <View className="mb-6">
-                <View className="flex flex-row justify-between items-center mb-2">
-                  <Text className="text-base font-quicksandSemibold text-gray-800">
-                    Cover Letter
+              {/* Cover letter */}
+              <View className="mb-2">
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="font-quicksandSemiBold text-[14px] text-gray-900">
+                    Cover letter
                   </Text>
-                  <Text className="text-gray-500 font-quicksandMedium text-sm">
+                  <Text className="font-quicksandMedium text-[12px] text-gray-400">
                     Optional
                   </Text>
                 </View>
                 <TextInput
                   value={coverLetter}
                   onChangeText={setCoverLetter}
-                  placeholder="Tell the employer why you're a great fit for this role..."
-                  placeholderTextColor="#9CA3AF"
+                  placeholder="Why are you a great fit for this role?"
+                  placeholderTextColor="#D1D5DB"
                   multiline
-                  numberOfLines={6}
                   textAlignVertical="top"
-                  className="bg-gray-50 rounded-2xl p-4 font-quicksandMedium text-gray-800 min-h-[150px]"
-                  style={{ fontSize: 15 }}
+                  className="bg-gray-50 border border-gray-200 rounded-2xl p-4 font-quicksandMedium text-gray-800 min-h-[140px] text-[14px]"
                 />
-                <Text className="text-gray-500 font-quicksandMedium text-sm mt-2">
-                  {coverLetter.length} characters
+                <Text className="font-quicksandMedium text-[11px] text-gray-300 mt-1.5 text-right">
+                  {coverLetter.length} chars
                 </Text>
               </View>
 
-              {/* Submit Button */}
+              {/* Submit */}
               <TouchableOpacity
                 onPress={handleSubmitApplication}
                 disabled={applying}
-                className="bg-cyan-700 rounded-2xl py-4 flex flex-row justify-center items-center mb-4"
+                activeOpacity={0.85}
+                className="bg-gray-900 rounded-2xl py-4 flex-row items-center justify-center gap-2 mt-3 mb-3"
               >
                 {applying ? (
-                  <ActivityIndicator color="white" />
+                  <ActivityIndicator color="white" size="small" />
                 ) : (
                   <>
-                    <Text className="text-white font-quicksandBold text-lg mr-2">
-                      Submit Application
+                    <Text className="font-quicksandBold text-[15px] text-white">
+                      Submit application
                     </Text>
-                    <Ionicons name="send" size={18} color="white" />
+                    <Ionicons name="send" size={15} color="white" />
                   </>
                 )}
               </TouchableOpacity>
 
-              <Text className="text-center text-gray-500 font-quicksandMedium text-sm">
-                Your application will be sent to {companyName}
+              <Text className="text-center font-quicksandMedium text-[12px] text-gray-300 mb-2">
+                Your application will be sent directly to {companyName}
               </Text>
             </ScrollView>
           </View>
         </View>
       </Modal>
+
       <InfoAlertModal
         visible={showInfoAlert}
         title={infoAlertTitle}
