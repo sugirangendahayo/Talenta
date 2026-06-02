@@ -188,5 +188,13 @@
     "updated": "Mis à jour avec succès",
     "copied": "Copié dans le presse-papiers",
     "shared": "Partagé avec succès"
+  },
+  "notificationsScreen": {
+    "title": "Notifications",
+    "unreadCount": "{{count}} non lu(s)",
+    "markAllRead": "Tout marquer comme lu",
+    "emptyTitle": "Aucune notification pour le moment",
+    "emptyMessage": "Lorsque vous recevrez des mises à jour sur vos candidatures, elles apparaîtront ici.",
+    "loading": "Chargement des notifications..."
   }
 }
