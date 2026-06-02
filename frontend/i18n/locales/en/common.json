@@ -188,5 +188,13 @@
     "updated": "Updated successfully",
     "copied": "Copied to clipboard",
     "shared": "Shared successfully"
+  },
+  "notificationsScreen": {
+    "title": "Notifications",
+    "unreadCount": "{{count}} unread",
+    "markAllRead": "Mark all read",
+    "emptyTitle": "No Notifications Yet",
+    "emptyMessage": "When you receive updates about your applications, they'll appear here.",
+    "loading": "Loading notifications..."
   }
 }
