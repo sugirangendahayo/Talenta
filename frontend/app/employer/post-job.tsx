@@ -261,7 +261,7 @@ export default function PostJob() {
                   />
                 </View>
                 <Text className="text-lg font-quicksandBold text-gray-800">
-                  Basic Information
+                  {t("sections.basicInfo.title")}
                 </Text>
               </View>
 
