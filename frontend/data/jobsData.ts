@@ -13,6 +13,7 @@ export const jobsData: Job[] = [
     description: "We are looking for a skilled Frontend Developer to join our team...",
     requirements: ["React", "TypeScript", "CSS", "3+ years experience"],
     logo: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png"
+    
   },
   {
     id: "2",
