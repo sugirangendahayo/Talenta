@@ -13,7 +13,8 @@ import {
   EmployerProfile,
 } from "@/lib/supabase";
 import { Session, User } from "@supabase/supabase-js";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // NEW: Import for onboarding storage
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { applyUserLanguage, resetToDeviceLanguage } from "@/i18n/config";
 
 interface AuthContextType {
   session: Session | null;
@@ -181,6 +182,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const userRole = profileData.role as Role;
             setRole(userRole);
             await fetchProfile(initialSession.user.id, userRole);
+            // Apply this user's saved language preference
+            await applyUserLanguage(initialSession.user.id);
           }
         }
       } catch (error) {
@@ -221,6 +224,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const userRole = profileData.role as Role;
           setRole(userRole);
           await fetchProfile(newSession.user.id, userRole);
+          // Apply this user's saved language preference
+          await applyUserLanguage(newSession.user.id);
         }
       } else {
         setRole(null);
@@ -246,8 +251,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setRole(null);
       setProfile(null);
-      // NEW: Optionally reset onboarding on sign out (if desired; otherwise omit)
-      // setHasSeenOnboarding(false);
+      // Reset language to device/global default so it doesn't bleed into the next user's session
+      await resetToDeviceLanguage();
     } catch (error) {
       console.error("Error signing out:", error);
       throw error;
