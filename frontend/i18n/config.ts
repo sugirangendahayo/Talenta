@@ -10,7 +10,11 @@ import en from './locales/en';
 import fr from './locales/fr';
 import rw from './locales/rw';
 
-const LANGUAGE_KEY = '@app_language';
+/** Global fallback key (device-level, used before any user logs in) */
+const GLOBAL_LANGUAGE_KEY = '@app_language';
+
+/** Returns the per-user AsyncStorage key */
+const userLanguageKey = (userId: string) => `@app_language_${userId}`;
 
 // Supported languages
 const supportedLanguages = ['en', 'fr', 'rw'] as const;
@@ -28,15 +32,66 @@ const getDeviceLanguage = () => {
 };
 
 /**
- * Load saved language OR fallback to device language
+ * Load the device-level fallback language (used on app start before login)
  */
 const getInitialLanguage = async () => {
   try {
-    const saved = await AsyncStorage.getItem(LANGUAGE_KEY);
+    const saved = await AsyncStorage.getItem(GLOBAL_LANGUAGE_KEY);
     return saved || getDeviceLanguage();
   } catch {
     return getDeviceLanguage();
   }
+};
+
+/**
+ * Load a specific user's saved language preference.
+ * Falls back to the global/device language if none is stored.
+ */
+export const loadLanguageForUser = async (userId: string): Promise<string> => {
+  try {
+    const saved = await AsyncStorage.getItem(userLanguageKey(userId));
+    if (saved) return saved;
+    // No user-specific preference — use the global/device default
+    const globalSaved = await AsyncStorage.getItem(GLOBAL_LANGUAGE_KEY);
+    return globalSaved || getDeviceLanguage();
+  } catch {
+    return getDeviceLanguage();
+  }
+};
+
+/**
+ * Save a language for a specific user (scoped to userId).
+ * Also updates i18n immediately.
+ */
+export const saveLanguageForUser = async (userId: string, language: string) => {
+  await AsyncStorage.setItem(userLanguageKey(userId), language);
+  i18n.changeLanguage(language);
+};
+
+/**
+ * Save language globally (device-level, no user scope).
+ * Use this only when no user is logged in.
+ * @deprecated Prefer saveLanguageForUser when a user is authenticated.
+ */
+export const saveLanguage = async (language: string) => {
+  await AsyncStorage.setItem(GLOBAL_LANGUAGE_KEY, language);
+  i18n.changeLanguage(language);
+};
+
+/**
+ * Apply a user's saved language to i18n (call after login).
+ */
+export const applyUserLanguage = async (userId: string) => {
+  const lang = await loadLanguageForUser(userId);
+  i18n.changeLanguage(lang);
+};
+
+/**
+ * Reset to the device/global language (call after logout).
+ */
+export const resetToDeviceLanguage = async () => {
+  const lang = await getInitialLanguage();
+  i18n.changeLanguage(lang);
 };
 
 /**
@@ -62,14 +117,6 @@ const initI18n = async () => {
         useSuspense: false,
       },
     });
-};
-
-/**
- * Save user-selected language
- */
-export const saveLanguage = async (language: string) => {
-  await AsyncStorage.setItem(LANGUAGE_KEY, language);
-  i18n.changeLanguage(language);
 };
 
 // Initialize immediately
