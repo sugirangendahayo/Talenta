@@ -39,7 +39,8 @@
   "stats": {
     "jobsAvailable": "Emplois disponibles",
     "companiesHiring": "Entreprises qui recrutent",
-    "newToday": "Nouveaux aujourd'hui"
+    "newToday": "Nouveaux aujourd'hui",
+    "newAvailable": "{{count}} nouveaux emplois disponibles"
   },
   "emptyStates": {
     "noJobs": "Aucun emploi disponible pour le moment",
