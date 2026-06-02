@@ -1,4 +1,4 @@
-import { saveLanguage } from "@/i18n/config";
+import { saveLanguage, saveLanguageForUser } from "@/i18n/config";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,18 +27,25 @@ const LANGUAGES: Language[] = [
 interface LanguageSelectorProps {
   visible: boolean;
   onClose: () => void;
+  /** When provided, language is saved per-user instead of globally */
+  userId?: string;
 }
 
 export default function LanguageSelector({
   visible,
   onClose,
+  userId,
 }: LanguageSelectorProps) {
   const { t, i18n } = useTranslation("profile");
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
   const handleSelectLanguage = async (languageCode: string) => {
     setSelectedLanguage(languageCode);
-    await saveLanguage(languageCode);
+    if (userId) {
+      await saveLanguageForUser(userId, languageCode);
+    } else {
+      await saveLanguage(languageCode);
+    }
     // Small delay to show selection before closing
     setTimeout(() => {
       onClose();
