@@ -4,15 +4,20 @@
   "stats": {
     "activeJobs": "Akazi akora",
     "applicants": "Abashakwaho", 
-    "hired": "Abashyizweho akazi"
+    "hired": "Abashyizweho akazi",
+    "applications": "Ubusabe",
+    "interviews": "Ibiganiro",
+    "profile": "Imyirondoro"
   },
   "sections": {
     "account": {
-      "title": "Konti",
+      "title": "Konti bwite",
       "editProfile": "Hindura ibyinshiheho",
       "teamManagement": "Kuyobora itsinda",
       "verification": "Kugenzura",
-      "privacy": "Ibanga"
+      "privacy": "Ibanga & Umutekano",
+      "educationAndSkills": "Amashuri & Ubumenyi",
+      "profileCompletion": "Kuzuza imyirondoro"
     },
     "language": {
       "title": "Ururimi",
@@ -22,11 +27,14 @@
       "currentLanguage": "Ururimi rw'ibyo ushaka"
     },
     "preferences": {
-      "title": "Ibyahisemo",
+      "title": "Ibyahisemo by'akazi",
       "applicationAlerts": "Iburira ryo kwizihizwa",
       "emailNotifications": "Amatangazo ya imeri",
       "defaultFilters": "Muyunguruzo z'igenamiterere",
-      "autoReply": "Igisubizo cyihuse"
+      "autoReply": "Igisubizo cyihuse",
+      "jobAlerts": "Iburira ry'akazi",
+      "jobPreferences": "Ibyahisemo by'akazi",
+      "locationSettings": "Igenamiterere ry'aho uherereye"
     },
     "billing": {
       "title": "Kwishyura",
@@ -35,19 +43,30 @@
       "billingHistory": "Amateka yo kwishyura",
       "upgrade": "Kuvugurura"
     },
+    "documents": {
+      "title": "Inyandiko",
+      "resume": "CV",
+      "idDocuments": "Ibyangombwa by'indangamuntu",
+      "certifications": "Ibyemezo",
+      "portfolio": "Porotofoliyo"
+    },
     "support": {
       "title": "Gufasha",
       "contactSupport": "Twandikire",
       "resources": "Ibikoresho",
       "terms": "Amategeko yo gukoresha",
-      "privacy": "Politiki y'ibanga"
+      "privacy": "Politiki y'ibanga",
+      "jobSearchTips": "Inama zo gushaka akazi"
     }
   },
   "quickActions": {
     "title": "Ibikorwa byihuse",
     "postJob": "Shakira akazi",
     "applicants": "Abashakwaho",
-    "analytics": "Analitiki"
+    "analytics": "Analitiki",
+    "findJobs": "Shaka Akazi",
+    "updateCV": "Vugurura CV",
+    "myStats": "Imibare yanjye"
   },
   "logout": {
     "button": "Sohoka",
@@ -57,7 +76,9 @@
   "status": {
     "verified": "Yagenwe neza",
     "pending": "Biteganyijwe",
-    "loading": "Ikorwa ibyinshiheho..."
+    "loading": "Ikorwa ibyinshiheho...",
+    "complete": "Yuzuye",
+    "incomplete": "Icyuzuye"
   },
   "companyInfo": {
     "companyName": "Izina ry'isosiyete",
