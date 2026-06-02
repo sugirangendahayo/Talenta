@@ -126,7 +126,7 @@ export default function ExpiryDatePicker({
                       : "text-green-700"
                 }`}
               >
-                {daysLeft} days active
+                {daysLeft} {t("time.daysLeft")}
               </Text>
             </View>
           </View>
