@@ -4,15 +4,20 @@
   "stats": {
     "activeJobs": "Emplois actifs",
     "applicants": "Candidats", 
-    "hired": "Embauchés"
+    "hired": "Embauchés",
+    "applications": "Candidatures",
+    "interviews": "Entretiens",
+    "profile": "Profil"
   },
   "sections": {
     "account": {
-      "title": "Compte",
+      "title": "Compte Personnel",
       "editProfile": "Modifier le profil",
       "teamManagement": "Gestion d'équipe",
       "verification": "Vérification",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité & Sécurité",
+      "educationAndSkills": "Éducation & Compétences",
+      "profileCompletion": "Complétion du profil"
     },
     "language": {
       "title": "Langue",
@@ -26,7 +31,10 @@
       "applicationAlerts": "Alertes de candidature",
       "emailNotifications": "Notifications par email",
       "defaultFilters": "Filtres par défaut",
-      "autoReply": "Réponse automatique"
+      "autoReply": "Réponse automatique",
+      "jobAlerts": "Alertes d'emploi",
+      "jobPreferences": "Préférences d'emploi",
+      "locationSettings": "Paramètres de localisation"
     },
     "billing": {
       "title": "Facturation",
@@ -35,19 +43,30 @@
       "billingHistory": "Historique de facturation",
       "upgrade": "Mettre à niveau"
     },
+    "documents": {
+      "title": "Documents",
+      "resume": "CV/Résumé",
+      "idDocuments": "Pièces d'identité",
+      "certifications": "Certifications",
+      "portfolio": "Portfolio"
+    },
     "support": {
       "title": "Support",
       "contactSupport": "Contacter le support",
       "resources": "Ressources",
       "terms": "Conditions d'utilisation",
-      "privacy": "Politique de confidentialité"
+      "privacy": "Politique de confidentialité",
+      "jobSearchTips": "Conseils de recherche d'emploi"
     }
   },
   "quickActions": {
     "title": "Actions rapides",
     "postJob": "Publier un emploi",
     "applicants": "Candidats",
-    "analytics": "Analyses"
+    "analytics": "Analyses",
+    "findJobs": "Trouver des emplois",
+    "updateCV": "Mettre à jour le CV",
+    "myStats": "Mes Statistiques"
   },
   "logout": {
     "button": "Déconnexion",
@@ -57,7 +76,9 @@
   "status": {
     "verified": "Vérifié",
     "pending": "En attente",
-    "loading": "Chargement du profil..."
+    "loading": "Chargement du profil...",
+    "complete": "Complet",
+    "incomplete": "Incomplet"
   },
   "companyInfo": {
     "companyName": "Nom de l'entreprise",
