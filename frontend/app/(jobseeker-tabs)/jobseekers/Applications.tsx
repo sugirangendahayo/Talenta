@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function Applications() {
   const router = useRouter();
@@ -22,15 +23,16 @@ export default function Applications() {
   >("all");
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
+  const { t } = useTranslation("jobs");
 
   const { applications, loading, refreshing, refresh, withdrawApplication } =
     useApplications({ status: activeFilter });
 
   const filters = [
-    { id: "all" as const, label: "All" },
-    { id: "pending" as const, label: "Pending" },
-    { id: "shortlisted" as const, label: "Shortlisted" },
-    { id: "rejected" as const, label: "Rejected" },
+    { id: "all" as const, label: t("applications.filters.all") },
+    { id: "pending" as const, label: t("applications.filters.pending") },
+    { id: "shortlisted" as const, label: t("applications.filters.shortlisted") },
+    { id: "rejected" as const, label: t("applications.filters.rejected") },
   ];
 
   const getStatusColor = (status: string) => {
@@ -39,18 +41,18 @@ export default function Applications() {
         return {
           bg: "bg-yellow-100",
           text: "text-yellow-700",
-          label: "Pending",
+          label: t("applications.status.pending"),
         };
       case "shortlisted":
         return {
           bg: "bg-green-100",
           text: "text-green-700",
-          label: "Shortlisted",
+          label: t("applications.status.shortlisted"),
         };
       case "rejected":
-        return { bg: "bg-red-100", text: "text-red-700", label: "Rejected" };
+        return { bg: "bg-red-100", text: "text-red-700", label: t("applications.status.rejected") };
       default:
-        return { bg: "bg-gray-100", text: "text-gray-700", label: "Unknown" };
+        return { bg: "bg-gray-100", text: "text-gray-700", label: t("applications.status.unknown") };
     }
   };
 
@@ -82,31 +84,31 @@ export default function Applications() {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-    return `${Math.floor(seconds / 604800)} weeks ago`;
+    if (seconds < 60) return t("time.justNow");
+    if (seconds < 3600) return t("time.minutesAgo", { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t("time.hoursAgo", { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t("time.daysAgo", { days: Math.floor(seconds / 86400) });
+    return t("time.weeksAgo", { weeks: Math.floor(seconds / 604800) });
   };
 
   const handleWithdraw = (applicationId: string, jobTitle: string) => {
     Alert.alert(
-      "Withdraw Application",
-      `Are you sure you want to withdraw your application for ${jobTitle}?`,
+      t("applications.withdraw.title"),
+      t("applications.withdraw.message", { jobTitle }),
       [
         {
-          text: "Cancel",
+          text: t("buttons.cancel"),
           style: "cancel",
         },
         {
-          text: "Withdraw",
+          text: t("applications.withdraw.confirmBtn"),
           style: "destructive",
           onPress: async () => {
             const success = await withdrawApplication(applicationId);
             if (success) {
-              Alert.alert("Success", "Application withdrawn successfully");
+              Alert.alert(t("applications.withdraw.successTitle"), t("applications.withdraw.successMessage"));
             } else {
-              Alert.alert("Error", "Failed to withdraw application");
+              Alert.alert(t("applications.withdraw.errorTitle"), t("applications.withdraw.errorMessage"));
             }
           },
         },
@@ -142,10 +144,10 @@ export default function Applications() {
         <View className="flex flex-row items-center justify-between">
           <View>
             <Text className="text-3xl font-quicksandBold text-gray-800">
-              Applications
+              {t("applications.header.title")}
             </Text>
             <Text className="text-gray-500 font-quicksandMedium mt-1">
-              Track your job applications
+              {t("applications.header.subtitle")}
             </Text>
           </View>
           <TouchableOpacity
@@ -186,8 +188,7 @@ export default function Applications() {
       {!loading && (
         <View className="px-6 py-4 bg-white border-b border-gray-200">
           <Text className="text-gray-600 font-quicksandMedium">
-            Showing {applications.length} application
-            {applications.length !== 1 ? "s" : ""}
+            {t("applications.list.showing", { count: applications.length })}
           </Text>
         </View>
       )}
@@ -197,7 +198,7 @@ export default function Applications() {
         <View className="flex-1 items-center justify-center flex">
           <ActivityIndicator size="large" color="#0E7490" />
           <Text className="text-gray-600 font-quicksandMedium mt-4">
-            Loading applications...
+            {t("applications.list.loading")}
           </Text>
         </View>
       ) : (
@@ -310,7 +311,7 @@ export default function Applications() {
                           />
                         </View>
                         <Text className="text-gray-600 font-quicksandMedium text-xs ml-2">
-                          Applied {timeAgo}
+                          {t("applications.list.applied")} {timeAgo}
                         </Text>
                       </View>
                     </View>
@@ -327,7 +328,7 @@ export default function Applications() {
                           color="#6B7280"
                         />
                         <Text className="text-gray-700 font-quicksandMedium text-sm ml-2">
-                          View Job
+                          {t("applications.buttons.viewJob")}
                         </Text>
                       </TouchableOpacity>
                       {application.status === "pending" && (
@@ -346,7 +347,7 @@ export default function Applications() {
                             color="#DC2626"
                           />
                           <Text className="text-red-600 font-quicksandMedium text-sm ml-2">
-                            Withdraw
+                            {t("applications.buttons.withdraw")}
                           </Text>
                         </TouchableOpacity>
                       )}
@@ -360,19 +361,19 @@ export default function Applications() {
             <View className="flex-1 items-center justify-center flex py-20 px-8">
               <Ionicons name="document-outline" size={80} color="#D1D5DB" />
               <Text className="text-2xl font-quicksandBold text-gray-800 mt-6 text-center">
-                No applications found
+                {t("applications.empty.title")}
               </Text>
               <Text className="text-gray-500 font-quicksandMedium text-base mt-2 text-center">
                 {activeFilter === "all"
-                  ? "You haven't applied to any jobs yet."
-                  : `No ${activeFilter} applications found.`}
+                  ? t("applications.empty.noApplications")
+                  : t("applications.empty.noFilteredApplications", { status: activeFilter })}
               </Text>
               <TouchableOpacity
                 onPress={() => router.push("/(jobseeker-tabs)/jobseekers/Jobs")}
                 className="bg-cyan-700 rounded-2xl px-6 py-3 mt-6"
               >
                 <Text className="text-white font-quicksandBold text-base">
-                  Browse Jobs
+                  {t("applications.buttons.browseJobs")}
                 </Text>
               </TouchableOpacity>
             </View>
