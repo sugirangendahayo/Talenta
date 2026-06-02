@@ -8,10 +8,11 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  Text,
   TouchableOpacity,
   View,
+  Text,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface JobsListProps {
   selectedCategory: string;
@@ -25,6 +26,7 @@ const JobsList: React.FC<JobsListProps> = ({
   onScroll,
 }) => {
   const router = useRouter();
+  const { t } = useTranslation(["home", "jobs"]);
 
   const {
     jobs,
@@ -66,11 +68,11 @@ const JobsList: React.FC<JobsListProps> = ({
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-    return `${Math.floor(seconds / 604800)}w ago`;
+    if (seconds < 60) return t("jobs:time.justNow");
+    if (seconds < 3600) return t("jobs:time.minutesAgo", { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t("jobs:time.hoursAgo", { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t("jobs:time.daysAgo", { days: Math.floor(seconds / 86400) });
+    return t("jobs:time.weeksAgo", { weeks: Math.floor(seconds / 604800) });
   };
 
   const renderJobItem = ({ item }: { item: any }) => {
@@ -155,12 +157,12 @@ const JobsList: React.FC<JobsListProps> = ({
         >
           <Ionicons name="arrow-up" size={16} color="white" />
           <Text className="text-white font-quicksandBold text-sm ml-2">
-            {newJobsCount} new {newJobsCount === 1 ? "job" : "jobs"} available
+            {t("home:stats.newAvailable", { count: newJobsCount })}
           </Text>
         </TouchableOpacity>
       )}
       <Text className="text-2xl font-quicksandBold text-gray-800 px-4 pb-2">
-        All Available Jobs
+        {t("jobs:allAvailable")}
       </Text>
     </>
   );
@@ -180,10 +182,10 @@ const JobsList: React.FC<JobsListProps> = ({
       <View className="flex-1 items-center justify-center flex py-20 px-8">
         <Ionicons name="search-outline" size={64} color="#D1D5DB" />
         <Text className="text-xl font-quicksandBold text-gray-800 mt-4 text-center">
-          No jobs found
+          {t("home:emptyStates.noJobs")}
         </Text>
         <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center">
-          {error ? error : "Try adjusting your filters or search terms"}
+          {error ? error : t("home:search.noResults")}
         </Text>
       </View>
     );
@@ -194,7 +196,7 @@ const JobsList: React.FC<JobsListProps> = ({
       <View className="flex-1 items-center justify-center bg-gray-50">
         <ActivityIndicator size="large" color="#0E7490" />
         <Text className="text-gray-600 font-quicksandMedium mt-4">
-          Loading jobs...
+          {t("home:messages.loading")}
         </Text>
       </View>
     );
