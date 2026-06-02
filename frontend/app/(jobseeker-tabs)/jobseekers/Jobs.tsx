@@ -6,35 +6,33 @@ import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useState, useRef } from "react";
 import { View, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 interface Category {
   id: string;
   name: string;
 }
 
-const categoryNames: { [key: string]: string } = {
-  it: "IT & Software",
-  design: "Design",
-  business: "Business",
-  construction: "Construction",
-  finance: "Finance",
-  healthcare: "Healthcare",
-  education: "Education",
-  sales: "Sales & Marketing",
-  hospitality: "Hospitality",
-  transport: "Transport",
-  creative: "Creative",
-  agriculture: "Agriculture",
-  security: "Security & Law",
-};
-
 export default function Jobs() {
+  const { t } = useTranslation("categories");
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
 
   const categories: Category[] = [
-    { id: "all", name: "All" },
-    ...Object.entries(categoryNames).map(([id, name]) => ({ id, name })),
+    { id: "all", name: t("all") },
+    { id: "it", name: t("categories.it") },
+    { id: "design", name: t("categories.design") },
+    { id: "business", name: t("categories.business") },
+    { id: "construction", name: t("categories.construction") },
+    { id: "finance", name: t("categories.finance") },
+    { id: "healthcare", name: t("categories.healthcare") },
+    { id: "education", name: t("categories.education") },
+    { id: "sales", name: t("categories.sales") },
+    { id: "hospitality", name: t("categories.hospitality") },
+    { id: "transport", name: t("categories.transport") },
+    { id: "creative", name: t("categories.creative") },
+    { id: "agriculture", name: t("categories.agriculture") },
+    { id: "security", name: t("categories.security") },
   ];
 
   const [selectedCategory, setSelectedCategory] = useState("all");
