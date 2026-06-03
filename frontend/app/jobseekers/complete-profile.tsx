@@ -647,6 +647,7 @@ export default function CompleteProfileScreen() {
               <ActivityIndicator color="white" />
             ) : (
               <>
+              {/* save profile */}
                 <Text className="text-white font-quicksandBold text-lg mr-2">
                   Save Profile
                 </Text>
