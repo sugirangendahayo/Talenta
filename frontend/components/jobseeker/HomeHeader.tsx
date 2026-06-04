@@ -53,7 +53,7 @@ export default function HomeHeader() {
         </View>
         <View className="p-2 rounded-3xl bg-gray-100 relative">
           <TouchableOpacity onPress={handleNotificationsPress}>
-            {/* Inner shadow */}
+            {/* Inner shadow here*/}
             <View
               className="absolute inset-0 rounded-full"
               style={{

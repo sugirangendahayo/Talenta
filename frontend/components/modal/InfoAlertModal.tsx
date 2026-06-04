@@ -20,7 +20,7 @@ export default function InfoAlertModal({
     <Modal transparent animationType="fade" visible={visible}>
       <View className="flex-1 bg-black/50 justify-center items-center px-6">
         <View className="bg-white w-full rounded-3xl p-6 max-h-[75%]">
-          {/* Header */}
+          {/* Header here!*/}
           <View className="flex-row items-center mb-4">
             <Ionicons
               name="alert-circle"
