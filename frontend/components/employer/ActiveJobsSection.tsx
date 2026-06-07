@@ -13,26 +13,21 @@ interface JobCardProps {
 
 const JobCard = ({ job, onRefresh }: JobCardProps) => {
   const router = useRouter();
- const { t } = useTranslation(["dashboard", "common"]);
+  const { t } = useTranslation(["dashboard", "common"]);
 
-
-  // Calculate days until expiry
   const getDaysUntilExpiry = () => {
     if (!job.expires_at) return null;
     const expiry = new Date(job.expires_at);
     const today = new Date();
     const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Calculate days active
   const getDaysActive = () => {
     const created = new Date(job.created_at);
     const today = new Date();
     const diffTime = today.getTime() - created.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const daysUntilExpiry = getDaysUntilExpiry();
@@ -43,7 +38,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
     if (job.salary_min && job.salary_max) {
       const formatNum = (num: number) =>
         num >= 1000 ? `$${(num / 1000).toFixed(0)}k` : `$${num}`;
-      return `${formatNum(job.salary_min)} - ${formatNum(job.salary_max)}`;
+      return `${formatNum(job.salary_min)} – ${formatNum(job.salary_max)}`;
     }
     return job.salary_min
       ? `From $${job.salary_min}`
@@ -64,9 +59,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
               const { error } = await supabase.rpc("pause_job", {
                 job_id: job.id,
               });
-
               if (error) throw error;
-
               toast.success(t("jobs.pausedSuccess"));
               onRefresh();
             } catch (error: any) {
@@ -81,7 +74,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
 
   return (
     <TouchableOpacity
-      className="bg-gray-50 rounded-xl p-3 border border-gray-200 mb-3"
+      className="bg-gray-50 rounded-xl p-3 border border-gray-100 mb-3"
       onPress={() =>
         router.push({
           pathname: "/(employer-tabs)/employers/job-details/[id]",
@@ -89,82 +82,77 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
         })
       }
     >
-      {/* Job Info */}
-      <View className="mb-3">
-        <Text className="text-base font-quicksandBold text-gray-800 mb-1">
-          {job.title}
-        </Text>
-        <View className="flex flex-row items-center gap-3 flex-wrap">
-          <View className="flex flex-row items-center gap-1">
-            <Ionicons name="cash-outline" size={14} color="#10B981" />
-            <Text className="text-xs font-quicksandMedium text-gray-600">
-              {formatSalary()}
-            </Text>
-          </View>
-          <View className="flex flex-row items-center gap-1">
-            <Ionicons name="location-outline" size={14} color="#0E7490" />
-            <Text className="text-xs font-quicksandMedium text-gray-600">
-              {job.location}
-            </Text>
-          </View>
-          {daysUntilExpiry !== null && daysUntilExpiry > 0 && (
-            <View className="flex flex-row items-center gap-1">
-              <Ionicons
-                name="time-outline"
-                size={14}
-                color={daysUntilExpiry < 7 ? "#EF4444" : "#F59E0B"}
-              />
-              <Text
-                className={`text-xs font-quicksandMedium ${
-                  daysUntilExpiry < 7 ? "text-red-600" : "text-orange-600"
-                }`}
-              >
-                Expires in {daysUntilExpiry} {t("jobs.day")}
-                {daysUntilExpiry > 1 ? t("jobs.plural") : ""}
-              </Text>
-            </View>
-          )}
-          {daysActive > 0 && (
-            <View className="flex flex-row items-center gap-1">
-              <Ionicons name="time-outline" size={14} color="#6B7280" />
-              <Text className="text-xs font-quicksandMedium text-gray-600">
-                {daysActive} {t("jobs.day")}
-                {daysActive > 1 ? t("jobs.plural") : ""} {t("jobs.active")}
-              </Text>
-            </View>
-          )}
+      {/* Job title */}
+      <Text className="text-sm font-quicksandBold text-gray-800 mb-2">
+        {job.title}
+      </Text>
+
+      {/* Meta chips row */}
+      <View className="flex-row flex-wrap gap-2 mb-3">
+        <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-2.5 py-1">
+          <Ionicons name="cash-outline" size={12} color="#6B7280" />
+          <Text className="text-xs font-quicksandMedium text-gray-600">
+            {formatSalary()}
+          </Text>
         </View>
+
+        <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-2.5 py-1">
+          <Ionicons name="location-outline" size={12} color="#6B7280" />
+          <Text className="text-xs font-quicksandMedium text-gray-600">
+            {job.location}
+          </Text>
+        </View>
+
+        {daysUntilExpiry !== null && daysUntilExpiry > 0 && (
+          <View
+            className={`flex-row items-center gap-1 rounded-full px-2.5 py-1 ${
+              daysUntilExpiry < 7 ? "bg-red-50" : "bg-gray-100"
+            }`}
+          >
+            <Ionicons
+              name="time-outline"
+              size={12}
+              color={daysUntilExpiry < 7 ? "#EF4444" : "#6B7280"}
+            />
+            <Text
+              className={`text-xs font-quicksandMedium ${
+                daysUntilExpiry < 7 ? "text-red-500" : "text-gray-600"
+              }`}
+            >
+              {daysUntilExpiry}d left
+            </Text>
+          </View>
+        )}
       </View>
 
-      {/* Stats & Actions */}
-      <View className="flex flex-row items-center justify-between pt-3 border-t border-gray-200">
-        <View className="flex flex-row items-center gap-4">
-          <TouchableOpacity
-            className="flex flex-row items-center gap-1"
-            onPress={(e) => {
-              e.stopPropagation();
-              router.push({
-                pathname: "/(employer-tabs)/employers/Applicants",
-                params: { jobId: job.id },
-              });
-            }}
-          >
-            <Ionicons name="people-outline" size={16} color="#0E7490" />
-            <Text className="text-xs font-quicksandBold text-gray-700">
-              {job.applicants_count} {t("jobs.applicant")}
-              {job.applicants_count !== 1 ? t("jobs.plural") : ""}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* Footer: applicants count + pause action */}
+      <View className="flex-row items-center justify-between pt-2.5 border-t border-gray-200">
         <TouchableOpacity
-          className="bg-gray-200 px-3 py-1.5 rounded-full flex flex-row items-center gap-1"
+          className="flex-row items-center gap-1.5"
+          onPress={(e) => {
+            e.stopPropagation();
+            router.push({
+              pathname: "/(employer-tabs)/employers/Applicants",
+              params: { jobId: job.id },
+            });
+          }}
+        >
+          <Ionicons name="people-outline" size={15} color="#0E7490" />
+          <Text className="text-xs font-quicksandBold text-cyan-700">
+            {job.applicants_count} {t("jobs.applicant")}
+            {job.applicants_count !== 1 ? t("jobs.plural") : ""}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="flex-row items-center gap-1 border border-gray-200 bg-white px-3 py-1.5 rounded-full"
           onPress={(e) => {
             e.stopPropagation();
             handlePause();
           }}
         >
-          <Ionicons name="pause" size={14} color="#6B7280" />
-          <Text className="text-xs font-quicksandBold text-gray-700">
+          <Ionicons name="pause" size={12} color="#6B7280" />
+          <Text className="text-xs font-quicksandBold text-gray-500">
             {t("jobs.pause")}
           </Text>
         </TouchableOpacity>
@@ -183,42 +171,42 @@ export default function ActiveJobsSection({
   onRefresh,
 }: ActiveJobsSectionProps) {
   const router = useRouter();
- const { t } = useTranslation(["dashboard", "common"]);
-
+  const { t } = useTranslation(["dashboard", "common"]);
 
   if (jobs.length === 0) return null;
 
   return (
     <View className="mx-4 my-2">
-      <View className="bg-white rounded-2xl p-4 border border-gray-200">
+      <View className="bg-white rounded-2xl p-4 border border-gray-100">
         {/* Header */}
-        <View className="flex flex-row items-center justify-between mb-3">
-          <View className="flex flex-row items-center gap-2">
-            <View className="w-8 h-8 bg-cyan-100 rounded-full items-center justify-center flex">
-              <Ionicons name="briefcase" size={18} color="#0E7490" />
+        <View className="flex-row items-center justify-between mb-3">
+          <View className="flex-row items-center gap-2">
+            <View className="w-8 h-8 bg-cyan-50 rounded-full items-center justify-center">
+              <Ionicons name="briefcase-outline" size={17} color="#0E7490" />
             </View>
             <View>
               <Text className="text-base font-quicksandBold text-gray-800">
                 {t("sections.activeJobs.title")}
               </Text>
-              <Text className="text-xs font-quicksandMedium text-gray-500">
+              <Text className="text-xs font-quicksandMedium text-gray-400">
                 {jobs.length} {t("jobs.position")}
                 {jobs.length > 1 ? t("jobs.plural") : ""} {t("jobs.open")}
               </Text>
             </View>
           </View>
+
           <TouchableOpacity
-            className="flex flex-row items-center gap-1"
+            className="flex-row items-center gap-0.5"
             onPress={() => router.push("/(employer-tabs)/employers/Jobs")}
           >
             <Text className="text-sm font-quicksandBold text-cyan-700">
               {t("buttons.viewAll", { ns: "common" })}
             </Text>
-            <Ionicons name="arrow-forward" size={14} color="#0E7490" />
+            <Ionicons name="chevron-forward" size={14} color="#0E7490" />
           </TouchableOpacity>
         </View>
 
-        {/* Jobs List */}
+        {/* Jobs list */}
         <View>
           {jobs.map((job) => (
             <JobCard key={job.id} job={job} onRefresh={onRefresh} />
@@ -228,4 +216,3 @@ export default function ActiveJobsSection({
     </View>
   );
 }
-
