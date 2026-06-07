@@ -28,40 +28,51 @@ export default function DashboardHeader({
       ? (profile as EmployerProfile).company_name || "There"
       : "There";
 
+  // First letter of company name for avatar
+  const initial = companyName.charAt(0).toUpperCase();
+
   return (
-    <View className="bg-white px-4 py-4 border-b border-gray-200">
-      <View className="flex flex-row items-center justify-between">
-        {/* Left: Company Logo & Greeting */}
-        <View className="flex flex-row items-center gap-3">
-          <View className="w-12 h-12 bg-cyan-100 rounded-full items-center justify-center flex">
-            <Ionicons name="business" size={24} color="#0E7490" />
+    <View className="bg-white px-6 pt-4 pb-4 border-b border-gray-100">
+      <View className="flex-row items-center justify-between">
+        {/* Left: Avatar + greeting */}
+        <View className="flex-row items-center gap-3">
+          <View className="w-11 h-11 bg-cyan-50 rounded-full items-center justify-center border border-cyan-100">
+            <Text className="text-base font-quicksandBold text-cyan-700">
+              {initial}
+            </Text>
           </View>
           <View>
-            <Text className="text-lg font-quicksandBold text-gray-800">
+            <Text className="text-xs font-quicksandMedium text-gray-400">
               {getGreeting()}
             </Text>
-            <Text className="text-sm font-quicksandMedium text-gray-500">
+            <Text className="text-base font-quicksandBold text-gray-900">
               {companyName}
             </Text>
           </View>
         </View>
 
-        {/* Right: Notifications */}
-        <TouchableOpacity
-          className="relative"
-          onPress={() => router.push("/(employer-tabs)/employers/Profile")}
-        >
-          <View className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center flex">
-            <Ionicons name="notifications-outline" size={22} color="#374151" />
-          </View>
-          {unreadCount > 0 && (
-            <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center flex px-1">
-              <Text className="text-[10px] font-quicksandBold text-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </Text>
+        {/* Right: action icons */}
+        <View className="flex-row items-center gap-2">
+          <TouchableOpacity
+            className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center"
+            onPress={() => router.push("/(employer-tabs)/employers/Profile")}
+          >
+            <View className="relative">
+              <Ionicons
+                name="notifications-outline"
+                size={18}
+                color="#374151"
+              />
+              {unreadCount > 0 && (
+                <View className="absolute -top-1.5 -right-1.5 bg-red-500 rounded-full min-w-[14px] h-[14px] items-center justify-center px-0.5">
+                  <Text className="text-[9px] font-quicksandBold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </Text>
+                </View>
+              )}
             </View>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
