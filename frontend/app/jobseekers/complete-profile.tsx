@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Modal,
   Platform,
   ScrollView,
@@ -12,10 +13,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  FlatList,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// Common countries list — extend as needed
 const COUNTRIES = [
   { code: "RW", name: "Rwanda", dialCode: "+250", flag: "🇷🇼" },
   { code: "UG", name: "Uganda", dialCode: "+256", flag: "🇺🇬" },
@@ -48,9 +48,7 @@ function PhoneInputField({
   value: string;
   onChange: (fullNumber: string) => void;
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<Country>(
-    COUNTRIES[0] // Default: Rwanda
-  );
+  const [selectedCountry, setSelectedCountry] = useState<Country>(COUNTRIES[0]);
   const [nationalNumber, setNationalNumber] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const [search, setSearch] = useState("");
@@ -58,11 +56,10 @@ function PhoneInputField({
   const filteredCountries = COUNTRIES.filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.dialCode.includes(search)
+      c.dialCode.includes(search),
   );
 
   const handleNumberChange = (text: string) => {
-    // Strip non-numeric characters
     const cleaned = text.replace(/[^0-9]/g, "");
     setNationalNumber(cleaned);
     onChange(`${selectedCountry.dialCode}${cleaned}`);
@@ -78,58 +75,34 @@ function PhoneInputField({
   return (
     <>
       <View
-        style={{
-          flexDirection: "row",
-          backgroundColor: "#F9FAFB",
-          borderRadius: 16,
-          overflow: "hidden",
-        }}
+        className="flex-row rounded-2xl overflow-hidden border border-gray-200"
+        style={{ backgroundColor: "#F8FAFC" }}
       >
-        {/* Country Picker Button */}
+        {/* Dial code picker trigger */}
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 12,
-            paddingVertical: 14,
-            borderRightWidth: 1,
-            borderRightColor: "#E5E7EB",
-            gap: 6,
-          }}
+          className="flex-row items-center px-3 py-3.5 gap-1.5 border-r border-gray-200"
+          activeOpacity={0.7}
         >
-          <Text style={{ fontSize: 20 }}>{selectedCountry.flag}</Text>
-          <Text
-            style={{
-              fontFamily: "Quicksand-SemiBold",
-              fontSize: 15,
-              color: "#1F2937",
-            }}
-          >
+          <Text style={{ fontSize: 18 }}>{selectedCountry.flag}</Text>
+          <Text className="font-quicksandSemibold text-sm text-gray-800">
             {selectedCountry.dialCode}
           </Text>
-          <Ionicons name="chevron-down" size={14} color="#6B7280" />
+          <Ionicons name="chevron-down" size={13} color="#6B7280" />
         </TouchableOpacity>
 
-        {/* Number Input */}
+        {/* Number input */}
         <TextInput
           value={nationalNumber}
           onChangeText={handleNumberChange}
           placeholder="e.g. 78 000 0000"
           placeholderTextColor="#9CA3AF"
           keyboardType="phone-pad"
-          style={{
-            flex: 1,
-            fontFamily: "Quicksand-Medium",
-            fontSize: 15,
-            color: "#1F2937",
-            paddingHorizontal: 12,
-            paddingVertical: 14,
-          }}
+          className="flex-1 font-quicksandMedium text-sm text-gray-800 px-3 py-3.5"
         />
       </View>
 
-      {/* Country Picker Modal */}
+      {/* Country picker bottom sheet */}
       <Modal
         visible={showPicker}
         animationType="slide"
@@ -137,115 +110,71 @@ function PhoneInputField({
         onRequestClose={() => setShowPicker(false)}
       >
         <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0,0,0,0.4)",
-            justifyContent: "flex-end",
-          }}
+          className="flex-1 justify-end"
+          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
         >
           <View
+            className="bg-white pt-4"
             style={{
-              backgroundColor: "white",
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
-              paddingTop: 16,
               maxHeight: "70%",
             }}
           >
-            {/* Modal Header */}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingHorizontal: 20,
-                marginBottom: 12,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: "Quicksand-Bold",
-                  fontSize: 18,
-                  color: "#1F2937",
-                }}
-              >
+            {/* Sheet header */}
+            <View className="flex-row items-center justify-between px-5 mb-3">
+              <Text className="font-quicksandBold text-lg text-gray-900">
                 Select Country
               </Text>
-              <TouchableOpacity onPress={() => setShowPicker(false)}>
-                <Ionicons name="close" size={24} color="#6B7280" />
+              <TouchableOpacity
+                onPress={() => setShowPicker(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={16} color="#374151" />
               </TouchableOpacity>
             </View>
 
             {/* Search */}
             <View
-              style={{
-                marginHorizontal: 20,
-                marginBottom: 12,
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: "#F3F4F6",
-                borderRadius: 12,
-                paddingHorizontal: 12,
-              }}
+              className="mx-5 mb-3 flex-row items-center rounded-xl border border-gray-200 px-3"
+              style={{ backgroundColor: "#F8FAFC" }}
             >
-              <Ionicons name="search" size={18} color="#9CA3AF" />
+              <Ionicons name="search" size={15} color="#9CA3AF" />
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search country..."
                 placeholderTextColor="#9CA3AF"
-                style={{
-                  flex: 1,
-                  fontFamily: "Quicksand-Medium",
-                  fontSize: 14,
-                  color: "#1F2937",
-                  paddingVertical: 10,
-                  paddingHorizontal: 8,
-                }}
+                className="flex-1 font-quicksandMedium text-sm text-gray-800 py-2.5 px-2"
               />
             </View>
 
-            {/* Country List */}
+            {/* List */}
             <FlatList
               data={filteredCountries}
               keyExtractor={(item) => item.code}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => handleCountrySelect(item)}
+                  className="flex-row items-center px-5 py-3 gap-3"
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 20,
-                    paddingVertical: 12,
                     backgroundColor:
                       selectedCountry.code === item.code
                         ? "#ECFEFF"
                         : "transparent",
-                    gap: 12,
                   }}
+                  activeOpacity={0.7}
                 >
-                  <Text style={{ fontSize: 24 }}>{item.flag}</Text>
-                  <Text
-                    style={{
-                      flex: 1,
-                      fontFamily: "Quicksand-SemiBold",
-                      fontSize: 15,
-                      color: "#1F2937",
-                    }}
-                  >
+                  <Text style={{ fontSize: 22 }}>{item.flag}</Text>
+                  <Text className="flex-1 font-quicksandSemibold text-sm text-gray-800">
                     {item.name}
                   </Text>
-                  <Text
-                    style={{
-                      fontFamily: "Quicksand-Medium",
-                      fontSize: 14,
-                      color: "#6B7280",
-                    }}
-                  >
+                  <Text className="font-quicksandMedium text-xs text-gray-400">
                     {item.dialCode}
                   </Text>
                   {selectedCountry.code === item.code && (
-                    <Ionicons name="checkmark" size={18} color="#0E7490" />
+                    <Ionicons name="checkmark" size={16} color="#0E7490" />
                   )}
                 </TouchableOpacity>
               )}
@@ -257,6 +186,112 @@ function PhoneInputField({
   );
 }
 
+// ─── Field label ────────────────────────────────────────────────────────────
+function FieldLabel({
+  label,
+  required,
+}: {
+  label: string;
+  required?: boolean;
+}) {
+  return (
+    <Text className="text-gray-600 font-quicksandSemibold text-sm mb-2">
+      {label}
+      {required && <Text className="text-cyan-600"> *</Text>}
+    </Text>
+  );
+}
+
+// ─── Section card wrapper ────────────────────────────────────────────────────
+function SectionCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View
+      className="mx-6 mt-4 bg-white rounded-3xl p-5 border border-gray-100"
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      }}
+    >
+      <View className="flex-row items-center mb-5 gap-2.5">
+        {icon}
+        <Text className="text-base font-quicksandBold text-gray-800">
+          {title}
+        </Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+// ─── Chip selector ───────────────────────────────────────────────────────────
+function ChipGroup({
+  options,
+  selected,
+  onSelect,
+}: {
+  options: string[];
+  selected: string;
+  onSelect: (v: string) => void;
+}) {
+  return (
+    <View className="flex-row flex-wrap gap-2">
+      {options.map((option) => (
+        <TouchableOpacity
+          key={option}
+          onPress={() => onSelect(option)}
+          className={`px-4 py-2 rounded-full border ${
+            selected === option
+              ? "bg-cyan-700 border-cyan-700"
+              : "bg-gray-50 border-gray-200"
+          }`}
+          activeOpacity={0.7}
+        >
+          <Text
+            className={`font-quicksandSemibold text-sm ${
+              selected === option ? "text-white" : "text-gray-600"
+            }`}
+          >
+            {option}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+// ─── Text input field ────────────────────────────────────────────────────────
+function InputField({
+  value,
+  onChangeText,
+  placeholder,
+}: {
+  value: string;
+  onChangeText: (t: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      placeholderTextColor="#9CA3AF"
+      className="rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 border border-gray-200"
+      style={{ backgroundColor: "#F8FAFC" }}
+    />
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 export default function CompleteProfileScreen() {
   const router = useRouter();
   const {
@@ -286,16 +321,13 @@ export default function CompleteProfileScreen() {
 
   const handleSave = async () => {
     const success = await saveProfile();
-    if (success && completionStatus.isComplete) {
-      router.back();
-    }
+    if (success && completionStatus.isComplete) router.back();
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (_: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split("T")[0];
-      updateField("date_of_birth", formattedDate);
+      updateField("date_of_birth", selectedDate.toISOString().split("T")[0]);
     }
   };
 
@@ -308,119 +340,120 @@ export default function CompleteProfileScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center">
+      <View className="flex-1 bg-white items-center justify-center">
         <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-600 font-quicksandMedium mt-4">
+        <Text className="text-gray-400 font-quicksandMedium mt-3 text-sm">
           Loading profile...
         </Text>
       </View>
     );
   }
 
-  return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-cyan-700 px-6 pt-16 pb-6">
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-          <Text className="text-2xl font-quicksandBold text-white">
-            Complete Profile
-          </Text>
-          <View style={{ width: 24 }} />
-        </View>
+  const pct = completionStatus.completionPercentage;
 
-        {/* Progress Bar */}
-        <View className="mt-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-white font-quicksandMedium">
-              Profile Completion
-            </Text>
-            <Text className="text-white font-quicksandBold">
-              {completionStatus.completionPercentage}%
-            </Text>
-          </View>
-          <View className="h-3 bg-cyan-900 rounded-full overflow-hidden">
-            <View
-              className="h-full bg-white rounded-full"
-              style={{ width: `${completionStatus.completionPercentage}%` }}
-            />
-          </View>
-          {completionStatus.missingFields.length > 0 && (
-            <Text className="text-cyan-100 font-quicksandMedium text-sm mt-2">
-              {completionStatus.missingFields.length} field(s) remaining
-            </Text>
-          )}
+  return (
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      {/* Header */}
+      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3"
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={18} color="#374151" />
+        </TouchableOpacity>
+        <Text className="text-xl font-quicksandBold text-gray-900 flex-1">
+          Complete Profile
+        </Text>
+        {/* Percentage pill */}
+        <View className="bg-gray-100 rounded-full px-3 py-1 border border-gray-200">
+          <Text className="font-quicksandBold text-xs text-gray-700">
+            {pct}%
+          </Text>
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Personal Information */}
-        <View className="mx-6 mt-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
-          <View className="flex-row items-center mb-4">
-            <Ionicons name="person-outline" size={20} color="#0E7490" />
-            <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              Personal Information
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* Progress card */}
+        <View
+          className="mx-6 mt-5 rounded-2xl border border-gray-100 px-4 py-4"
+          style={{ backgroundColor: "#F8FAFC" }}
+        >
+          <View className="flex-row items-center justify-between mb-2.5">
+            <Text className="font-quicksandSemibold text-sm text-gray-600">
+              Profile completion
+            </Text>
+            <Text className="font-quicksandBold text-sm text-cyan-700">
+              {pct}%
             </Text>
           </View>
-
-          {/* First Name */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              First Name *
+          {/* Track */}
+          <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <View
+              className="h-full bg-cyan-700 rounded-full"
+              style={{ width: `${pct}%` }}
+            />
+          </View>
+          {completionStatus.missingFields.length > 0 && (
+            <Text className="text-gray-400 font-quicksandMedium text-xs mt-2">
+              {completionStatus.missingFields.length} field
+              {completionStatus.missingFields.length > 1 ? "s" : ""} remaining
             </Text>
-            <TextInput
+          )}
+        </View>
+
+        {/* ── Personal Information ── */}
+        <SectionCard
+          icon={<Ionicons name="person-outline" size={18} color="#0E7490" />}
+          title="Personal Information"
+        >
+          <View className="mb-4">
+            <FieldLabel label="First Name" required />
+            <InputField
               value={formData.first_name}
-              onChangeText={(text) => updateField("first_name", text)}
+              onChangeText={(t) => updateField("first_name", t)}
               placeholder="Enter your first name"
-              placeholderTextColor="#9CA3AF"
-              className="bg-gray-50 rounded-2xl px-4 py-3 font-quicksandMedium text-gray-800"
             />
           </View>
 
-          {/* Last Name */}
           <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Last Name *
-            </Text>
-            <TextInput
+            <FieldLabel label="Last Name" required />
+            <InputField
               value={formData.last_name}
-              onChangeText={(text) => updateField("last_name", text)}
+              onChangeText={(t) => updateField("last_name", t)}
               placeholder="Enter your last name"
-              placeholderTextColor="#9CA3AF"
-              className="bg-gray-50 rounded-2xl px-4 py-3 font-quicksandMedium text-gray-800"
             />
           </View>
 
-          {/* Phone Number */}
           <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Phone Number *
-            </Text>
+            <FieldLabel label="Phone Number" required />
             <PhoneInputField
               value={formData.phone}
-              onChange={(fullNumber) => updateField("phone", fullNumber)}
+              onChange={(n) => updateField("phone", n)}
             />
           </View>
 
-          {/* Date of Birth */}
           <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Date of Birth *
-            </Text>
+            <FieldLabel label="Date of Birth" required />
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
-              className="bg-gray-50 rounded-2xl px-4 py-3 flex-row items-center justify-between"
+              className="flex-row items-center justify-between rounded-2xl px-4 py-3 border border-gray-200"
+              style={{ backgroundColor: "#F8FAFC" }}
+              activeOpacity={0.7}
             >
               <Text
-                className={`font-quicksandMedium ${
+                className={`font-quicksandMedium text-sm ${
                   formData.date_of_birth ? "text-gray-800" : "text-gray-400"
                 }`}
               >
                 {formData.date_of_birth || "Select date of birth"}
               </Text>
-              <Ionicons name="calendar-outline" size={20} color="#6B7280" />
+              <Ionicons name="calendar-outline" size={17} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
@@ -438,162 +471,85 @@ export default function CompleteProfileScreen() {
             />
           )}
 
-          {/* Gender */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Gender *
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {genderOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => updateField("gender", option)}
-                  className={`px-4 py-2 rounded-full ${
-                    formData.gender === option
-                      ? "bg-cyan-700"
-                      : "bg-gray-100 border border-gray-300"
-                  }`}
-                >
-                  <Text
-                    className={`font-quicksandSemibold ${
-                      formData.gender === option ? "text-white" : "text-gray-700"
-                    }`}
-                  >
-                    {option}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+          <View>
+            <FieldLabel label="Gender" required />
+            <ChipGroup
+              options={genderOptions}
+              selected={formData.gender}
+              onSelect={(v) => updateField("gender", v)}
+            />
           </View>
-        </View>
+        </SectionCard>
 
-        {/* Location */}
-        <View className="mx-6 mt-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
-          <View className="flex-row items-center mb-4">
-            <Ionicons name="location-outline" size={20} color="#0E7490" />
-            <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              Location
-            </Text>
-          </View>
-
+        {/* ── Location ── */}
+        <SectionCard
+          icon={<Ionicons name="location-outline" size={18} color="#0E7490" />}
+          title="Location"
+        >
           <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Country *
-            </Text>
-            <TextInput
+            <FieldLabel label="Country" required />
+            <InputField
               value={formData.country}
-              onChangeText={(text) => updateField("country", text)}
+              onChangeText={(t) => updateField("country", t)}
               placeholder="e.g., Rwanda"
-              placeholderTextColor="#9CA3AF"
-              className="bg-gray-50 rounded-2xl px-4 py-3 font-quicksandMedium text-gray-800"
             />
           </View>
-
-          <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              City *
-            </Text>
-            <TextInput
+          <View>
+            <FieldLabel label="City" required />
+            <InputField
               value={formData.city}
-              onChangeText={(text) => updateField("city", text)}
+              onChangeText={(t) => updateField("city", t)}
               placeholder="e.g., Kigali"
-              placeholderTextColor="#9CA3AF"
-              className="bg-gray-50 rounded-2xl px-4 py-3 font-quicksandMedium text-gray-800"
             />
           </View>
-        </View>
+        </SectionCard>
 
-        {/* Education & Experience */}
-        <View className="mx-6 mt-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
-          <View className="flex-row items-center mb-4">
-            <Ionicons name="school-outline" size={20} color="#0E7490" />
-            <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              Education & Experience
-            </Text>
+        {/* ── Education & Experience ── */}
+        <SectionCard
+          icon={<Ionicons name="school-outline" size={18} color="#0E7490" />}
+          title="Education & Experience"
+        >
+          <View className="mb-5">
+            <FieldLabel label="Education Level" required />
+            <ChipGroup
+              options={educationLevels}
+              selected={formData.education_level}
+              onSelect={(v) => updateField("education_level", v)}
+            />
           </View>
-
-          <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Education Level *
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {educationLevels.map((level) => (
-                <TouchableOpacity
-                  key={level}
-                  onPress={() => updateField("education_level", level)}
-                  className={`px-4 py-2 rounded-full ${
-                    formData.education_level === level
-                      ? "bg-cyan-700"
-                      : "bg-gray-100 border border-gray-300"
-                  }`}
-                >
-                  <Text
-                    className={`font-quicksandSemibold text-sm ${
-                      formData.education_level === level
-                        ? "text-white"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {level}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+          <View>
+            <FieldLabel label="Experience Level" required />
+            <ChipGroup
+              options={experienceLevels}
+              selected={formData.experience_level}
+              onSelect={(v) => updateField("experience_level", v)}
+            />
           </View>
+        </SectionCard>
 
-          <View className="mb-4">
-            <Text className="text-gray-700 font-quicksandSemibold mb-2">
-              Experience Level *
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {experienceLevels.map((level) => (
-                <TouchableOpacity
-                  key={level}
-                  onPress={() => updateField("experience_level", level)}
-                  className={`px-4 py-2 rounded-full ${
-                    formData.experience_level === level
-                      ? "bg-cyan-700"
-                      : "bg-gray-100 border border-gray-300"
-                  }`}
-                >
-                  <Text
-                    className={`font-quicksandSemibold ${
-                      formData.experience_level === level
-                        ? "text-white"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {level}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </View>
-
-        {/* Skills */}
-        <View className="mx-6 mt-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
-          <View className="flex-row items-center mb-4">
-            <MaterialIcons name="stars" size={20} color="#0E7490" />
-            <Text className="text-lg font-quicksandBold text-gray-800 ml-3">
-              Skills *
-            </Text>
-          </View>
-
+        {/* ── Skills ── */}
+        <SectionCard
+          icon={<MaterialIcons name="stars" size={18} color="#0E7490" />}
+          title="Skills"
+        >
+          {/* Add skill row */}
           <View className="flex-row gap-2 mb-4">
             <TextInput
               value={newSkill}
               onChangeText={setNewSkill}
               placeholder="Add a skill (e.g., JavaScript)"
               placeholderTextColor="#9CA3AF"
-              className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 font-quicksandMedium text-gray-800"
+              className="flex-1 rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 border border-gray-200"
+              style={{ backgroundColor: "#F8FAFC" }}
               onSubmitEditing={handleAddSkill}
+              returnKeyType="done"
             />
             <TouchableOpacity
               onPress={handleAddSkill}
-              className="bg-cyan-700 px-4 rounded-2xl items-center justify-center"
+              className="w-12 bg-cyan-700 rounded-2xl items-center justify-center"
+              activeOpacity={0.85}
             >
-              <Ionicons name="add" size={24} color="white" />
+              <Ionicons name="add" size={22} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -602,75 +558,95 @@ export default function CompleteProfileScreen() {
               {formData.skills.map((skill, index) => (
                 <View
                   key={index}
-                  className="bg-cyan-50 px-3 py-2 rounded-full border border-cyan-200 flex-row items-center gap-2"
+                  className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200"
+                  style={{ backgroundColor: "#F8FAFC" }}
                 >
-                  <Text className="text-cyan-700 font-quicksandSemibold text-sm">
+                  <Text className="text-gray-700 font-quicksandSemibold text-xs">
                     {skill}
                   </Text>
-                  <TouchableOpacity onPress={() => removeSkill(index)}>
-                    <Ionicons name="close-circle" size={18} color="#0E7490" />
+                  <TouchableOpacity
+                    onPress={() => removeSkill(index)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="close-circle" size={15} color="#9CA3AF" />
                   </TouchableOpacity>
                 </View>
               ))}
             </View>
           ) : (
-            <Text className="text-gray-500 font-quicksandMedium text-center py-4">
-              No skills added yet
-            </Text>
-          )}
-        </View>
-
-        {/* CV Upload Note */}
-        <View className="mx-6 mt-6 bg-amber-50 rounded-2xl p-4 border border-amber-200">
-          <View className="flex-row items-start gap-3">
-            <Ionicons name="information-circle" size={20} color="#D97706" />
-            <View className="flex-1">
-              <Text className="text-amber-800 font-quicksandBold mb-1">
-                CV/Resume Required
-              </Text>
-              <Text className="text-amber-700 font-quicksandMedium text-sm">
-                You&apos;ll need to upload your CV before applying for jobs. You
-                can do this from your Profile → Documents section.
+            <View className="items-center py-5">
+              <Ionicons name="sparkles-outline" size={24} color="#D1D5DB" />
+              <Text className="text-gray-400 font-quicksandMedium text-sm mt-2">
+                No skills added yet
               </Text>
             </View>
+          )}
+        </SectionCard>
+
+        {/* CV note — neutral, no amber */}
+        <View
+          className="mx-6 mt-4 rounded-2xl border border-gray-100 p-4 flex-row items-start gap-3"
+          style={{ backgroundColor: "#F8FAFC" }}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            size={18}
+            color="#0E7490"
+          />
+          <View className="flex-1">
+            <Text className="font-quicksandBold text-sm text-gray-700 mb-0.5">
+              CV / Resume required
+            </Text>
+            <Text className="font-quicksandMedium text-xs text-gray-400 leading-relaxed">
+              You'll need to upload your CV before applying for jobs. You can do
+              this from Profile → Documents.
+            </Text>
           </View>
         </View>
 
-        {/* Save Button */}
-        <View className="mx-6 my-8">
+        {/* Completion badge — shows when 100% */}
+        {completionStatus.isComplete && (
+          <View
+            className="mx-6 mt-4 rounded-2xl border border-cyan-100 p-4 flex-row items-center gap-2"
+            style={{ backgroundColor: "#ECFEFF" }}
+          >
+            <Ionicons name="checkmark-circle" size={18} color="#0E7490" />
+            <View className="flex-1">
+              <Text className="font-quicksandBold text-sm text-cyan-800">
+                Profile 100% complete
+              </Text>
+              <Text className="font-quicksandMedium text-xs text-cyan-600 mt-0.5">
+                You're all set to apply for jobs
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Save button */}
+        <View className="mx-6 mt-6">
           <TouchableOpacity
             onPress={handleSave}
             disabled={saving}
-            className="bg-cyan-700 rounded-2xl py-4 flex-row items-center justify-center"
+            className="bg-cyan-700 rounded-2xl py-4 flex-row items-center justify-center gap-2"
+            activeOpacity={0.85}
           >
             {saving ? (
               <ActivityIndicator color="white" />
             ) : (
               <>
-              {/* save profile */}
-                <Text className="text-white font-quicksandBold text-lg mr-2">
+                <Text className="text-white font-quicksandBold text-sm">
                   Save Profile
                 </Text>
-                <Ionicons name="checkmark-circle" size={20} color="white" />
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={18}
+                  color="white"
+                />
               </>
             )}
           </TouchableOpacity>
-
-          {completionStatus.isComplete && (
-            <View className="bg-green-50 rounded-2xl p-4 mt-4 border border-green-200">
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="checkmark-circle" size={20} color="#059669" />
-                <Text className="text-green-800 font-quicksandBold">
-                  Profile 100% Complete! 🎉
-                </Text>
-              </View>
-              <Text className="text-green-700 font-quicksandMedium text-sm mt-1">
-                You&apos;re all set to apply for jobs!!
-              </Text>
-            </View>
-          )}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
