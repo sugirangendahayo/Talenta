@@ -1,7 +1,6 @@
 import ActiveJobsSection from "@/components/employer/ActiveJobsSection";
 import AttentionSection from "@/components/employer/AttentionSection";
 import DashboardHeader from "@/components/employer/DashboardHeader";
-import QuickActions from "@/components/employer/QuickActions";
 import RecentContactsSection from "@/components/employer/RecentContactSection";
 import StatCards from "@/components/employer/StatsCards";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
@@ -40,7 +39,7 @@ export default function Dashboard() {
     const scrollDirection =
       currentScrollY > lastScrollY.current ? "down" : "up";
 
-    if (scrollDirection === "down" && currentScrollY > 0) {
+    if (scrollDirection === "down" && currentScrollY > 50) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
       setIsVisible(true);
@@ -51,11 +50,11 @@ export default function Dashboard() {
 
   if (loading && !refreshing) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1 bg-white">
         <DashboardHeader />
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center justify-center py-10">
           <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="mt-4 text-gray-600 font-quicksandMedium">
+          <Text className="mt-3 text-sm text-gray-400 font-quicksandMedium">
             {t("messages.loadingDashboard")}
           </Text>
         </View>
@@ -65,10 +64,11 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1 bg-white">
         <DashboardHeader />
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-red-600 font-quicksandBold text-lg text-center">
+          <Ionicons name="cloud-offline-outline" size={40} color="#D1D5DB" />
+          <Text className="mt-3 text-sm text-gray-400 font-quicksandMedium text-center">
             {error}
           </Text>
         </View>
@@ -80,7 +80,7 @@ export default function Dashboard() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView
         showsVerticalScrollIndicator={false}
-        // contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         refreshControl={
@@ -92,26 +92,18 @@ export default function Dashboard() {
           />
         }
       >
-        {/* Header with company logo, greeting, notifications */}
         <DashboardHeader unreadCount={stats.unreadMessages} />
 
-        {/* 4 Stat Cards: Jobs, Applicants, Interviews, Messages */}
         <StatCards stats={stats} />
 
-        {/* Requiring Attention Section - High-priority applicants */}
         {highPriorityApplicants.length > 0 && (
           <AttentionSection applicants={highPriorityApplicants} />
         )}
 
-        {/* Active Jobs Section - List of current job postings */}
         {activeJobs.length > 0 && (
           <ActiveJobsSection jobs={activeJobs} onRefresh={refresh} />
         )}
 
-        {/* Quick Action Buttons - Post Job, Find Candidates, etc. */}
-        <QuickActions />
-
-        {/* Recent Contacts - Hired/Shortlisted candidates */}
         {recentContacts.length > 0 && (
           <RecentContactsSection contacts={recentContacts} />
         )}
