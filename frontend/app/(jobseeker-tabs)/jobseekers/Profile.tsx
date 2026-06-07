@@ -245,77 +245,86 @@ export default function JobseekerProfile() {
         scrollEventThrottle={16}
       >
         {/* Profile Card */}
-        <View className="mx-6 my-6 bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
+        <View
+          className="mx-6 my-4 bg-white rounded-3xl p-4 border border-gray-100"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+          }}
+        >
+          {/* Top row: avatar + info + QR */}
           <View className="flex-row items-center">
+            {/* Avatar */}
             <View className="relative">
               <Image
                 source={require("@/assets/images/user_.png")}
-                className="w-20 h-20 rounded-full"
+                className="w-14 h-14 rounded-2xl"
                 resizeMode="cover"
               />
-              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-2 border-2 border-white">
-                <Feather name="camera" size={14} color="white" />
+              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white">
+                <Feather name="camera" size={11} color="white" />
               </TouchableOpacity>
             </View>
-            <View className="ml-4 flex-1">
-              <Text className="text-xl font-quicksandBold text-gray-800">
+
+            {/* Name / email / status */}
+            <View className="ml-3 flex-1">
+              <Text className="text-base font-quicksandBold text-gray-900 leading-tight">
                 {jobseekerData?.first_name && jobseekerData?.last_name
                   ? `${jobseekerData.first_name} ${jobseekerData.last_name}`
                   : "Your Name"}
               </Text>
-              <Text className="text-gray-500 font-quicksandMedium mt-1">
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5" numberOfLines={1}>
                 {jobseekerData?.email || "email@example.com"}
               </Text>
-              <View className="flex-row items-center gap-2 mt-2 flex-wrap">
-                <View className="bg-cyan-100 px-3 py-1 rounded-full flex-row items-center gap-1">
-                  <MaterialIcons
-                    name={jobseekerData?.profile_completed ? "verified" : "pending"}
-                    size={14}
-                    color="#0E7490"
-                  />
-                  <Text className="text-cyan-700 text-xs font-quicksandBold">
-                    {jobseekerData?.profile_completed
-                      ? t("status.verified", { defaultValue: "Verified" })
-                      : t("status.incomplete", { defaultValue: "Incomplete" })}
-                  </Text>
-                </View>
-                {jobseekerData?.experience_level && (
-                  <View className="bg-purple-100 px-3 py-1 rounded-full">
-                    <Text className="text-purple-700 text-xs font-quicksandBold">
-                      {jobseekerData.experience_level}
-                    </Text>
-                  </View>
-                )}
+              {/* Status chip — single, on-brand only */}
+              <View className="flex-row items-center gap-1 mt-1.5 self-start bg-cyan-50 border border-cyan-100 px-2.5 py-1 rounded-full">
+                <MaterialIcons
+                  name={jobseekerData?.profile_completed ? "verified" : "pending"}
+                  size={12}
+                  color="#0E7490"
+                />
+                <Text className="text-cyan-700 text-xs font-quicksandBold">
+                  {jobseekerData?.profile_completed
+                    ? t("status.verified", { defaultValue: "Verified" })
+                    : t("status.incomplete", { defaultValue: "Incomplete" })}
+                </Text>
               </View>
             </View>
-            <TouchableOpacity className="bg-gray-100 p-3 rounded-2xl">
-              <Ionicons name="qr-code-outline" size={20} color="#6B7280" />
+
+            {/* QR */}
+            <TouchableOpacity className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center">
+              <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
             </TouchableOpacity>
           </View>
 
-          {/* Profile Stats */}
-          <View className="flex-row mt-6 pt-6 border-t border-gray-100">
+          {/* Divider */}
+          <View className="h-px bg-gray-100 mt-4 mb-3" />
+
+          {/* Stats row */}
+          <View className="flex-row">
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800">
+              <Text className="text-lg font-quicksandBold text-gray-800">
                 {applicationCount}
               </Text>
-              <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.applications", { defaultValue: "Applications" })}
               </Text>
             </View>
-            <View className="w-px bg-gray-200" />
+            <View className="w-px bg-gray-100" />
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800">0</Text>
-              <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
+              <Text className="text-lg font-quicksandBold text-gray-800">0</Text>
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.interviews", { defaultValue: "Interviews" })}
               </Text>
             </View>
-            <View className="w-px bg-gray-200" />
+            <View className="w-px bg-gray-100" />
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800">
+              <Text className="text-lg font-quicksandBold text-gray-800">
                 {completionPercentage}%
               </Text>
-              <Text className="text-gray-500 font-quicksandMedium text-xs mt-1">
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.profile", { defaultValue: "Profile" })}
               </Text>
             </View>
