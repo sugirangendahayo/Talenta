@@ -2,7 +2,14 @@ import type { RecentContact } from "@/hooks/useDashboard";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Alert, Linking, Platform, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Linking,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ContactCardProps {
   contact: RecentContact;
@@ -92,7 +99,8 @@ const ContactCard = ({ contact }: ContactCardProps) => {
     if (diffDays === 0) return t("time.today");
     if (diffDays === 1) return t("time.yesterday");
     if (diffDays < 7) return t("time.daysAgo", { days: diffDays });
-    if (diffDays < 30) return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
+    if (diffDays < 30)
+      return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
     return t("time.monthsAgo", { months: Math.floor(diffDays / 30) });
   };
 
@@ -128,7 +136,9 @@ const ContactCard = ({ contact }: ContactCardProps) => {
 
           {/* Status badge */}
           <View className={`${statusBadge.className} px-2.5 py-1 rounded-full`}>
-            <Text className={`${statusBadge.textClassName} text-xs font-quicksandBold`}>
+            <Text
+              className={`${statusBadge.textClassName} text-xs font-quicksandBold`}
+            >
               {statusBadge.text}
             </Text>
           </View>
@@ -207,7 +217,9 @@ export default function RecentContactsSection({
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-400">
                 {contacts.length} {t("sections.recentContacts.candidate")}
-                {contacts.length > 1 ? t("sections.recentContacts.plural") : ""}{" "}
+                {contacts.length > 1
+                  ? t("sections.recentContacts.plural")
+                  : ""}{" "}
                 {t("sections.recentContacts.toReach")}
               </Text>
             </View>
