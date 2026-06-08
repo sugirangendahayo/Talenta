@@ -6,7 +6,7 @@ export interface Application {
   id: string;
   job_id: string;
   jobseeker_id: string;
-  status: "pending" | "shortlisted" | "rejected";
+  status: "pending" | "shortlisted" | "hired" | "rejected";
   cover_letter: string | null;
   created_at: string;
   updated_at: string;
@@ -27,7 +27,7 @@ export interface Application {
   };
 }
 
-type StatusFilter = "all" | "pending" | "shortlisted" | "rejected";
+type StatusFilter = "all" | "pending" | "shortlisted" | "hired" | "rejected";
 
 interface UseApplicationsOptions {
   status?: StatusFilter;
@@ -152,6 +152,7 @@ export function useApplications(options: UseApplicationsOptions = {}) {
       pending: applications.filter((app) => app.status === "pending").length,
       shortlisted: applications.filter((app) => app.status === "shortlisted")
         .length,
+      hired: applications.filter((app) => app.status === "hired").length,
       rejected: applications.filter((app) => app.status === "rejected").length,
     };
   }, [applications]);
