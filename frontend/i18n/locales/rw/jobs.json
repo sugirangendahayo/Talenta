@@ -168,11 +168,13 @@
       "all": "Byose",
       "pending": "Bitegereje",
       "shortlisted": "Byatoranyijwe",
+      "hired": "Yashyizweho akazi",
       "rejected": "Byanzwe"
     },
     "status": {
       "pending": "Bitegereje",
       "shortlisted": "Byatoranyijwe",
+      "hired": "Yashyizweho akazi",
       "rejected": "Byanzwe",
       "unknown": "Ntibizwi"
     },
