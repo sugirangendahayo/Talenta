@@ -1,4 +1,6 @@
+// app/jobseekers/CompleteProfileScreen.tsx
 import { useProfileCompletion } from "@/hooks/useProfileCompletion";
+import { ProfileFormSkeleton } from "@/components/skeletons/ProfileFormSkeleton";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
@@ -78,7 +80,6 @@ function PhoneInputField({
         className="flex-row rounded-2xl overflow-hidden border border-gray-200"
         style={{ backgroundColor: "#F8FAFC" }}
       >
-        {/* Dial code picker trigger */}
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
           className="flex-row items-center px-3 py-3.5 gap-1.5 border-r border-gray-200"
@@ -91,7 +92,6 @@ function PhoneInputField({
           <Ionicons name="chevron-down" size={13} color="#6B7280" />
         </TouchableOpacity>
 
-        {/* Number input */}
         <TextInput
           value={nationalNumber}
           onChangeText={handleNumberChange}
@@ -102,7 +102,6 @@ function PhoneInputField({
         />
       </View>
 
-      {/* Country picker bottom sheet */}
       <Modal
         visible={showPicker}
         animationType="slide"
@@ -121,7 +120,6 @@ function PhoneInputField({
               maxHeight: "70%",
             }}
           >
-            {/* Sheet header */}
             <View className="flex-row items-center justify-between px-5 mb-3">
               <Text className="font-quicksandBold text-lg text-gray-900">
                 Select Country
@@ -135,7 +133,6 @@ function PhoneInputField({
               </TouchableOpacity>
             </View>
 
-            {/* Search */}
             <View
               className="mx-5 mb-3 flex-row items-center rounded-xl border border-gray-200 px-3"
               style={{ backgroundColor: "#F8FAFC" }}
@@ -150,7 +147,6 @@ function PhoneInputField({
               />
             </View>
 
-            {/* List */}
             <FlatList
               data={filteredCountries}
               keyExtractor={(item) => item.code}
@@ -160,9 +156,7 @@ function PhoneInputField({
                   className="flex-row items-center px-5 py-3 gap-3"
                   style={{
                     backgroundColor:
-                      selectedCountry.code === item.code
-                        ? "#ECFEFF"
-                        : "transparent",
+                      selectedCountry.code === item.code ? "#ECFEFF" : "transparent",
                   }}
                   activeOpacity={0.7}
                 >
@@ -186,14 +180,7 @@ function PhoneInputField({
   );
 }
 
-// ─── Field label ────────────────────────────────────────────────────────────
-function FieldLabel({
-  label,
-  required,
-}: {
-  label: string;
-  required?: boolean;
-}) {
+function FieldLabel({ label, required }: { label: string; required?: boolean }) {
   return (
     <Text className="text-gray-600 font-quicksandSemibold text-sm mb-2">
       {label}
@@ -202,7 +189,6 @@ function FieldLabel({
   );
 }
 
-// ─── Section card wrapper ────────────────────────────────────────────────────
 function SectionCard({
   icon,
   title,
@@ -224,16 +210,13 @@ function SectionCard({
     >
       <View className="flex-row items-center mb-5 gap-2.5">
         {icon}
-        <Text className="text-base font-quicksandBold text-gray-800">
-          {title}
-        </Text>
+        <Text className="text-base font-quicksandBold text-gray-800">{title}</Text>
       </View>
       {children}
     </View>
   );
 }
 
-// ─── Chip selector ───────────────────────────────────────────────────────────
 function ChipGroup({
   options,
   selected,
@@ -269,7 +252,6 @@ function ChipGroup({
   );
 }
 
-// ─── Text input field ────────────────────────────────────────────────────────
 function InputField({
   value,
   onChangeText,
@@ -338,14 +320,12 @@ export default function CompleteProfileScreen() {
     }
   };
 
+  // ─── Skeleton loading state ───────────────────────────────────────────────
   if (loading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-400 font-quicksandMedium mt-3 text-sm">
-          Loading profile...
-        </Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+        <ProfileFormSkeleton />
+      </SafeAreaView>
     );
   }
 
@@ -365,11 +345,8 @@ export default function CompleteProfileScreen() {
         <Text className="text-xl font-quicksandBold text-gray-900 flex-1">
           Complete Profile
         </Text>
-        {/* Percentage pill */}
         <View className="bg-gray-100 rounded-full px-3 py-1 border border-gray-200">
-          <Text className="font-quicksandBold text-xs text-gray-700">
-            {pct}%
-          </Text>
+          <Text className="font-quicksandBold text-xs text-gray-700">{pct}%</Text>
         </View>
       </View>
 
@@ -388,11 +365,8 @@ export default function CompleteProfileScreen() {
             <Text className="font-quicksandSemibold text-sm text-gray-600">
               Profile completion
             </Text>
-            <Text className="font-quicksandBold text-sm text-cyan-700">
-              {pct}%
-            </Text>
+            <Text className="font-quicksandBold text-sm text-cyan-700">{pct}%</Text>
           </View>
-          {/* Track */}
           <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <View
               className="h-full bg-cyan-700 rounded-full"
@@ -460,9 +434,7 @@ export default function CompleteProfileScreen() {
           {showDatePicker && (
             <DateTimePicker
               value={
-                formData.date_of_birth
-                  ? new Date(formData.date_of_birth)
-                  : new Date()
+                formData.date_of_birth ? new Date(formData.date_of_birth) : new Date()
               }
               mode="date"
               display={Platform.OS === "ios" ? "spinner" : "default"}
@@ -532,7 +504,6 @@ export default function CompleteProfileScreen() {
           icon={<MaterialIcons name="stars" size={18} color="#0E7490" />}
           title="Skills"
         >
-          {/* Add skill row */}
           <View className="flex-row gap-2 mb-4">
             <TextInput
               value={newSkill}
@@ -564,10 +535,7 @@ export default function CompleteProfileScreen() {
                   <Text className="text-gray-700 font-quicksandSemibold text-xs">
                     {skill}
                   </Text>
-                  <TouchableOpacity
-                    onPress={() => removeSkill(index)}
-                    activeOpacity={0.7}
-                  >
+                  <TouchableOpacity onPress={() => removeSkill(index)} activeOpacity={0.7}>
                     <Ionicons name="close-circle" size={15} color="#9CA3AF" />
                   </TouchableOpacity>
                 </View>
@@ -583,28 +551,24 @@ export default function CompleteProfileScreen() {
           )}
         </SectionCard>
 
-        {/* CV note — neutral, no amber */}
+        {/* CV note */}
         <View
           className="mx-6 mt-4 rounded-2xl border border-gray-100 p-4 flex-row items-start gap-3"
           style={{ backgroundColor: "#F8FAFC" }}
         >
-          <Ionicons
-            name="information-circle-outline"
-            size={18}
-            color="#0E7490"
-          />
+          <Ionicons name="information-circle-outline" size={18} color="#0E7490" />
           <View className="flex-1">
             <Text className="font-quicksandBold text-sm text-gray-700 mb-0.5">
               CV / Resume required
             </Text>
             <Text className="font-quicksandMedium text-xs text-gray-400 leading-relaxed">
-              You'll need to upload your CV before applying for jobs. You can do
+              You&apos;ll need to upload your CV before applying for jobs. You can do
               this from Profile → Documents.
             </Text>
           </View>
         </View>
 
-        {/* Completion badge — shows when 100% */}
+        {/* Completion badge */}
         {completionStatus.isComplete && (
           <View
             className="mx-6 mt-4 rounded-2xl border border-cyan-100 p-4 flex-row items-center gap-2"
@@ -616,7 +580,7 @@ export default function CompleteProfileScreen() {
                 Profile 100% complete
               </Text>
               <Text className="font-quicksandMedium text-xs text-cyan-600 mt-0.5">
-                You're all set to apply for jobs
+                You&apos;re all set to apply for jobs
               </Text>
             </View>
           </View>
@@ -634,14 +598,8 @@ export default function CompleteProfileScreen() {
               <ActivityIndicator color="white" />
             ) : (
               <>
-                <Text className="text-white font-quicksandBold text-sm">
-                  Save Profile
-                </Text>
-                <Ionicons
-                  name="checkmark-circle-outline"
-                  size={18}
-                  color="white"
-                />
+                <Text className="text-white font-quicksandBold text-sm">Save Profile</Text>
+                <Ionicons name="checkmark-circle-outline" size={18} color="white" />
               </>
             )}
           </TouchableOpacity>
