@@ -1,14 +1,19 @@
+// app/(employer-tabs)/employers/Dashboard.tsx
 import ActiveJobsSection from "@/components/employer/ActiveJobsSection";
 import AttentionSection from "@/components/employer/AttentionSection";
 import DashboardHeader from "@/components/employer/DashboardHeader";
 import RecentContactsSection from "@/components/employer/RecentContactSection";
 import StatCards from "@/components/employer/StatsCards";
+import {
+  DashboardHeaderSkeleton,
+  DashboardSkeleton,
+} from "@/components/skeletons/DashboardSkeleton";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import { useDashboard } from "@/hooks/UseDashboard";
+import { useDashboard } from "@/hooks/useDashboard";
+import { Ionicons } from "@expo/vector-icons";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
   RefreshControl,
@@ -48,20 +53,24 @@ export default function Dashboard() {
     lastScrollY.current = currentScrollY;
   };
 
+  // ─── Skeleton loading state ─────────────────────────────────────────────
   if (loading && !refreshing) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <DashboardHeader />
-        <View className="flex-1 items-center justify-center py-10">
-          <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="mt-3 text-sm text-gray-400 font-quicksandMedium">
-            {t("messages.loadingDashboard")}
-          </Text>
-        </View>
+      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+        {/* Header always visible — keeps the screen grounded */}
+        <DashboardHeaderSkeleton />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        >
+          <DashboardSkeleton />
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
+  // ─── Error state ────────────────────────────────────────────────────────
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-white">
@@ -76,6 +85,7 @@ export default function Dashboard() {
     );
   }
 
+  // ─── Loaded state ───────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView
