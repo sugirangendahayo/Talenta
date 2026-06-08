@@ -1,5 +1,7 @@
 // components/jobseeker/JobsList.tsx
 import { useJobs } from "@/hooks/useJobs";
+import { FullJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
+import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
@@ -43,7 +45,7 @@ const JobsList: React.FC<JobsListProps> = ({
     category: selectedCategory,
     searchQuery: searchQuery,
     pageSize: 10,
-    recommended: false, // Show ALL jobs, not recommended
+    recommended: false,
   });
 
   const handleJobPress = (jobId: string) => {
@@ -55,9 +57,7 @@ const JobsList: React.FC<JobsListProps> = ({
 
   const formatSalary = (min: number, max: number) => {
     const formatNumber = (num: number) => {
-      if (num >= 1000) {
-        return `$${(num / 1000).toFixed(0)}k`;
-      }
+      if (num >= 1000) return `$${(num / 1000).toFixed(0)}k`;
       return `$${num}`;
     };
     return `${formatNumber(min)} - ${formatNumber(max)}`;
@@ -86,7 +86,6 @@ const JobsList: React.FC<JobsListProps> = ({
         className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
         onPress={() => handleJobPress(item.id)}
       >
-        {/* Same UI as HomeJobs */}
         <View className="flex-1">
           <View className="flex flex-row items-start justify-between mb-3">
             <View className="flex flex-row items-center flex-1 mr-3">
@@ -167,6 +166,7 @@ const JobsList: React.FC<JobsListProps> = ({
     </>
   );
 
+  // ─── Pagination footer: small spinner (this is fine — it's not the initial load) ──
   const renderFooter = () => {
     if (!loadingMore) return null;
     return (
@@ -191,13 +191,19 @@ const JobsList: React.FC<JobsListProps> = ({
     );
   };
 
+  // ─── Initial load → full-screen skeleton list ─────────────────────────────
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-600 font-quicksandMedium mt-4">
-          {t("home:messages.loading")}
+      <View className="flex-1 bg-gray-50">
+        {/* Keep the header visible so the screen doesn't jump */}
+        <Text className="text-2xl font-quicksandBold text-gray-800 px-4 py-3">
+          {t("jobs:allAvailable")}
         </Text>
+        <SkeletonList
+          count={6}
+          renderItem={() => <FullJobCardSkeleton />}
+          staggerMs={60}
+        />
       </View>
     );
   }
