@@ -168,11 +168,13 @@
       "all": "All",
       "pending": "Pending",
       "shortlisted": "Shortlisted",
+      "hired": "Hired",
       "rejected": "Rejected"
     },
     "status": {
       "pending": "Pending",
       "shortlisted": "Shortlisted",
+      "hired": "Hired",
       "rejected": "Rejected",
       "unknown": "Unknown"
     },
