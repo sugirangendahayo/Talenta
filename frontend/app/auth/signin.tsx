@@ -96,7 +96,7 @@ export default function Signin() {
         <AuthLink
           text={t("signin.noAccount")}
           linkText={t("signin.signUpLink")}
-          onPress={() => router.push("/auth/signup")}
+          onPress={() => router.push("/welcome/Step1")}
           className="mt-8"
         />
       </View>
