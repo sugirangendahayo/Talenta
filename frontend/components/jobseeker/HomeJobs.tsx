@@ -1,12 +1,13 @@
 // components/jobseeker/HomeJobs.tsx
 import { useJobs } from "@/hooks/useJobs";
 import { supabase } from "@/lib/supabase";
+import { CompactJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
+import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Text,
   TouchableOpacity,
   View,
@@ -91,40 +92,51 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
     userProfile && !searchQuery && selectedCategory === "all" &&
     userProfile.skills && userProfile.skills.length > 0;
 
+  // ─── Section header (always rendered, even during loading) ───────────────
+  const SectionHeader = () => (
+    <View className="flex-row items-center justify-between px-6 mb-4">
+      <View>
+        <Text className="text-xl font-quicksandBold text-gray-800">
+          {isRecommending
+            ? t("home:recommended.title", { defaultValue: "Recommended" })
+            : t("home:featuredJobs.title", { defaultValue: "Latest Jobs" })}
+        </Text>
+        {isRecommending && (
+          <Text className="text-xs font-quicksandMedium text-gray-400 mt-0.5">
+            {t("home:recommended.basedOnSkills", { defaultValue: "Based on your skills" })}
+          </Text>
+        )}
+      </View>
+      <TouchableOpacity
+        onPress={handleViewAll}
+        className="flex-row items-center gap-1"
+      >
+        <Text className="text-cyan-700 font-quicksandBold text-sm">
+          {t("home:featuredJobs.viewAll", { defaultValue: "View All" })}
+        </Text>
+        <Ionicons name="chevron-forward" size={14} color="#0E7490" />
+      </TouchableOpacity>
+    </View>
+  );
+
+  // ─── Skeleton state ───────────────────────────────────────────────────────
   if (loading || profileLoading) {
     return (
-      <View className="py-10 items-center">
-        <ActivityIndicator size="large" color="#0E7490" />
+      <View className="mb-6">
+        <SectionHeader />
+        <View className="gap-3 px-6">
+          <SkeletonList
+            count={PREVIEW_COUNT}
+            renderItem={() => <CompactJobCardSkeleton />}
+          />
+        </View>
       </View>
     );
   }
 
   return (
     <View className="mb-6">
-      {/* Section header */}
-      <View className="flex-row items-center justify-between px-6 mb-4">
-        <View>
-          <Text className="text-xl font-quicksandBold text-gray-800">
-            {isRecommending
-              ? t("home:recommended.title", { defaultValue: "Recommended" })
-              : t("home:featuredJobs.title", { defaultValue: "Latest Jobs" })}
-          </Text>
-          {isRecommending && (
-            <Text className="text-xs font-quicksandMedium text-gray-400 mt-0.5">
-              {t("home:recommended.basedOnSkills", { defaultValue: "Based on your skills" })}
-            </Text>
-          )}
-        </View>
-        <TouchableOpacity
-          onPress={handleViewAll}
-          className="flex-row items-center gap-1"
-        >
-          <Text className="text-cyan-700 font-quicksandBold text-sm">
-            {t("home:featuredJobs.viewAll", { defaultValue: "View All" })}
-          </Text>
-          <Ionicons name="chevron-forward" size={14} color="#0E7490" />
-        </TouchableOpacity>
-      </View>
+      <SectionHeader />
 
       {/* New Jobs Banner */}
       {newJobsCount > 0 && (
@@ -229,7 +241,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
       {jobs.length > 0 && (
         <TouchableOpacity
           onPress={handleViewAll}
-          className="mx-6 mt-4 border border-cyan-200 bg-cyan-50 rounded-2xl p-4 flex-row items-center justify-center gap-2"
+          className="mx-6 mt-4 bg-gray-50 rounded-2xl p-4 flex-row items-center justify-center gap-2"
           activeOpacity={0.8}
         >
           <Text className="text-cyan-700 font-quicksandBold text-sm">
