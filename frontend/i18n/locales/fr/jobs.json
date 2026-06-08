@@ -168,11 +168,13 @@
       "all": "Toutes",
       "pending": "En attente",
       "shortlisted": "Présélectionné",
+      "hired": "Embauché",
       "rejected": "Rejeté"
     },
     "status": {
       "pending": "En attente",
       "shortlisted": "Présélectionné",
+      "hired": "Embauché",
       "rejected": "Rejeté",
       "unknown": "Inconnu"
     },
