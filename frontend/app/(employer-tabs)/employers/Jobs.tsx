@@ -1,15 +1,20 @@
+// app/(employer-tabs)/employers/Jobs.tsx
 import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
 import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
 import EmployerJobsList from "@/components/employer/EmployerJobsList";
+import {
+  EmployerJobsSkeleton,
+  EmployerJobsHeaderSkeleton,
+} from "@/components/skeletons/EmployerJobsSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  ScrollView,
   Text,
   View,
 } from "react-native";
@@ -49,7 +54,6 @@ export default function Jobs() {
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
 
-  // Fetch jobs from Supabase
   useEffect(() => {
     fetchJobs();
   }, [user]);
@@ -72,7 +76,6 @@ export default function Jobs() {
         .order("created_at", { ascending: false });
 
       if (fetchError) throw fetchError;
-
       setJobs(data || []);
     } catch (err: any) {
       console.error("Error fetching jobs:", err);
@@ -82,7 +85,6 @@ export default function Jobs() {
     }
   };
 
-  // Compute unique categories dynamically from jobs data
   const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
   const categories: Category[] = [
     { id: "all", name: t("categories.all") },
@@ -105,22 +107,23 @@ export default function Jobs() {
 
     lastScrollY.current = currentScrollY;
   };
-  // Loading state
+
+  // ─── Skeleton loading state ─────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <EmployerJobsHeader />
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="mt-4 text-gray-600 font-quicksandMedium">
-            {t("states.loading")}
-          </Text>
-        </View>
+      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
+          <EmployerJobsSkeleton />
+        </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Error state
+  // ─── Error state ────────────────────────────────────────────────────────
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
@@ -137,6 +140,7 @@ export default function Jobs() {
     );
   }
 
+  // ─── Loaded state ───────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <EmployerJobsHeader />
