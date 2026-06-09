@@ -2,9 +2,9 @@
 import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
 import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
 import EmployerJobsList from "@/components/employer/EmployerJobsList";
+import PostJobSheet from "@/components/employer/PostJobSheet";
 import {
   EmployerJobsSkeleton,
-  EmployerJobsHeaderSkeleton,
 } from "@/components/skeletons/EmployerJobsSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
@@ -47,6 +47,7 @@ export default function Jobs() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,7 +128,7 @@ export default function Jobs() {
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
-        <EmployerJobsHeader />
+        <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-red-600 font-quicksandBold text-lg text-center">
             {error}
@@ -136,6 +137,11 @@ export default function Jobs() {
             {t("errors.tryAgainOrContact")}
           </Text>
         </View>
+        <PostJobSheet
+          visible={sheetVisible}
+          onClose={() => setSheetVisible(false)}
+          onSuccess={fetchJobs}
+        />
       </SafeAreaView>
     );
   }
@@ -143,7 +149,8 @@ export default function Jobs() {
   // ─── Loaded state ───────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <EmployerJobsHeader />
+      <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
+
       <EmployerJobFilters
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
@@ -153,6 +160,7 @@ export default function Jobs() {
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
       />
+
       <EmployerJobsList
         jobs={jobs}
         selectedCategory={selectedCategory}
@@ -160,6 +168,13 @@ export default function Jobs() {
         statusFilter={selectedStatus}
         onRefresh={fetchJobs}
         onScroll={handleScroll}
+      />
+
+      {/* Bottom sheet — rendered at root so it overlays the full screen */}
+      <PostJobSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        onSuccess={fetchJobs}
       />
     </SafeAreaView>
   );
