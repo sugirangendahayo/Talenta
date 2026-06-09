@@ -2,7 +2,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet } from "react-native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,7 +15,7 @@ import {
   TabBarVisibilityProvider,
   useTabBarVisibility,
 } from "@/contexts/TabBarVisibilityContext";
-import { useRouter } from "expo-router";
+import PostJobSheet from "@/components/employer/PostJobSheet";
 
 // ─── Spring configs ───────────────────────────────────────────────────────────
 const TAB_SPRING = {
@@ -48,8 +48,13 @@ const FAB_MID = "rgba(14,116,144,1)";
 const FAB_BOT = "rgba(9,88,110,1)";
 
 // ─── PostJobFAB ───────────────────────────────────────────────────────────────
-function PostJobFAB({ slideY }: { slideY: Animated.SharedValue<number> }) {
-  const router = useRouter();
+function PostJobFAB({
+  slideY,
+  onPress,
+}: {
+  slideY: Animated.SharedValue<number>;
+  onPress: () => void;
+}) {
   const pressScale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -72,7 +77,7 @@ function PostJobFAB({ slideY }: { slideY: Animated.SharedValue<number> }) {
     <Animated.View style={[styles.fabWrapper, animStyle]}>
       <Animated.View style={pressStyle}>
         <TouchableOpacity
-          onPress={() => router.push("/employers/post-job" as any)}
+          onPress={onPress}
           activeOpacity={1}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
@@ -117,6 +122,7 @@ function TabButton({
   const labelOpacity = useSharedValue(isFocused ? 1 : 0);
   const labelWidth = useSharedValue(isFocused ? 1 : 0);
   const pressScale = useSharedValue(1);
+  
 
   useEffect(() => {
     flex.value = isFocused ? 3 : 1;
@@ -199,6 +205,7 @@ function TabButton({
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { isVisible } = useTabBarVisibility();
   const slideY = useSharedValue(0);
+  const [sheetVisible, setSheetVisible] = useState(false);
 
   useEffect(() => {
     slideY.value = isVisible ? 0 : 150;
@@ -272,7 +279,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         </View>
       </Animated.View>
 
-      <PostJobFAB slideY={slideY} />
+      <PostJobFAB slideY={slideY} onPress={() => setSheetVisible(true)} />
+      <PostJobSheet visible={sheetVisible} onClose={() => setSheetVisible(false)} onSuccess={() => {}} />
     </>
   );
 }
