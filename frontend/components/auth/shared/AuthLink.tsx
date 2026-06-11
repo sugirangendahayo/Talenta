@@ -23,7 +23,7 @@ export default function AuthLink({
         : "items-center";
 
   return (
-    <View className={`flex flex-row ${alignmentClass} ${className}`}>
+    <View className={`flex flex-row  ${alignmentClass} ${className}`}>
       {text && (
         <Text className="text-gray-600 font-quicksandMedium mr-1">{text}</Text>
       )}

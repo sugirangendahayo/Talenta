@@ -36,7 +36,7 @@ const C = {
   muted: "#64748B", // secondary text
   hairline: "#E2F8F4", // dividers
 
-  tealMid: "#257680", // slightly lighter teal
+  tealMid: "#257680", // slightly lighter tealyh
   tealLight: "#99F6E4", // pale teal for glows/orb
   tealGlow: "rgba(13,148,136,0.08)",
   tealOrb: "rgba(20,184,166,0.13)",
