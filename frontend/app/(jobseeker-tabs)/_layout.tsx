@@ -1,23 +1,23 @@
 // app/(jobseeker-tabs)/_layout.tsx
-import { Tabs } from "expo-router";
+import { Tabs, useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
-import { useEffect, useRef } from "react";
+import { TouchableOpacity, View, StyleSheet } from "react-native";
+import { useEffect } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-  interpolateColor,
-  runOnJS,
-  Easing,
+  type SharedValue
+
 } from "react-native-reanimated";
+
 import { LinearGradient } from "expo-linear-gradient";
 import {
   TabBarVisibilityProvider,
   useTabBarVisibility,
 } from "@/contexts/TabBarVisibilityContext";
-import { useRouter } from "expo-router";
+
 
 // ─── Spring configs ───────────────────────────────────────────────────────────
 const TAB_SPRING = {
@@ -48,8 +48,12 @@ const ACTIVE_MID = "rgba(12,98,122,1)";
 const ACTIVE_BOT = "rgba(8,75,96,1)";
 
 // ─── BookmarksFAB ─────────────────────────────────────────────────────────────
-function BookmarksFAB({ slideY }: { slideY: Animated.SharedValue<number> }) {
+// ─── BookmarksFAB ─────────────────────────────────────────────────────────────
+function BookmarksFAB({ slideY }: { slideY: SharedValue<number> }) {
   const router = useRouter();
+  const pathname = usePathname(); // add this import: import { useRouter, usePathname } from "expo-router";
+
+  const isActive = pathname.includes("saved-jobs");
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: withSpring(slideY.value, HIDE_SPRING) }],
@@ -61,11 +65,14 @@ function BookmarksFAB({ slideY }: { slideY: Animated.SharedValue<number> }) {
       <TouchableOpacity
         onPress={() => router.push("/jobseekers/saved-jobs" as any)}
         activeOpacity={0.8}
-        style={styles.fabOuter}
+        style={[
+          styles.fabOuter,
+          isActive && { borderColor: "#0E7490", borderWidth: 2 },
+        ]}
       >
         {/* Glossy surface on FAB */}
         <LinearGradient
-          colors={[GLASS_TOP, GLASS_MID, GLASS_BOT]}
+          colors={isActive ? [ACTIVE_TOP, ACTIVE_MID, ACTIVE_BOT] : [GLASS_TOP, GLASS_MID, GLASS_BOT]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={StyleSheet.absoluteFillObject}
@@ -77,7 +84,11 @@ function BookmarksFAB({ slideY }: { slideY: Animated.SharedValue<number> }) {
           end={{ x: 0, y: 0.45 }}
           style={styles.fabSheen}
         />
-        <Ionicons name="bookmark-outline" size={22} color="#111827" />
+        <Ionicons
+          name={isActive ? "bookmark" : "bookmark-outline"}
+          size={22}
+          color={isActive ? "#fff" : "#111827"}
+        />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -181,9 +192,17 @@ function TabButton({
 }
 
 // ─── Custom tab bar ───────────────────────────────────────────────────────────
+// ─── Custom tab bar ───────────────────────────────────────────────────────────
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { isVisible } = useTabBarVisibility();
   const slideY = useSharedValue(0);
+
+  // ── Only render the 4 real tabs, ignore everything else ──
+  const VISIBLE_TABS = ["jobseekers/Home", "jobseekers/Jobs", "jobseekers/Applications", "jobseekers/Profile"];
+  const visibleRoutes = state.routes.filter((r: any) => VISIBLE_TABS.includes(r.name));
+  const visibleIndex = visibleRoutes.findIndex((_: any, i: number) => 
+    state.index === state.routes.indexOf(visibleRoutes[i])
+  );
 
   useEffect(() => {
     slideY.value = isVisible ? 0 : 150;
@@ -196,23 +215,20 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
   return (
     <>
-      {/* Tab bar container */}
       <Animated.View style={[styles.barWrapper, barStyle]}>
-        {/* Glossy bar surface — layered gradients */}
+        {/* ...gradients unchanged... */}
         <LinearGradient
           colors={[GLASS_TOP, GLASS_MID, GLASS_BOT]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={StyleSheet.absoluteFillObject}
         />
-        {/* Top-edge sheen — the "pearl" brightness */}
         <LinearGradient
           colors={[GLASS_SHEEN, "rgba(255,255,255,0)"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 0.4 }}
           style={[StyleSheet.absoluteFillObject, styles.barSheen]}
         />
-        {/* Subtle left-to-right iridescent sweep */}
         <LinearGradient
           colors={[
             "rgba(200,220,255,0.10)",
@@ -224,11 +240,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           style={StyleSheet.absoluteFillObject}
         />
 
-        {/* Tab buttons */}
+        {/* ── Only the 4 visible routes ── */}
         <View style={styles.tabsRow}>
-          {state.routes.map((route: any, index: number) => {
+          {visibleRoutes.map((route: any) => {
             const { options } = descriptors[route.key];
-            const isFocused = state.index === index;
+            const isFocused = state.routes[state.index]?.name === route.name;
 
             const onPress = () => {
               const event = navigation.emit({
@@ -263,7 +279,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     </>
   );
 }
-
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   // Bar
@@ -397,6 +412,12 @@ function TabsContent() {
             <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
+      />
+
+      {/* ── Hide saved-jobs from the tab bar ── */}
+      <Tabs.Screen
+        name="jobseekers/saved-jobs"
+        options={{ href: null }}
       />
     </Tabs>
   );

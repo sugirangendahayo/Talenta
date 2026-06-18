@@ -1,5 +1,6 @@
 // components/jobseeker/HomeJobs.tsx
 import { useJobs } from "@/hooks/useJobs";
+import { useBookmarkSet, useAppliedSet } from "@/hooks/useBookmarks";
 import { supabase } from "@/lib/supabase";
 import { CompactJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
@@ -7,11 +8,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 interface HomeJobsProps {
@@ -32,10 +29,16 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
   const [profileLoading, setProfileLoading] = useState(true);
   const { t } = useTranslation(["home", "jobs"]);
 
+  // ─── Bookmark & applied state ─────────────────────────────────────────────
+  const { bookmarkedIds, toggleInSet } = useBookmarkSet();
+  const { appliedIds } = useAppliedSet();
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
             .from("jobseeker_profiles")
@@ -89,10 +92,13 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
   };
 
   const isRecommending =
-    userProfile && !searchQuery && selectedCategory === "all" &&
-    userProfile.skills && userProfile.skills.length > 0;
+    userProfile &&
+    !searchQuery &&
+    selectedCategory === "all" &&
+    userProfile.skills &&
+    userProfile.skills.length > 0;
 
-  // ─── Section header (always rendered, even during loading) ───────────────
+  // ─── Section header ───────────────────────────────────────────────────────
   const SectionHeader = () => (
     <View className="flex-row items-center justify-between px-6 mb-4">
       <View>
@@ -107,10 +113,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
           </Text>
         )}
       </View>
-      <TouchableOpacity
-        onPress={handleViewAll}
-        className="flex-row items-center gap-1"
-      >
+      <TouchableOpacity onPress={handleViewAll} className="flex-row items-center gap-1">
         <Text className="text-cyan-700 font-quicksandBold text-sm">
           {t("home:featuredJobs.viewAll", { defaultValue: "View All" })}
         </Text>
@@ -119,16 +122,12 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
     </View>
   );
 
-  // ─── Skeleton state ───────────────────────────────────────────────────────
   if (loading || profileLoading) {
     return (
       <View className="mb-6">
         <SectionHeader />
         <View className="gap-3 px-6">
-          <SkeletonList
-            count={PREVIEW_COUNT}
-            renderItem={() => <CompactJobCardSkeleton />}
-          />
+          <SkeletonList count={PREVIEW_COUNT} renderItem={() => <CompactJobCardSkeleton />} />
         </View>
       </View>
     );
@@ -147,7 +146,10 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
         >
           <Ionicons name="arrow-up" size={16} color="white" />
           <Text className="text-white font-quicksandBold text-sm ml-2">
-            {t("home:stats.newAvailable", { count: newJobsCount, defaultValue: `${newJobsCount} new jobs` })}
+            {t("home:stats.newAvailable", {
+              count: newJobsCount,
+              defaultValue: `${newJobsCount} new jobs`,
+            })}
           </Text>
         </TouchableOpacity>
       )}
@@ -166,7 +168,11 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
             const companyName = item.employer_profiles?.company_name || "Company";
             const salary = formatSalary(item.salary_min, item.salary_max);
             const timeAgo = getTimeAgo(item.created_at);
-            const jobTypes = item.job_type.split(",").map((t: string) => t.trim());
+            const jobTypes = item.job_type
+              ? item.job_type.split(",").map((t: string) => t.trim())
+              : [];
+            const isBookmarked = bookmarkedIds.has(item.id);
+            const isApplied = appliedIds.has(item.id);
 
             return (
               <TouchableOpacity
@@ -177,10 +183,8 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
               >
                 <View className="flex-row items-start justify-between mb-3">
                   <View className="flex-row items-center flex-1 mr-3">
-                    {/* Company initial avatar */}
-                    <View
-                      className="w-12 h-12 rounded-2xl border border-gray-100 bg-cyan-50 items-center justify-center"
-                    >
+                    {/* Company avatar */}
+                    <View className="w-12 h-12 rounded-2xl border border-gray-100 bg-cyan-50 items-center justify-center">
                       <Text className="text-lg font-quicksandBold text-cyan-600">
                         {companyName.charAt(0).toUpperCase()}
                       </Text>
@@ -203,8 +207,20 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                       </View>
                     </View>
                   </View>
-                  <TouchableOpacity className="bg-gray-100 p-2 rounded-full">
-                    <Ionicons name="bookmark-outline" size={16} color="#6B7280" />
+
+                  {/* ── Bookmark button ── */}
+                  <TouchableOpacity
+                    onPress={() => toggleInSet(item.id)}
+                    activeOpacity={0.7}
+                    className={`p-2 rounded-full ${
+                      isBookmarked ? "bg-cyan-700" : "bg-gray-100"
+                    }`}
+                  >
+                    <Ionicons
+                      name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                      size={16}
+                      color={isBookmarked ? "#ffffff" : "#6B7280"}
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -222,14 +238,25 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
 
                 {/* Footer */}
                 <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
-                  <Text className="text-cyan-700 text-sm font-quicksandBold">
-                    {salary}
-                  </Text>
-                  <View className="bg-cyan-700 px-4 py-1.5 rounded-full">
-                    <Text className="text-white text-xs font-quicksandBold">
-                      {t("home:featuredJobs.apply", { defaultValue: "Apply" })}
-                    </Text>
-                  </View>
+                  <Text className="text-cyan-700 text-sm font-quicksandBold">{salary}</Text>
+
+                  {/* ── Applied vs Apply button ── */}
+                  {isApplied ? (
+                    <View className="flex-row items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full">
+                      <Ionicons name="checkmark-circle" size={13} color="#059669" />
+                      <Text className="text-emerald-700 text-xs font-quicksandBold">Applied</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => handleJobPress(item.id)}
+                      activeOpacity={0.8}
+                      className="bg-cyan-700 px-4 py-1.5 rounded-full"
+                    >
+                      <Text className="text-white text-xs font-quicksandBold">
+                        {t("home:featuredJobs.apply", { defaultValue: "Apply" })}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </TouchableOpacity>
             );
@@ -237,7 +264,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
         </View>
       )}
 
-      {/* View All button at bottom */}
+      {/* View All */}
       {jobs.length > 0 && (
         <TouchableOpacity
           onPress={handleViewAll}

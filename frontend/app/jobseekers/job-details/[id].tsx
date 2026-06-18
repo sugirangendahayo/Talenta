@@ -1,5 +1,7 @@
+// app/jobseekers/job-details/[id].tsx
 import InfoAlertModal from "@/components/modal/InfoAlertModal";
 import { useApplyJob } from "@/hooks/useApplyJob";
+import { useJobBookmark } from "@/hooks/useBookmarks";
 import { supabase } from "@/lib/supabase";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
@@ -56,6 +58,13 @@ export default function JobDetailsScreen() {
     applyForJob,
   } = useApplyJob();
 
+  // ─── Bookmark state for this job ─────────────────────────────────────────
+  const {
+    isBookmarked,
+    toggling,
+    toggle: toggleBookmark,
+  } = useJobBookmark(id as string);
+
   useEffect(() => {
     fetchJobDetails();
     if (id) checkRequirements(id as string);
@@ -72,7 +81,10 @@ export default function JobDetailsScreen() {
         .eq("status", "active")
         .single();
       if (fetchError) throw fetchError;
-      if (!data) { setError("Job not found"); return; }
+      if (!data) {
+        setError("Job not found");
+        return;
+      }
       setJob(data);
     } catch (err: any) {
       console.error("Error fetching job:", err);
@@ -94,7 +106,7 @@ export default function JobDetailsScreen() {
     if (requirements.missingFields.length > 0) {
       setInfoAlertTitle("Profile Incomplete");
       setInfoAlertMessage(
-        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`
+        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`,
       );
       setShowInfoAlert(true);
       return;
@@ -105,18 +117,22 @@ export default function JobDetailsScreen() {
   const handleSubmitApplication = async () => {
     if (!id) return;
     const success = await applyForJob({ jobId: id as string, coverLetter });
-    if (success) { setShowApplyModal(false); setCoverLetter(""); }
+    if (success) {
+      setShowApplyModal(false);
+      setCoverLetter("");
+    }
   };
 
   const formatSalary = (min: number, max: number) => {
-    const fmt = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
+    const fmt = (n: number) =>
+      n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
     return `${fmt(min)} - ${fmt(max)}`;
   };
 
   const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const seconds = Math.floor(
+      (Date.now() - new Date(dateString).getTime()) / 1000,
+    );
     if (seconds < 60) return "Just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -126,13 +142,24 @@ export default function JobDetailsScreen() {
 
   const getCategoryDisplay = (category: string) => {
     const categoryNames: { [key: string]: string } = {
-      it: "IT & Software", design: "Design", business: "Business",
-      construction: "Construction", finance: "Finance", healthcare: "Healthcare",
-      education: "Education", sales: "Sales & Marketing", hospitality: "Hospitality",
-      transport: "Transport", creative: "Creative", agriculture: "Agriculture",
+      it: "IT & Software",
+      design: "Design",
+      business: "Business",
+      construction: "Construction",
+      finance: "Finance",
+      healthcare: "Healthcare",
+      education: "Education",
+      sales: "Sales & Marketing",
+      hospitality: "Hospitality",
+      transport: "Transport",
+      creative: "Creative",
+      agriculture: "Agriculture",
       security: "Security & Law",
     };
-    return categoryNames[category] || category.charAt(0).toUpperCase() + category.slice(1);
+    return (
+      categoryNames[category] ||
+      category.charAt(0).toUpperCase() + category.slice(1)
+    );
   };
 
   if (loading) {
@@ -171,12 +198,14 @@ export default function JobDetailsScreen() {
   const companyName = job.employer_profiles?.company_name || "Company";
   const salary = formatSalary(job.salary_min, job.salary_max);
   const timeAgo = getTimeAgo(job.created_at);
-  const jobTypes = job.job_type.split(",").map((t) => t.trim());
+  const jobTypes = job.job_type
+    ? job.job_type.split(",").map((t) => t.trim())
+    : [];
   const categoryDisplay = getCategoryDisplay(job.category);
 
   return (
     <View className="flex-1 bg-gray-100">
-      {/* ── TOP HERO — untouched ── */}
+      {/* ── TOP HERO ── */}
       <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700">
         <View className="flex flex-row items-center justify-between">
           <TouchableOpacity onPress={() => router.back()} className="p-2">
@@ -185,14 +214,39 @@ export default function JobDetailsScreen() {
           <Text className="text-lg font-quicksandBold text-white">
             Job Details
           </Text>
-          <TouchableOpacity className="p-2">
-            <Ionicons name="bookmark-outline" size={24} color="#fff" />
+
+          {/* ── Bookmark button in header ── */}
+          <TouchableOpacity
+            onPress={toggleBookmark}
+            disabled={toggling}
+            className="p-2"
+            activeOpacity={0.7}
+          >
+            {toggling ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <View
+                style={{
+                  backgroundColor: isBookmarked
+                    ? "rgba(255,255,255,0.25)"
+                    : "rgba(255,255,255,0.12)",
+                  borderRadius: 10,
+                  padding: 6,
+                }}
+              >
+                <Ionicons
+                  name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                  size={22}
+                  color={isBookmarked ? "#FDE68A" : "#fff"}
+                />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* ── JOB HEADER — untouched ── */}
+        {/* ── JOB HEADER ── */}
         <View className="px-4 pt-6">
           <View className="flex flex-row items-start justify-between mb-4">
             <View className="flex flex-row items-center flex-1 mr-3">
@@ -221,7 +275,27 @@ export default function JobDetailsScreen() {
             </View>
           </View>
 
-          {/* Quick Info — untouched */}
+          {/* Applied badge — shown inline under title when already applied */}
+          {hasApplied && (
+            <View className="flex-row items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2.5 mb-4">
+              <Ionicons name="checkmark-circle" size={16} color="#059669" />
+              <Text className="font-quicksandBold text-[13px] text-emerald-700">
+                You've already applied for this role
+              </Text>
+            </View>
+          )}
+
+          {/* Bookmarked badge */}
+          {isBookmarked && (
+            <View className="flex-row items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-2xl px-4 py-2.5 mb-4">
+              <Ionicons name="bookmark" size={14} color="#0E7490" />
+              <Text className="font-quicksandMedium text-[13px] text-cyan-700">
+                Saved to your bookmarks
+              </Text>
+            </View>
+          )}
+
+          {/* Quick Info */}
           <View className="flex flex-row flex-wrap gap-3 mb-6">
             <View className="bg-cyan-100 px-4 py-3 rounded-2xl">
               <Text className="text-cyan-700 font-quicksandBold text-sm">
@@ -238,8 +312,6 @@ export default function JobDetailsScreen() {
           </View>
         </View>
 
-        {/* ── BELOW THE FOLD — reworked ── */}
-
         {/* Description */}
         <View className="mx-4 mb-3 bg-white rounded-2xl overflow-hidden">
           <View className="px-4 pt-4 pb-2">
@@ -250,11 +322,10 @@ export default function JobDetailsScreen() {
               {job.description}
             </Text>
           </View>
-          {/* bottom accent strip */}
           <View className="h-[3px] bg-cyan-50 mt-4" />
         </View>
 
-        {/* Experience + Skills side-by-side context strip */}
+        {/* Experience */}
         {job.experience_level && (
           <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
             <View className="flex-row items-center gap-2 mb-2">
@@ -297,7 +368,7 @@ export default function JobDetailsScreen() {
           </View>
         )}
 
-        {/* Overview — clean key/value rows */}
+        {/* Overview */}
         <View className="mx-4 mb-3 bg-white rounded-2xl px-4 pt-4 pb-1">
           <Text className="font-quicksandBold text-[15px] text-gray-900 mb-1">
             Overview
@@ -320,9 +391,7 @@ export default function JobDetailsScreen() {
                   {row.value}
                 </Text>
               </View>
-              {i < arr.length - 1 && (
-                <View className="h-px bg-gray-100" />
-              )}
+              {i < arr.length - 1 && <View className="h-px bg-gray-100" />}
             </View>
           ))}
         </View>
@@ -397,7 +466,6 @@ export default function JobDetailsScreen() {
       >
         <View className="flex-1 justify-end bg-black/40">
           <View className="bg-white rounded-t-3xl px-5 pt-4 pb-8 max-h-[85%]">
-            {/* Drag handle */}
             <View className="w-10 h-1 rounded-full bg-gray-200 self-center mb-5" />
 
             <View className="flex-row items-center justify-between mb-5">

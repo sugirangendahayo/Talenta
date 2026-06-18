@@ -226,7 +226,7 @@ export default function Step1() {
         </Text>
         <Text className="text-gray-400 font-quicksandMedium text-sm text-center mt-3 leading-relaxed">
           {t("step1.subtitle", {
-            defaultValue: "Your dream job is waiting for you to explore.",
+            defaultValue: "Your dream job is waiting for you to explore!.",
           })}
         </Text>
       </View>
