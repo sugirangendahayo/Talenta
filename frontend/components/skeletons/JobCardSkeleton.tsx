@@ -16,22 +16,22 @@ import {
   SkeletonLine,
   SkeletonPill,
   SkeletonRoundedSquare,
+  useSkeletonColorMode
 } from "./SkeletonBase";
-
-const COLOR_MODE = "light" as const;
 
 // ─── Spacer helper ────────────────────────────────────────────────────────────
 const Spacer = ({ h }: { h: number }) => <View style={{ height: h }} />;
 
 // ─── Compact card (HomeJobs) ──────────────────────────────────────────────────
-export const CompactJobCardSkeleton: React.FC = () => (
+export const CompactJobCardSkeleton: React.FC = () => {
+  const COLOR_MODE = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#141414] border-gray-100 dark:border-[#2a2a2a]"
     style={{
-      backgroundColor: "#fff",
       padding: 16,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: "#F3F4F6",
       shadowColor: "#000",
       shadowOpacity: 0.04,
       shadowRadius: 4,
@@ -75,13 +75,13 @@ export const CompactJobCardSkeleton: React.FC = () => (
 
     {/* Footer: salary + apply button */}
     <View
+      className="border-t border-gray-100 dark:border-[#2a2a2a]"
       style={{
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         paddingTop: 12,
         borderTopWidth: 1,
-        borderTopColor: "#F3F4F6",
       }}
     >
       <SkeletonLine width={80} height={12} />
@@ -89,18 +89,20 @@ export const CompactJobCardSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 // ─── Full card (JobsList) ─────────────────────────────────────────────────────
-export const FullJobCardSkeleton: React.FC = () => (
+export const FullJobCardSkeleton: React.FC = () => {
+  const COLOR_MODE = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
     style={{
-      backgroundColor: "#fff",
       marginHorizontal: 16,
       marginVertical: 8,
       padding: 16,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: "#E5E7EB",
       shadowColor: "#000",
       shadowOpacity: 0.04,
       shadowRadius: 4,
@@ -160,6 +162,7 @@ export const FullJobCardSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 // ─── Default export (compact by default) ─────────────────────────────────────
 interface JobCardSkeletonProps {
