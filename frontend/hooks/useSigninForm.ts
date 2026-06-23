@@ -2,9 +2,11 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { useTranslation } from "react-i18next";
 
 export default function useSigninForm() {
   const router = useRouter();
+  const { t } = useTranslation("auth");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,13 +21,13 @@ export default function useSigninForm() {
   const validateForm = (): { valid: boolean; message: string } => {
     // Check if fields are empty
     if (!formData.email.trim() || !formData.password.trim()) {
-      return { valid: false, message: "Please fill in all fields" };
+      return { valid: false, message: t("validation.fillAllFields") };
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      return { valid: false, message: "Please enter a valid email address" };
+      return { valid: false, message: t("validation.invalidEmail") };
     }
 
     return { valid: true, message: "" };
@@ -53,7 +55,7 @@ export default function useSigninForm() {
       if (authError) throw authError;
 
       if (!authData.user) {
-        throw new Error("Sign in failed");
+        throw new Error(t("messages.signInFailed"));
       }
 
       // 2. Get user's role from profiles table
@@ -66,13 +68,13 @@ export default function useSigninForm() {
       if (profileError) throw profileError;
 
       if (!profileData) {
-        throw new Error("Profile not found");
+        throw new Error(t("messages.profileNotFound"));
       }
 
       // 3. Navigate based on role
       const role = profileData.role;
 
-         toast.success("Signed in successfully!", {
+         toast.success(t("messages.signInSuccess"), {
                duration: 2000,
              });
       
@@ -82,20 +84,20 @@ export default function useSigninForm() {
           router.replace("/(employer-tabs)/employers/Dashboard");
         } else {
           // Admin or unknown role - handle as needed
-          toast.error("Invalid user role");
+          toast.error(t("messages.invalidUserRole"));
         }
   
     } catch (error: any) {
       console.error("Signin error:", error);
       // ... rest of the error handling
 
-      let errorMessage = "An error occurred during sign in";
+      let errorMessage = t("messages.signInError");
 
       // Handle specific error cases
       if (error.message.includes("Invalid login credentials")) {
-        errorMessage = "Invalid email or password. Please try again.";
+        errorMessage = t("messages.invalidCredentials");
       } else if (error.message.includes("Email not confirmed")) {
-        errorMessage = "Please confirm your email before signing in.";
+        errorMessage = t("messages.emailNotConfirmed");
       } else if (error.message) {
         errorMessage = error.message;
       }
