@@ -6,10 +6,12 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner-native";
 
 export default function useSignupForm() {
   const router = useRouter();
+  const { t } = useTranslation("auth");
   const [role, setRole] = useState<"jobseeker" | "employer">("jobseeker");
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,32 +44,31 @@ export default function useSignupForm() {
     if (password.length < 8) {
       return {
         valid: false,
-        message: "Password must be at least 8 characters long",
+        message: t("validation.passwordTooShort"),
       };
     }
     if (!/[A-Z]/.test(password)) {
       return {
         valid: false,
-        message: "Password must contain at least one uppercase letter",
+        message: t("validation.passwordUppercase"),
       };
     }
     if (!/[a-z]/.test(password)) {
       return {
         valid: false,
-        message: "Password must contain at least one lowercase letter",
+        message: t("validation.passwordLowercase"),
       };
     }
     if (!/[0-9]/.test(password)) {
       return {
         valid: false,
-        message: "Password must contain at least one number",
+        message: t("validation.passwordNumber"),
       };
     }
     if (!/[!@#$%^&*]/.test(password)) {
       return {
         valid: false,
-        message:
-          "Password must contain at least one special character (!@#$%^&*)",
+        message: t("validation.passwordSpecial"),
       };
     }
     return { valid: true, message: "" };
@@ -81,7 +82,13 @@ export default function useSignupForm() {
       if (!field.placeholder?.includes("Optional")) {
         const value = formData[field.key as keyof typeof formData];
         if (!value || value.toString().trim() === "") {
-          return { valid: false, message: `Please fill in ${field.label}` };
+          const fieldName = t(`fields.${field.key}`, {
+            defaultValue: field.label,
+          });
+          return {
+            valid: false,
+            message: t("validation.fillField", { field: fieldName }),
+          };
         }
       }
     }
@@ -89,7 +96,7 @@ export default function useSignupForm() {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      return { valid: false, message: "Please enter a valid email address" };
+      return { valid: false, message: t("validation.invalidEmail") };
     }
 
     // Password validation
@@ -103,12 +110,12 @@ export default function useSignupForm() {
       if (!formData.firstName.trim() || !formData.lastName.trim()) {
         return {
           valid: false,
-          message: "Please provide both first and last name",
+          message: t("validation.fullNameRequired"),
         };
       }
     } else {
       if (!formData.companyName.trim()) {
-        return { valid: false, message: "Please provide company name" };
+        return { valid: false, message: t("validation.companyNameRequired") };
       }
     }
 
@@ -119,7 +126,7 @@ export default function useSignupForm() {
     // Validate form
     const validation = validateForm();
     if (!validation.valid) {
-      Alert.alert("Validation Error", validation.message);
+      Alert.alert(t("validation.title"), validation.message);
       return;
     }
 
@@ -140,7 +147,7 @@ export default function useSignupForm() {
       if (authError) throw authError;
 
       if (!authData.user) {
-        throw new Error("User creation failed");
+        throw new Error(t("messages.userCreationFailed"));
       }
 
       // 2. Create role-specific profile
@@ -177,7 +184,7 @@ export default function useSignupForm() {
       
       
       // Show success message
-      toast.success("Account created successfully!", {
+      toast.success(t("messages.accountCreated"), {
         duration: 2000,
       });
       
@@ -190,10 +197,9 @@ export default function useSignupForm() {
     } catch (error: any) {
       console.error("Signup error:", error);
 
-      let errorMessage = "An error occurred during signup";
+      let errorMessage = t("messages.signupError");
       if (error.message.includes("already registered")) {
-        errorMessage =
-          "This email is already registered. Please sign in instead!";
+        errorMessage = t("messages.emailAlreadyRegistered");
       } else if (error.message) {
         errorMessage = error.message;
       }
