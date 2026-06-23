@@ -12,21 +12,23 @@ import { Skeleton } from "moti/skeleton";
 import { MotiView } from "moti";
 import React from "react";
 import { View } from "react-native";
-import { SkeletonLine, SkeletonBox, SkeletonPill } from "./SkeletonBase";
+import { SkeletonLine, SkeletonBox, SkeletonPill, useSkeletonColorMode } from "./SkeletonBase";
 
-const COLOR_MODE = "light" as const;
 const Spacer = ({ h }: { h: number }) => <View style={{ height: h }} />;
 
 // ─── Reusable: a single input field row (label + input box) ──────────────────
-const FieldSkeleton = ({ labelWidth = 100 }: { labelWidth?: number }) => (
+const FieldSkeleton = ({ labelWidth = 100 }: { labelWidth?: number }) => {
+  const C = useSkeletonColorMode();
+  return (
   <View style={{ marginBottom: 16 }}>
     {/* Label */}
     <SkeletonLine width={labelWidth} height={11} />
     <Spacer h={8} />
     {/* Input box */}
-    <Skeleton colorMode={COLOR_MODE} width="100%" height={46} radius={16} />
+    <Skeleton colorMode={C} width="100%" height={46} radius={16} />
   </View>
 );
+};
 
 // ─── Reusable: a chip group row (label + row of pill placeholders) ────────────
 const ChipGroupSkeleton = ({
@@ -35,29 +37,33 @@ const ChipGroupSkeleton = ({
 }: {
   labelWidth?: number;
   chips?: number[];
-}) => (
+}) => {
+  const C = useSkeletonColorMode();
+  return (
   <View style={{ marginBottom: 20 }}>
     <SkeletonLine width={labelWidth} height={11} />
     <Spacer h={8} />
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
       {chips.map((w, i) => (
-        <Skeleton key={i} colorMode={COLOR_MODE} width={w} height={34} radius={999} />
+        <Skeleton key={i} colorMode={C} width={w} height={34} radius={999} />
       ))}
     </View>
   </View>
 );
+};
 
 // ─── Reusable: section card shell (icon dot + title + children) ───────────────
-const SectionCardSkeleton = ({ children }: { children: React.ReactNode }) => (
+const SectionCardSkeleton = ({ children }: { children: React.ReactNode }) => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#141414] border-gray-100 dark:border-[#2a2a2a]"
     style={{
       marginHorizontal: 24,
       marginTop: 16,
-      backgroundColor: "#fff",
       borderRadius: 24,
       padding: 20,
       borderWidth: 1,
-      borderColor: "#F3F4F6",
       shadowColor: "#000",
       shadowOpacity: 0.04,
       shadowRadius: 3,
@@ -67,36 +73,39 @@ const SectionCardSkeleton = ({ children }: { children: React.ReactNode }) => (
   >
     {/* Section header: icon circle + title line */}
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 20 }}>
-      <Skeleton colorMode={COLOR_MODE} width={28} height={28} radius={14} />
+      <Skeleton colorMode={C} width={28} height={28} radius={14} />
       <SkeletonLine width={150} height={13} />
     </View>
     {children}
   </View>
 );
+};
 
 // ─── Full profile form skeleton ───────────────────────────────────────────────
-export const ProfileFormSkeleton: React.FC = () => (
-  <View style={{ flex: 1, backgroundColor: "#fff" }}>
+export const ProfileFormSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
+  <View className="flex-1 bg-white dark:bg-[#080A08]">
 
     {/* ── Header bar ── */}
     <View
+      className="border-b border-gray-100 dark:border-[#2a2a2a]"
       style={{
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
       }}
     >
       {/* Back button */}
-      <Skeleton colorMode={COLOR_MODE} width={36} height={36} radius={18} />
+      <Skeleton colorMode={C} width={36} height={36} radius={18} />
       <View style={{ width: 12 }} />
       {/* Title */}
       <SkeletonLine width={160} height={16} />
       <View style={{ flex: 1 }} />
       {/* % pill */}
-      <Skeleton colorMode={COLOR_MODE} width={48} height={26} radius={999} />
+      <Skeleton colorMode={C} width={48} height={26} radius={999} />
     </View>
 
     {/* ── Scrollable body (staggered sections) ── */}
@@ -109,13 +118,12 @@ export const ProfileFormSkeleton: React.FC = () => (
         transition={{ type: "timing", duration: 300, delay: 0 }}
       >
         <View
+          className="bg-gray-50 dark:bg-[#1e1e1e] border-gray-100 dark:border-[#2a2a2a]"
           style={{
             marginHorizontal: 24,
             marginTop: 20,
-            backgroundColor: "#F8FAFC",
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: "#F3F4F6",
             padding: 16,
           }}
         >
@@ -124,7 +132,7 @@ export const ProfileFormSkeleton: React.FC = () => (
             <SkeletonLine width={32} height={11} />
           </View>
           {/* Progress track */}
-          <Skeleton colorMode={COLOR_MODE} width="100%" height={8} radius={999} />
+          <Skeleton colorMode={C} width="100%" height={8} radius={999} />
           <Spacer h={8} />
           <SkeletonLine width={100} height={10} />
         </View>
@@ -144,7 +152,7 @@ export const ProfileFormSkeleton: React.FC = () => (
             <SkeletonLine width={100} height={11} />
             <Spacer h={8} />
             <View style={{ flexDirection: "row", gap: 0 }}>
-              <Skeleton colorMode={COLOR_MODE} width={90} height={46} radius={16} />
+              <Skeleton colorMode={C} width={90} height={46} radius={16} />
               <View style={{ width: 1 }} />
               
             </View>
@@ -198,13 +206,13 @@ export const ProfileFormSkeleton: React.FC = () => (
         <SectionCardSkeleton>
           {/* Add skill row */}
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
-            <Skeleton colorMode={COLOR_MODE} width="82%" height={46} radius={16} />
-            <Skeleton colorMode={COLOR_MODE} width={46} height={46} radius={16} />
+            <Skeleton colorMode={C} width="82%" height={46} radius={16} />
+            <Skeleton colorMode={C} width={46} height={46} radius={16} />
           </View>
           {/* Skill chips placeholder */}
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {[72, 88, 64, 96, 76].map((w, i) => (
-              <Skeleton key={i} colorMode={COLOR_MODE} width={w} height={30} radius={999} />
+              <Skeleton key={i} colorMode={C} width={w} height={30} radius={999} />
             ))}
           </View>
         </SectionCardSkeleton>
@@ -217,19 +225,18 @@ export const ProfileFormSkeleton: React.FC = () => (
         transition={{ type: "timing", duration: 300, delay: 400 }}
       >
         <View
+          className="bg-gray-50 dark:bg-[#1e1e1e] border-gray-100 dark:border-[#2a2a2a]"
           style={{
             marginHorizontal: 24,
             marginTop: 16,
-            backgroundColor: "#F8FAFC",
             borderRadius: 16,
             borderWidth: 1,
-            borderColor: "#F3F4F6",
             padding: 16,
             flexDirection: "row",
             gap: 12,
           }}
         >
-          <Skeleton colorMode={COLOR_MODE} width={20} height={20} radius={10} />
+          <Skeleton colorMode={C} width={20} height={20} radius={10} />
           <View style={{ flex: 1, gap: 6 }}>
             <SkeletonLine width={130} height={12} />
             <SkeletonLine width="90%" height={10} />
@@ -245,12 +252,13 @@ export const ProfileFormSkeleton: React.FC = () => (
         transition={{ type: "timing", duration: 300, delay: 460 }}
       >
         <View style={{ marginHorizontal: 24, marginTop: 24 }}>
-          <Skeleton colorMode={COLOR_MODE} width="100%" height={52} radius={16} />
+          <Skeleton colorMode={C} width="100%" height={52} radius={16} />
         </View>
       </MotiView>
 
     </View>
   </View>
 );
+};
 
 export default ProfileFormSkeleton;
