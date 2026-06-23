@@ -157,7 +157,7 @@ export default function HeroBanner() {
               defaultValue: "Thousands of opportunities waiting for you",
             })}
           </Text>
-          <View className="self-start flex-row items-center bg-white/20 border border-white/30 px-4 py-2 rounded-full">
+          <View className="self-start flex-row items-center bg-white dark:bg-[#080A08]/20 border border-white/30 px-4 py-2 rounded-full">
             <Text className="text-white font-quicksandBold text-xs mr-1.5">
               {t(activeSlide.ctaKey, { defaultValue: "Find job(s)" })}
             </Text>
@@ -170,7 +170,7 @@ export default function HeroBanner() {
           {SLIDES.map((_, i) => (
             <View
               key={i}
-              className="rounded-full bg-white"
+              className="rounded-full bg-white dark:bg-[#080A08]"
               style={{
                 width: i === displayIndex ? 16 : 5,
                 height: 5,
