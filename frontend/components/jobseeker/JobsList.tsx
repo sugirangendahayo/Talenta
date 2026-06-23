@@ -1,5 +1,6 @@
 // components/jobseeker/JobsList.tsx
 import { useJobs } from "@/hooks/useJobs";
+import { useBookmarkSet, useAppliedSet } from "@/hooks/useBookmarks";
 import { FullJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -29,6 +30,12 @@ const JobsList: React.FC<JobsListProps> = ({
 }) => {
   const router = useRouter();
   const { t } = useTranslation(["home", "jobs"]);
+
+  // ─── Shared bookmark & applied state ───────────────────────────────────────
+  // Same hooks HomeJobs.tsx uses, so a bookmark made here, on Home, or on the
+  // job details screen all read from the same source of truth and never drift.
+  const { bookmarkedIds, toggleInSet } = useBookmarkSet();
+  const { appliedIds } = useAppliedSet();
 
   const {
     jobs,
@@ -79,69 +86,136 @@ const JobsList: React.FC<JobsListProps> = ({
     const companyName = item.employer_profiles?.company_name || "Company";
     const salary = formatSalary(item.salary_min, item.salary_max);
     const timeAgo = getTimeAgo(item.created_at);
-    const jobTypes = item.job_type.split(",").map((t: string) => t.trim());
+    const jobTypes = item.job_type
+      ? item.job_type.split(",").map((t: string) => t.trim())
+      : [];
+    const isBookmarked = bookmarkedIds.has(item.id);
+    const isApplied = appliedIds.has(item.id);
 
     return (
       <TouchableOpacity
-        className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
+        className="bg-white dark:bg-[#080A08] mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-[#222]"
         onPress={() => handleJobPress(item.id)}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.title} ${t("jobs:at", { defaultValue: "at" })} ${companyName}`}
       >
-        <View className="flex-1">
-          <View className="flex flex-row items-start justify-between mb-3">
-            <View className="flex flex-row items-center flex-1 mr-3">
-              <View className="w-16 h-16 rounded-full border border-gray-200 bg-white p-2 items-center justify-center flex">
-                <Text className="text-2xl font-quicksandBold text-cyan-600">
-                  {companyName.charAt(0).toUpperCase()}
+        <View className="flex-row items-start justify-between mb-3">
+          <View className="flex-row items-center flex-1 mr-3">
+            <View className="w-12 h-12 rounded-2xl border border-gray-100 dark:border-[#222] bg-cyan-50 items-center justify-center">
+              <Text className="text-lg font-quicksandBold text-cyan-600 dark:text-cyan-400">
+                {companyName.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <View className="flex-1 ml-3">
+              <View className="flex-row items-center gap-1">
+                <Text
+                  className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs"
+                  numberOfLines={1}
+                >
+                  {companyName}
                 </Text>
+                <MaterialIcons name="verified" size={12} color="#0E7490" />
               </View>
-              <View className="flex-1 ml-3">
-                <View className="flex flex-row items-center gap-1">
-                  <Text className="text-gray-600 font-quicksandMedium text-sm">
-                    {companyName}
-                  </Text>
-                  <MaterialIcons name="verified" size={14} color="#0E7490" />
-                </View>
-                <Text className="text-lg font-quicksandBold text-gray-800">
-                  {item.title}
+              <Text
+                className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 mt-0.5"
+                numberOfLines={1}
+              >
+                {item.title}
+              </Text>
+              <View className="flex-row items-center gap-1 mt-0.5">
+                <Ionicons name="location-sharp" size={11} color="#0E7490" />
+                <Text
+                  className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs"
+                  numberOfLines={1}
+                >
+                  {item.location}
                 </Text>
-                <View className="flex flex-row items-center gap-1">
-                  <Ionicons name="location-sharp" size={13} color="#0E7490" />
-                  <Text className="text-gray-600 font-quicksandMedium text-sm">
-                    {item.location}
-                  </Text>
-                </View>
               </View>
             </View>
-            <TouchableOpacity className="bg-gray-100 p-2 rounded-full">
-              <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
+          </View>
+
+          {/* ── Bookmark ── now actually wired up (it had no onPress before),
+              fixed 40x40 tap area + hitSlop so it doesn't get swallowed by the
+              card's own onPress underneath it. */}
+          <TouchableOpacity
+            onPress={() => toggleInSet(item.id)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isBookmarked }}
+            accessibilityLabel={
+              isBookmarked
+                ? t("home:featuredJobs.unsave", { defaultValue: "Remove from saved jobs" })
+                : t("home:featuredJobs.save", { defaultValue: "Save job" })
+            }
+            className={`w-10 h-10 rounded-full items-center justify-center ${
+              isBookmarked ? "bg-cyan-700 dark:bg-cyan-800" : "bg-gray-100 dark:bg-[#141414]"
+            }`}
+          >
+            <Ionicons
+              name={isBookmarked ? "bookmark" : "bookmark-outline"}
+              size={16}
+              color={isBookmarked ? "#ffffff" : "#6B7280"}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Tags + posted date */}
+        <View className="flex-row flex-wrap gap-2 mb-3">
+          {jobTypes.slice(0, 2).map((type: string, index: number) => (
+            <View key={index} className="bg-gray-100 dark:bg-[#141414] px-3 py-1.5 rounded-full">
+              <Text className="text-gray-600 dark:text-gray-400 text-xs font-quicksandMedium">{type}</Text>
+            </View>
+          ))}
+          <View className="bg-gray-50 dark:bg-[#080A08] px-3 py-1.5 rounded-full border border-gray-100 dark:border-[#222]">
+            <Text className="text-gray-400 text-xs font-quicksandMedium">{timeAgo}</Text>
+          </View>
+        </View>
+
+        {/* Description preview — separated from the time-ago label instead of
+            sharing one run-on Text block */}
+        <Text
+          className="text-gray-500 dark:text-gray-400 text-sm font-quicksandMedium mb-3 leading-5"
+          numberOfLines={2}
+        >
+          {item.description}
+        </Text>
+
+        {/* Footer */}
+        <View className="flex-row items-center justify-between pt-3 border-t border-gray-100 dark:border-[#222]">
+          <Text className="text-cyan-700 text-sm font-quicksandBold">{salary}</Text>
+
+          {/* ── Applied vs open ──────────────────────────────────────────────
+              Already-applied jobs get the same quiet badge as Home (nothing to
+              misfire). Otherwise, the circular arrow now actually does
+              something — it was rendered with no onPress at all before — and
+              carries the same hitSlop treatment as the bookmark button. */}
+          {isApplied ? (
+            <View
+              accessible
+              accessibilityLabel={t("home:featuredJobs.applied", { defaultValue: "Applied" })}
+              className="flex-row items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-full"
+            >
+              <Ionicons name="checkmark-circle" size={13} color="#059669" />
+              <Text className="text-emerald-700 text-xs font-quicksandBold">
+                {t("home:featuredJobs.applied", { defaultValue: "Applied" })}
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={() => handleJobPress(item.id)}
+              activeOpacity={0.8}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel={t("home:featuredJobs.applyTo", {
+                defaultValue: `Apply to ${item.title}`,
+              })}
+              className="bg-cyan-700 dark:bg-cyan-800 w-10 h-10 rounded-full items-center justify-center"
+            >
+              <MaterialIcons name="arrow-outward" size={18} color="#fff" />
             </TouchableOpacity>
-          </View>
-
-          <View className="flex flex-row flex-wrap gap-2 mb-3">
-            {jobTypes.slice(0, 2).map((type: string, index: number) => (
-              <View key={index} className="bg-gray-100 px-3 py-2 rounded-full">
-                <Text className="text-gray-700 text-xs font-quicksandMedium">
-                  {type}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          <Text className="text-gray-500 text-sm font-quicksandMedium mb-3">
-            {item.description.substring(0, 100)}...{"  "}
-            <Text className="text-cyan-600 text-xs font-quicksandMedium">
-              {timeAgo}
-            </Text>
-          </Text>
-
-          <View className="flex flex-row justify-between items-center">
-            <Text className="text-cyan-600 text-sm font-quicksandMedium p-2 bg-gray-100 rounded-full">
-              {salary}
-            </Text>
-            <TouchableOpacity className="bg-cyan-700 p-2 rounded-full">
-              <MaterialIcons name="arrow-outward" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -153,6 +227,7 @@ const JobsList: React.FC<JobsListProps> = ({
         <TouchableOpacity
           className="mx-4 mb-3 bg-cyan-600 p-3 rounded-2xl flex flex-row items-center justify-center"
           onPress={loadNewJobs}
+          activeOpacity={0.8}
         >
           <Ionicons name="arrow-up" size={16} color="white" />
           <Text className="text-white font-quicksandBold text-sm ml-2">
@@ -160,7 +235,7 @@ const JobsList: React.FC<JobsListProps> = ({
           </Text>
         </TouchableOpacity>
       )}
-      <Text className="text-2xl font-quicksandBold text-gray-800 px-4 pb-2">
+      <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200 px-4 pb-2">
         {t("jobs:allAvailable")}
       </Text>
     </>
@@ -181,10 +256,10 @@ const JobsList: React.FC<JobsListProps> = ({
     return (
       <View className="flex-1 items-center justify-center flex py-20 px-8">
         <Ionicons name="search-outline" size={64} color="#D1D5DB" />
-        <Text className="text-xl font-quicksandBold text-gray-800 mt-4 text-center">
+        <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200 mt-4 text-center">
           {t("home:emptyStates.noJobs")}
         </Text>
-        <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center">
+        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm mt-2 text-center">
           {error ? error : t("home:search.noResults")}
         </Text>
       </View>
@@ -194,9 +269,9 @@ const JobsList: React.FC<JobsListProps> = ({
   // ─── Initial load → full-screen skeleton list ─────────────────────────────
   if (loading) {
     return (
-      <View className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
         {/* Keep the header visible so the screen doesn't jump */}
-        <Text className="text-2xl font-quicksandBold text-gray-800 px-4 py-3">
+        <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200 px-4 py-3">
           {t("jobs:allAvailable")}
         </Text>
         <SkeletonList
@@ -209,7 +284,7 @@ const JobsList: React.FC<JobsListProps> = ({
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <FlatList
         data={jobs}
         renderItem={renderJobItem}

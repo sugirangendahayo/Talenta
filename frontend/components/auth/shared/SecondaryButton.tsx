@@ -14,9 +14,9 @@ export default function SecondaryButton({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`bg-gray-200 rounded-2xl py-4 items-center ${className}`}
+      className={`bg-gray-200 dark:bg-[#1e1e1e] rounded-2xl py-4 items-center ${className}`}
     >
-      <Text className="text-gray-700 font-quicksandBold text-base">
+      <Text className="text-gray-700 dark:text-gray-300 font-quicksandBold text-base">
         {title}
       </Text>
     </TouchableOpacity>

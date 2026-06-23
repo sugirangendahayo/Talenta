@@ -65,5 +65,83 @@
     "verified": "Verified",
     "businessPro": "Business Pro"
   },
-  "version": "Version 1.0.0"
+  "version": "Version 1.0.0",
+  "completeProfile": {
+    "title": "Complete Profile",
+    "progress": {
+      "label": "Profile completion",
+      "remaining": "{{count}} field remaining",
+      "remaining_plural": "{{count}} fields remaining"
+    },
+    "sections": {
+      "personal": {
+        "title": "Personal Information",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "phone": "Phone Number",
+        "dob": "Date of Birth",
+        "gender": "Gender"
+      },
+      "location": {
+        "title": "Location",
+        "country": "Country",
+        "city": "City"
+      },
+      "education": {
+        "title": "Education & Experience",
+        "level": "Education Level",
+        "experience": "Experience Level"
+      },
+      "skills": {
+        "title": "Skills",
+        "addPlaceholder": "Add a skill (e.g., JavaScript)",
+        "noSkills": "No skills added yet"
+      }
+    },
+    "cvNote": {
+      "title": "CV / Resume required",
+      "description": "You'll need to upload your CV before applying for jobs. You can do this from Profile → Documents."
+    },
+    "completionBadge": {
+      "title": "Profile 100% complete",
+      "description": "You're all set to apply for jobs"
+    },
+    "buttons": {
+      "save": "Save Profile"
+    },
+    "options": {
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other",
+        "preferNotToSay": "Prefer not to say"
+      },
+      "education": {
+        "highSchool": "High School",
+        "associateDegree": "Associate Degree",
+        "bachelorsDegree": "Bachelor's Degree",
+        "mastersDegree": "Master's Degree",
+        "phd": "PhD",
+        "other": "Other"
+      },
+      "experience": {
+        "entryLevel": "Entry Level",
+        "intermediate": "Intermediate",
+        "senior": "Senior",
+        "expert": "Expert"
+      }
+    },
+    "placeholders": {
+      "firstName": "Enter your first name",
+      "lastName": "Enter your last name",
+      "dob": "Select date of birth",
+      "country": "e.g., Rwanda",
+      "city": "e.g., Kigali",
+      "phoneExample": "e.g., 788 123 456"
+    },
+    "phone": {
+      "selectCountry": "Select Country",
+      "searchCountry": "Search country..."
+    }
+  }
 }

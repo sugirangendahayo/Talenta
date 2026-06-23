@@ -111,8 +111,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       case "closed":
         return {
           text: t("status.closed"),
-          bgColor: "bg-gray-200",
-          textColor: "text-gray-700",
+          bgColor: "bg-gray-200 dark:bg-[#1e1e1e]",
+          textColor: "text-gray-700 dark:text-gray-300",
         };
       case "paused":
         return {
@@ -129,8 +129,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       default:
         return {
           text: status,
-          bgColor: "bg-gray-100",
-          textColor: "text-gray-700",
+          bgColor: "bg-gray-100 dark:bg-[#141414]",
+          textColor: "text-gray-700 dark:text-gray-300",
         };
     }
   };
@@ -275,7 +275,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
               e.stopPropagation();
               handleCloseJob(job.id);
             }}
-            className="bg-gray-100 p-2 rounded-full"
+            className="bg-gray-100 dark:bg-[#141414] p-2 rounded-full"
           >
             <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
@@ -301,7 +301,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
               e.stopPropagation();
               handleCloseJob(job.id);
             }}
-            className="bg-gray-100 p-2 rounded-full"
+            className="bg-gray-100 dark:bg-[#141414] p-2 rounded-full"
           >
             <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
@@ -327,7 +327,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
               e.stopPropagation();
               handleCloseJob(job.id);
             }}
-            className="bg-gray-100 p-2 rounded-full"
+            className="bg-gray-100 dark:bg-[#141414] p-2 rounded-full"
           >
             <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
           </TouchableOpacity>
@@ -338,8 +338,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     // CLOSED: Usually no actions (hiring finished)
     if (status === "closed") {
       return (
-        <View className="bg-gray-100 px-3 py-2 rounded-full">
-          <Text className="text-gray-500 text-xs font-quicksandBold">
+        <View className="bg-gray-100 dark:bg-[#141414] px-3 py-2 rounded-full">
+          <Text className="text-gray-500 dark:text-gray-400 text-xs font-quicksandBold">
             {t("status.hiringComplete")}
           </Text>
         </View>
@@ -376,18 +376,18 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
             params: { id: item.id },
           })
         }
-        className="bg-white mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200"
+        className="bg-white dark:bg-[#080A08] mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-[#2a2a2a]"
       >
         <View className="flex-1">
           {/* Header: Job Info + Status */}
           <View className="flex flex-row items-start justify-between mb-3">
             <View className="flex-1 mr-3">
-              <Text className="text-lg font-quicksandBold text-gray-800 mb-1">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200 mb-1">
                 {item.title}
               </Text>
               <View className="flex flex-row items-center gap-1">
                 <Ionicons name="location-sharp" size={13} color="#0E7490" />
-                <Text className="text-gray-600 font-quicksandMedium text-sm">
+                <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-sm">
                   {item.location}
                 </Text>
               </View>
@@ -412,9 +412,9 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
                 .map((type: string, index: number) => (
                   <View
                     key={index}
-                    className="bg-gray-100 px-3 py-2 rounded-full"
+                    className="bg-gray-100 dark:bg-[#141414] px-3 py-2 rounded-full"
                   >
-                    <Text className="text-gray-700 text-xs font-quicksandMedium">
+                    <Text className="text-gray-700 dark:text-gray-300 text-xs font-quicksandMedium">
                       {type.trim()}
                     </Text>
                   </View>
@@ -426,7 +426,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
           <View className="flex flex-row items-center gap-4 mb-3 flex-wrap">
             <View className="flex flex-row items-center gap-1">
               <Ionicons name="time-outline" size={16} color="#F59E0B" />
-              <Text className="text-xs font-quicksandBold text-gray-700">
+              <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300">
                 {formatDate(item.created_at)}
               </Text>
             </View>
@@ -439,7 +439,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
                       ? "text-red-600"
                       : daysLeft < 30
                         ? "text-yellow-600"
-                        : "text-gray-700"
+                        : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {daysLeft > 0
@@ -454,7 +454,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
           {/* Description */}
           {item.description && (
-            <Text className="text-gray-500 text-sm font-quicksandMedium mb-3">
+            <Text className="text-gray-500 dark:text-gray-400 text-sm font-quicksandMedium mb-3">
               {item.description.substring(0, 100)}
               {item.description.length > 100 ? "..." : ""}
             </Text>
@@ -462,7 +462,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
           {/* Footer: Salary + Actions */}
           <View className="flex flex-row justify-between items-center gap-2">
-            <Text className="text-cyan-600 text-sm font-quicksandMedium p-2 bg-gray-100 rounded-full">
+            <Text className="text-cyan-600 dark:text-cyan-400 text-sm font-quicksandMedium p-2 bg-gray-100 dark:bg-[#141414] rounded-full">
               {formatSalary(item.salary_min, item.salary_max)}
             </Text>
             <View className="flex flex-row gap-2">
@@ -475,7 +475,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
                     params: { jobId: item.id },
                   });
                 }}
-                className="bg-cyan-700 p-2 rounded-full"
+                className="bg-cyan-700 dark:bg-cyan-800 p-2 rounded-full"
               >
                 <MaterialIcons name="arrow-outward" size={20} color="#fff" />
               </TouchableOpacity>
@@ -489,10 +489,10 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   const renderEmptyState = () => (
     <View className="flex-1 items-center justify-center flex py-20 px-8">
       <Ionicons name="briefcase-outline" size={64} color="#D1D5DB" />
-      <Text className="text-xl font-quicksandBold text-gray-800 mt-4 text-center">
+      <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200 mt-4 text-center">
         {t("empty.noJobsFound")}
       </Text>
-      <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center">
+      <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm mt-2 text-center">
         {jobs.length === 0
           ? t("empty.startByPosting")
           : t("empty.tryAdjustingFilters", { status: statusFilter })}
@@ -501,12 +501,12 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   );
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <FlatList
         data={filteredJobs}
         ListHeaderComponent={
           <View className="px-4 py-2 flex flex-row justify-between items-center">
-            <Text className="text-xl font-quicksandBold text-gray-800">
+            <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200">
               {t("list.yourJobPosts", { count: filteredJobs.length })}
             </Text>
           </View>

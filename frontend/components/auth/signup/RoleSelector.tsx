@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
+import { useTranslation } from "react-i18next";
 
 interface RoleSelectorProps {
   role: "jobseeker" | "employer";
@@ -9,6 +10,8 @@ export default function RoleSelector({
   role,
   onRoleChange,
 }: RoleSelectorProps) {
+  const { t } = useTranslation("auth");
+
   return (
     <View
       style={{
@@ -18,7 +21,7 @@ export default function RoleSelector({
         paddingVertical: 8,
       }}
     >
-      <View className="flex flex-row rounded-2xl bg-gray-100">
+      <View className="flex flex-row rounded-2xl bg-gray-100 dark:bg-[#141414]">
         {/* Job Seeker Button */}
         <TouchableOpacity
           onPress={() => onRoleChange("jobseeker")}
@@ -28,10 +31,10 @@ export default function RoleSelector({
         >
           <Text
             className={`font-quicksandBold ${
-              role === "jobseeker" ? "text-white" : "text-gray-700"
+              role === "jobseeker" ? "text-white" : "text-gray-700 dark:text-gray-300"
             }`}
           >
-            Job Seeker
+            {t("signup.roles.jobseeker")}
           </Text>
         </TouchableOpacity>
 
@@ -44,10 +47,10 @@ export default function RoleSelector({
         >
           <Text
             className={`font-quicksandBold ${
-              role === "employer" ? "text-white" : "text-gray-700"
+              role === "employer" ? "text-white" : "text-gray-700 dark:text-gray-300"
             }`}
           >
-            Employer
+            {t("signup.roles.employer")}
           </Text>
         </TouchableOpacity>
       </View>

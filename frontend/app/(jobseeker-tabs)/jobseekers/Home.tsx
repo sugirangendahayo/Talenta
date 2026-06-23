@@ -30,7 +30,7 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]" edges={["top"]}>
       {/* Sticky header — search lives here now */}
       <HomeHeader onSearchChange={setSearchQuery} />
 

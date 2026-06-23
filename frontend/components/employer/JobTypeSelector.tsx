@@ -33,12 +33,12 @@ export default function JobTypeSelector({
       {/* Label */}
       <View className="flex flex-row items-center mb-2 gap-1">
         <Ionicons name="options-outline" size={16} color="#0E7490" />
-        <Text className="text-sm font-quicksandBold text-gray-700">
+        <Text className="text-sm font-quicksandBold text-gray-700 dark:text-gray-300">
           {label}
         </Text>
         {required && <Text className="text-red-500 font-quicksandBold">*</Text>}
       </View>
-      <Text className="text-xs font-quicksandMedium text-gray-500 mb-2">
+      <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 mb-2">
         {t("search.selectAtLeastOne")}
       </Text>
 
@@ -50,8 +50,8 @@ export default function JobTypeSelector({
             onPress={() => onSelect(type.id)}
             className={`flex flex-row items-center gap-2 px-4 py-2 rounded-full border ${
               isSelected(type.id)
-                ? "bg-cyan-700 border-cyan-600"
-                : "bg-white border-gray-200"
+                ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-600"
+                : "bg-white dark:bg-[#080A08] border-gray-200 dark:border-[#2a2a2a]"
             }`}
           >
             <Ionicons
@@ -61,7 +61,7 @@ export default function JobTypeSelector({
             />
             <Text
               className={`text-sm font-quicksandBold ${
-                isSelected(type.id) ? "text-white" : "text-gray-700"
+                isSelected(type.id) ? "text-white" : "text-gray-700 dark:text-gray-300"
               }`}
             >
               {t("jobTypes." + type.id)}

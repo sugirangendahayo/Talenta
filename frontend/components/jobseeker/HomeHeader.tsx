@@ -93,7 +93,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
   });
 
   return (
-    <View className="bg-white">
+    <View className="bg-white dark:bg-[#080A08]">
       {/* Top row — default content and search bar are stacked, crossfade between them */}
       <View className="px-5 pt-4 pb-3" style={{ height: 60 }}>
 
@@ -106,7 +106,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
           {/* Left: avatar + greeting */}
           <View className="flex-row items-center gap-3">
             <View
-              className="w-10 h-10 rounded-full border border-gray-200 overflow-hidden bg-white"
+              className="w-10 h-10 rounded-full border border-gray-200 dark:border-[#2a2a2a] overflow-hidden bg-white dark:bg-[#080A08]"
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 1 },
@@ -121,7 +121,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
                 resizeMode="cover"
               />
             </View>
-            <Text className="font-quicksandSemibold text-sm text-gray-500 leading-tight">
+            <Text className="font-quicksandSemibold text-sm text-gray-500 dark:text-gray-400 leading-tight">
               {t("greeting", { firstName })}
             </Text>
           </View>
@@ -130,7 +130,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
               onPress={openSearch}
-              className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center"
+              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
               activeOpacity={0.7}
             >
               <Ionicons name="search-outline" size={17} color="#374151" />
@@ -138,10 +138,10 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
 
             <TouchableOpacity
               onPress={handleNotificationsPress}
-              className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center"
+              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
               activeOpacity={0.7}
             >
-              <View className="absolute -right-0.5 -top-0.5 bg-cyan-700 rounded-full min-w-[14px] h-[14px] items-center justify-center px-0.5 z-10">
+              <View className="absolute -right-0.5 -top-0.5 bg-cyan-700 dark:bg-cyan-800 rounded-full min-w-[14px] h-[14px] items-center justify-center px-0.5 z-10">
                 <Text className="text-white font-quicksandBold" style={{ fontSize: 9 }}>
                   1{/* {unreadCount > 99 ? "99+" : unreadCount} */}
                 </Text>
@@ -159,7 +159,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
         >
           {/* Search input — takes all available space */}
           <View
-            className="flex-1 flex-row items-center bg-gray-50 rounded-full px-4 py-2.5 border border-gray-200 mr-2"
+            className="flex-1 flex-row items-center bg-gray-50 dark:bg-[#080A08] rounded-full px-4 py-2.5 border border-gray-200 dark:border-[#2a2a2a] mr-2"
           >
             <Ionicons name="search" size={15} color="#9CA3AF" />
             <TextInput
@@ -168,7 +168,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
               onChangeText={handleSearchChange}
               placeholder={t("search.placeholder", { defaultValue: "Search jobs..." })}
               placeholderTextColor="#9CA3AF"
-              className="flex-1 ml-2 text-gray-800 font-quicksandMedium text-sm"
+              className="flex-1 ml-2 text-gray-800 dark:text-gray-200 font-quicksandMedium text-sm"
               returnKeyType="search"
               autoCapitalize="none"
             />
@@ -180,7 +180,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
             activeOpacity={0.7}
           >
             <Text className="text-cyan-700 font-quicksandBold text-sm">
-              Cancel
+              {t("search.cancel")}
             </Text>
           </TouchableOpacity>
         </Animated.View>
@@ -194,7 +194,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
           transform: [{ translateY: welcomeTranslateY }],
         }}
       >
-        <Text className="font-quicksandBold text-2xl text-gray-900 leading-tight">
+        <Text className="font-quicksandBold text-2xl text-gray-900 dark:text-gray-100 leading-tight">
           {t("welcome")}
         </Text>
       </Animated.View>

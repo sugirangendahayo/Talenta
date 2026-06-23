@@ -19,11 +19,11 @@ export default function FieldWrapper({
 }: FieldWrapperProps) {
   return (
     <View>
-      <Text className="text-gray-700 font-quicksandMedium mb-2">
+      <Text className="text-gray-700 dark:text-gray-300 font-quicksandMedium mb-2">
         {label}
         {required && <Text className="text-red-500"> *</Text>}
       </Text>
-      <View className="relative bg-white rounded-2xl border-[1px] border-gray-300">
+      <View className="relative bg-white dark:bg-[#080A08] rounded-2xl border-[1px] border-gray-300">
         {icon && showIconInside && (
           <MaterialIcons
             name={icon}

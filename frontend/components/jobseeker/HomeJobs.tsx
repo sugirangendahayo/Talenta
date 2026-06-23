@@ -99,21 +99,33 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
     userProfile.skills.length > 0;
 
   // ─── Section header ───────────────────────────────────────────────────────
+  // `flex-1` + numberOfLines on the title column lets it truncate instead of
+  // colliding with "View All" once translated strings run longer than English.
+  // `flex-shrink-0` on the link keeps its icon+label glued together instead of
+  // wrapping awkwardly when space gets tight.
   const SectionHeader = () => (
-    <View className="flex-row items-center justify-between px-6 mb-4">
-      <View>
-        <Text className="text-xl font-quicksandBold text-gray-800">
+    <View className="flex-row items-start justify-between px-6 mb-4 gap-3">
+      <View className="flex-1">
+        <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200" numberOfLines={1}>
           {isRecommending
             ? t("home:recommended.title", { defaultValue: "Recommended" })
             : t("home:featuredJobs.title", { defaultValue: "Latest Jobs" })}
         </Text>
         {isRecommending && (
-          <Text className="text-xs font-quicksandMedium text-gray-400 mt-0.5">
+          <Text
+            className="text-xs font-quicksandMedium text-gray-400 mt-0.5"
+            numberOfLines={1}
+          >
             {t("home:recommended.basedOnSkills", { defaultValue: "Based on your skills" })}
           </Text>
         )}
       </View>
-      <TouchableOpacity onPress={handleViewAll} className="flex-row items-center gap-1">
+      <TouchableOpacity
+        onPress={handleViewAll}
+        activeOpacity={0.7}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        className="flex-row items-center gap-1 flex-shrink-0 pt-0.5"
+      >
         <Text className="text-cyan-700 font-quicksandBold text-sm">
           {t("home:featuredJobs.viewAll", { defaultValue: "View All" })}
         </Text>
@@ -158,7 +170,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
       {jobs.length === 0 ? (
         <View className="items-center py-12 px-8">
           <Ionicons name="search-outline" size={48} color="#D1D5DB" />
-          <Text className="text-gray-500 font-quicksandMedium text-sm mt-3 text-center">
+          <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm mt-3 text-center">
             {t("home:search.noResults", { defaultValue: "No jobs found. Try a different search." })}
           </Text>
         </View>
@@ -177,43 +189,55 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
             return (
               <TouchableOpacity
                 key={item.id}
-                className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100"
+                className="bg-white dark:bg-[#080A08] p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-[#222]"
                 onPress={() => handleJobPress(item.id)}
                 activeOpacity={0.8}
               >
                 <View className="flex-row items-start justify-between mb-3">
                   <View className="flex-row items-center flex-1 mr-3">
                     {/* Company avatar */}
-                    <View className="w-12 h-12 rounded-2xl border border-gray-100 bg-cyan-50 items-center justify-center">
-                      <Text className="text-lg font-quicksandBold text-cyan-600">
+                    <View className="w-12 h-12 rounded-2xl border border-gray-100 dark:border-[#222] bg-cyan-50 items-center justify-center">
+                      <Text className="text-lg font-quicksandBold text-cyan-600 dark:text-cyan-400">
                         {companyName.charAt(0).toUpperCase()}
                       </Text>
                     </View>
                     <View className="flex-1 ml-3">
                       <View className="flex-row items-center gap-1">
-                        <Text className="text-gray-500 font-quicksandMedium text-xs">
+                        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs">
                           {companyName}
                         </Text>
                         <MaterialIcons name="verified" size={12} color="#0E7490" />
                       </View>
-                      <Text className="text-base font-quicksandBold text-gray-800 mt-0.5">
+                      <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 mt-0.5">
                         {item.title}
                       </Text>
                       <View className="flex-row items-center gap-1 mt-0.5">
                         <Ionicons name="location-sharp" size={11} color="#0E7490" />
-                        <Text className="text-gray-500 font-quicksandMedium text-xs">
+                        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs">
                           {item.location}
                         </Text>
                       </View>
                     </View>
                   </View>
 
-                  {/* ── Bookmark button ── */}
+                  {/* ── Bookmark button ──────────────────────────────────────
+                      Fixed 40x40 tap area (was icon + p-2, ~32px — under the
+                      44pt minimum) plus generous hitSlop, so an imprecise tap
+                      reliably lands on the button instead of falling through
+                      to the card's own onPress underneath it. */}
                   <TouchableOpacity
                     onPress={() => toggleInSet(item.id)}
                     activeOpacity={0.7}
-                    className={`p-2 rounded-full ${
-                      isBookmarked ? "bg-cyan-700" : "bg-gray-100"
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isBookmarked }}
+                    accessibilityLabel={
+                      isBookmarked
+                        ? t("home:featuredJobs.unsave", { defaultValue: "Remove from saved jobs" })
+                        : t("home:featuredJobs.save", { defaultValue: "Save job" })
+                    }
+                    className={`w-10 h-10 rounded-full items-center justify-center ${
+                      isBookmarked ? "bg-cyan-700 dark:bg-cyan-800" : "bg-gray-100 dark:bg-[#141414]"
                     }`}
                   >
                     <Ionicons
@@ -227,30 +251,45 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                 {/* Tags row */}
                 <View className="flex-row flex-wrap gap-2 mb-3">
                   {jobTypes.slice(0, 2).map((type: string, index: number) => (
-                    <View key={index} className="bg-gray-100 px-3 py-1 rounded-full">
-                      <Text className="text-gray-600 text-xs font-quicksandMedium">{type}</Text>
+                    <View key={index} className="bg-gray-100 dark:bg-[#141414] px-3 py-1 rounded-full">
+                      <Text className="text-gray-600 dark:text-gray-400 text-xs font-quicksandMedium">{type}</Text>
                     </View>
                   ))}
-                  <View className="bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                  <View className="bg-gray-50 dark:bg-[#080A08] px-3 py-1 rounded-full border border-gray-100 dark:border-[#222]">
                     <Text className="text-gray-400 text-xs font-quicksandMedium">{timeAgo}</Text>
                   </View>
                 </View>
 
                 {/* Footer */}
-                <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+                <View className="flex-row items-center justify-between pt-3 border-t border-gray-100 dark:border-[#222]">
                   <Text className="text-cyan-700 text-sm font-quicksandBold">{salary}</Text>
 
-                  {/* ── Applied vs Apply button ── */}
+                  {/* ── Applied vs Apply ──────────────────────────────────────
+                      Applied is a plain, non-pressable badge (nothing to
+                      misfire). Apply got the same hitSlop + fixed vertical
+                      padding treatment as the bookmark button, and the
+                      "Applied" label is now translated instead of hardcoded. */}
                   {isApplied ? (
-                    <View className="flex-row items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full">
+                    <View
+                      accessible
+                      accessibilityLabel={t("home:featuredJobs.applied", { defaultValue: "Applied" })}
+                      className="flex-row items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-full"
+                    >
                       <Ionicons name="checkmark-circle" size={13} color="#059669" />
-                      <Text className="text-emerald-700 text-xs font-quicksandBold">Applied</Text>
+                      <Text className="text-emerald-700 text-xs font-quicksandBold">
+                        {t("home:featuredJobs.applied", { defaultValue: "Applied" })}
+                      </Text>
                     </View>
                   ) : (
                     <TouchableOpacity
                       onPress={() => handleJobPress(item.id)}
                       activeOpacity={0.8}
-                      className="bg-cyan-700 px-4 py-1.5 rounded-full"
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={t("home:featuredJobs.applyTo", {
+                        defaultValue: `Apply to ${item.title}`,
+                      })}
+                      className="bg-cyan-700 dark:bg-cyan-800 px-4 py-2 rounded-full"
                     >
                       <Text className="text-white text-xs font-quicksandBold">
                         {t("home:featuredJobs.apply", { defaultValue: "Apply" })}
@@ -268,7 +307,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
       {jobs.length > 0 && (
         <TouchableOpacity
           onPress={handleViewAll}
-          className="mx-6 mt-4 bg-gray-50 rounded-2xl p-4 flex-row items-center justify-center gap-2"
+          className="mx-6 mt-4 bg-gray-50 dark:bg-[#080A08] rounded-2xl p-4 flex-row items-center justify-center gap-2"
           activeOpacity={0.8}
         >
           <Text className="text-cyan-700 font-quicksandBold text-sm">

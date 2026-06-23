@@ -16,6 +16,8 @@ import {
   useTabBarVisibility,
 } from "@/contexts/TabBarVisibilityContext";
 import PostJobSheet from "@/components/employer/PostJobSheet";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // ─── Spring configs ───────────────────────────────────────────────────────────
 const TAB_SPRING = {
@@ -31,11 +33,17 @@ const HIDE_SPRING = {
   mass: 1,
 } as const;
 
-// ─── Glossy bar surface colours ───────────────────────────────────────────────
+// ─── Light mode: glossy white pill ────────────────────────────────────────────
 const GLASS_TOP = "rgba(255,255,255,0.98)";
 const GLASS_MID = "rgba(252,252,255,0.96)";
 const GLASS_BOT = "rgba(240,243,255,0.94)";
 const GLASS_SHEEN = "rgba(255,255,255,0.55)";
+
+// ─── Dark mode: dark glass pill ───────────────────────────────────────────────
+const DARK_TOP = "rgba(28,28,28,0.97)";
+const DARK_MID = "rgba(20,20,20,0.98)";
+const DARK_BOT = "rgba(14,14,14,0.99)";
+const DARK_SHEEN = "rgba(255,255,255,0.06)";
 
 // ─── Active pill colours (cyan-700) ──────────────────────────────────────────
 const ACTIVE_TOP = "rgba(14,116,144,0.95)";
@@ -55,6 +63,7 @@ function PostJobFAB({
   slideY: Animated.SharedValue<number>;
   onPress: () => void;
 }) {
+  const { isDark } = useTheme();
   const pressScale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -81,7 +90,7 @@ function PostJobFAB({
           activeOpacity={1}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          style={styles.fabOuter}
+          style={[styles.fabOuter, isDark && { borderColor: "rgba(255,255,255,0.08)" }]}
         >
           {/* Glossy cyan surface */}
           <LinearGradient
@@ -106,16 +115,19 @@ function PostJobFAB({
 
 // ─── Single animated tab button ───────────────────────────────────────────────
 function TabButton({
+  route,
   isFocused,
   options,
   onPress,
   onLongPress,
+  isDark,
 }: {
   route: any;
   isFocused: boolean;
   options: any;
   onPress: () => void;
   onLongPress: () => void;
+  isDark: boolean;
 }) {
   const flex = useSharedValue(isFocused ? 3 : 1);
   const iconScale = useSharedValue(isFocused ? 1 : 0.88);
@@ -188,7 +200,7 @@ function TabButton({
 
         <Animated.View style={iconStyle}>
           {options.tabBarIcon?.({
-            color: isFocused ? "#fff" : "#64748B",
+            color: isFocused ? "#fff" : isDark ? "#9CA3AF" : "#64748B",
             size: 20,
           })}
         </Animated.View>
@@ -204,6 +216,7 @@ function TabButton({
 // ─── Custom tab bar ───────────────────────────────────────────────────────────
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { isVisible } = useTabBarVisibility();
+  const { isDark } = useTheme();
   const slideY = useSharedValue(0);
   const [sheetVisible, setSheetVisible] = useState(false);
 
@@ -216,34 +229,46 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     opacity: withTiming(slideY.value === 0 ? 1 : 0, { duration: 250 }),
   }));
 
+  const glassTop = isDark ? DARK_TOP : GLASS_TOP;
+  const glassMid = isDark ? DARK_MID : GLASS_MID;
+  const glassBot = isDark ? DARK_BOT : GLASS_BOT;
+  const glassSheen = isDark ? DARK_SHEEN : GLASS_SHEEN;
+
   return (
     <>
-      <Animated.View style={[styles.barWrapper, barStyle]}>
-        {/* Glossy bar surface */}
+      <Animated.View
+        style={[
+          styles.barWrapper,
+          isDark
+            ? { borderColor: "rgba(255,255,255,0.07)", shadowColor: "#000", shadowOpacity: 0.5 }
+            : { borderColor: "rgba(255,255,255,0.9)", shadowColor: "#94A3B8" },
+          barStyle,
+        ]}
+      >
         <LinearGradient
-          colors={[GLASS_TOP, GLASS_MID, GLASS_BOT]}
+          colors={[glassTop, glassMid, glassBot]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={StyleSheet.absoluteFillObject}
         />
-        {/* Top-edge pearl sheen */}
         <LinearGradient
-          colors={[GLASS_SHEEN, "rgba(255,255,255,0)"]}
+          colors={[glassSheen, "rgba(255,255,255,0)"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 0.4 }}
           style={[StyleSheet.absoluteFillObject, styles.barSheen]}
         />
-        {/* Iridescent sweep */}
-        <LinearGradient
-          colors={[
-            "rgba(200,220,255,0.10)",
-            "rgba(255,255,255,0)",
-            "rgba(200,230,220,0.08)",
-          ]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFillObject}
-        />
+        {!isDark && (
+          <LinearGradient
+            colors={[
+              "rgba(200,220,255,0.10)",
+              "rgba(255,255,255,0)",
+              "rgba(200,230,220,0.08)",
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
 
         <View style={styles.tabsRow}>
           {state.routes.map((route: any, index: number) => {
@@ -273,6 +298,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 options={options}
                 onPress={onPress}
                 onLongPress={onLongPress}
+                isDark={isDark}
               />
             );
           })}
@@ -295,13 +321,11 @@ const styles = StyleSheet.create({
     right: 88,
     borderRadius: 50,
     overflow: "hidden",
-    shadowColor: "#94A3B8",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.22,
     shadowRadius: 16,
     elevation: 8,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.9)",
     minHeight: 60,
     paddingHorizontal: 5,
     paddingVertical: 8,
@@ -369,6 +393,8 @@ const styles = StyleSheet.create({
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 function TabsContent() {
+  const { t } = useTranslation(["common", "jobs", "applicants"]);
+
   return (
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
@@ -377,7 +403,7 @@ function TabsContent() {
       <Tabs.Screen
         name="employers/Dashboard"
         options={{
-          title: "Home",
+          title: t("common:navigation.home"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -386,7 +412,7 @@ function TabsContent() {
       <Tabs.Screen
         name="employers/Jobs"
         options={{
-          title: "My Jobs",
+          title: t("jobs:header.title"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
           ),
@@ -395,7 +421,7 @@ function TabsContent() {
       <Tabs.Screen
         name="employers/Applicants"
         options={{
-          title: "Applicants",
+          title: t("applicants:header.title"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="file-tray-full-outline" size={size} color={color} />
           ),
@@ -404,7 +430,7 @@ function TabsContent() {
       <Tabs.Screen
         name="employers/Profile"
         options={{
-          title: "Profile",
+          title: t("common:navigation.profile"),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

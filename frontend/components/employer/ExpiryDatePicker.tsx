@@ -69,7 +69,7 @@ export default function ExpiryDatePicker({
       {/* Label */}
       <View className="flex flex-row items-center mb-2 gap-1">
         <Ionicons name="calendar-outline" size={16} color="#0E7490" />
-        <Text className="text-sm font-quicksandBold text-gray-700">
+        <Text className="text-sm font-quicksandBold text-gray-700 dark:text-gray-300">
           {label}
         </Text>
         {required && <Text className="text-red-500 font-quicksandBold">*</Text>}
@@ -83,13 +83,13 @@ export default function ExpiryDatePicker({
             onPress={() => handleQuickSelect(option.days)}
             className={`px-3 py-2 rounded-lg border ${
               daysLeft === option.days
-                ? "bg-cyan-700 border-cyan-700"
-                : "bg-white border-gray-300"
+                ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700"
+                : "bg-white dark:bg-[#080A08] border-gray-300"
             }`}
           >
             <Text
               className={`text-xs font-quicksandBold ${
-                daysLeft === option.days ? "text-white" : "text-gray-700"
+                daysLeft === option.days ? "text-white" : "text-gray-700 dark:text-gray-300"
               }`}
             >
               {option.label}
@@ -101,10 +101,10 @@ export default function ExpiryDatePicker({
       {/* Selected Date Display */}
       <TouchableOpacity
         onPress={() => setShowPicker(true)}
-        className="flex flex-row items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-300"
+        className="flex flex-row items-center justify-between p-4 bg-gray-50 dark:bg-[#080A08] rounded-xl border border-gray-300"
       >
         <View className="flex-1">
-          <Text className="text-gray-900 font-quicksandBold text-base mb-1">
+          <Text className="text-gray-900 dark:text-gray-100 font-quicksandBold text-base mb-1">
             {formatDate(selectedDate)}
           </Text>
           <View className="flex flex-row items-center gap-2">
@@ -137,7 +137,7 @@ export default function ExpiryDatePicker({
       {/* Info */}
       <View className="mt-2 flex flex-row items-start gap-2">
         <Ionicons name="information-circle-outline" size={16} color="#6B7280" />
-        <Text className="flex-1 text-xs font-quicksandMedium text-gray-500">
+        <Text className="flex-1 text-xs font-quicksandMedium text-gray-500 dark:text-gray-400">
           {t("postJob.expiryInfo")}
         </Text>
       </View>

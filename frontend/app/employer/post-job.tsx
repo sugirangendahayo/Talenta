@@ -237,7 +237,7 @@ export default function PostJob() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <PostJobHeader onSaveDraft={handleSaveDraft} />
 
       <KeyboardAvoidingView
@@ -260,7 +260,7 @@ export default function PostJob() {
                     color="#0E7490"
                   />
                 </View>
-                <Text className="text-lg font-quicksandBold text-gray-800">
+                <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                   {t("sections.basicInfo.title")}
                 </Text>
               </View>
@@ -286,7 +286,7 @@ export default function PostJob() {
               <View className="mb-4">
                 <View className="flex flex-row items-center mb-2 gap-1">
                   <Ionicons name="cash-outline" size={16} color="#0E7490" />
-                  <Text className="text-sm font-quicksandBold text-gray-700">
+                  <Text className="text-sm font-quicksandBold text-gray-700 dark:text-gray-300">
                     {t("sections.basicInfo.salaryRange")}
                   </Text>
                   <Text className="text-red-500 font-quicksandBold">*</Text>
@@ -328,7 +328,7 @@ export default function PostJob() {
                 <View className="w-8 h-8 bg-purple-100 rounded-full items-center justify-center flex">
                   <Ionicons name="document-text" size={18} color="#8B5CF6" />
                 </View>
-                <Text className="text-lg font-quicksandBold text-gray-800">
+                <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                   {t("sections.jobDetails.title")}
                 </Text>
               </View>
@@ -364,7 +364,7 @@ export default function PostJob() {
                 <View className="w-8 h-8 bg-green-100 rounded-full items-center justify-center flex">
                   <Ionicons name="checkmark-done" size={18} color="#10B981" />
                 </View>
-                <Text className="text-lg font-quicksandBold text-gray-800">
+                <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                   {t("sections.requirementsAndSkills.title")}
                 </Text>
               </View>
@@ -391,7 +391,7 @@ export default function PostJob() {
 
         {/* Fixed Bottom Action Buttons */}
         <View
-          className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3"
+          className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#080A08] border-t border-gray-200 dark:border-[#2a2a2a] px-4 py-3"
           style={{
             shadowColor: "#000",
             shadowOffset: { width: 0, height: -2 },
@@ -402,17 +402,17 @@ export default function PostJob() {
           <View className="flex flex-row gap-3">
             <TouchableOpacity
               onPress={() => router.back()}
-              className="flex-1 bg-gray-100 py-3 rounded-xl items-center justify-center flex"
+              className="flex-1 bg-gray-100 dark:bg-[#141414] py-3 rounded-xl items-center justify-center flex"
               disabled={isSubmitting}
             >
-              <Text className="text-gray-700 font-quicksandBold text-base">
+              <Text className="text-gray-700 dark:text-gray-300 font-quicksandBold text-base">
                 {t("postJob.cancel")}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={handleSubmit}
-              className="flex-1 bg-cyan-700 py-3 rounded-xl items-center justify-center flex flex-row gap-2"
+              className="flex-1 bg-cyan-700 dark:bg-cyan-800 py-3 rounded-xl items-center justify-center flex flex-row gap-2"
               disabled={isSubmitting}
               style={{ opacity: isSubmitting ? 0.7 : 1 }}
             >

@@ -21,7 +21,7 @@ export default function PrimaryButton({
       onPress={onPress}
       disabled={disabled}
       className={`rounded-2xl py-4 items-center justify-center flex flex-row ${
-        disabled ? "bg-gray-400" : "bg-cyan-700"
+        disabled ? "bg-gray-400" : "bg-cyan-700 dark:bg-cyan-800"
       } ${className}`}
     >
       {children ? (

@@ -21,7 +21,7 @@ export default function LogoUploader({
       {/* Label */}
       <View className="flex flex-row items-center mb-2 gap-1">
         <Ionicons name="image-outline" size={16} color="#0E7490" />
-        <Text className="text-sm font-quicksandBold text-gray-700">
+        <Text className="text-sm font-quicksandBold text-gray-700 dark:text-gray-300">
           {label}
         </Text>
         {required && <Text className="text-red-500 font-quicksandBold">*</Text>}
@@ -30,7 +30,7 @@ export default function LogoUploader({
       {/* Upload Area */}
       <View className="flex flex-row items-center gap-3">
         {/* Logo Preview */}
-        <View className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 items-center justify-center flex overflow-hidden">
+        <View className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 dark:bg-[#080A08] items-center justify-center flex overflow-hidden">
           {logoUrl ? (
             <Image
               source={{ uri: logoUrl }}
@@ -46,7 +46,7 @@ export default function LogoUploader({
         <View className="flex-1 gap-2">
           <TouchableOpacity
             onPress={onUpload}
-            className="bg-cyan-700 py-2 px-4 rounded-xl flex flex-row items-center justify-center gap-2"
+            className="bg-cyan-700 dark:bg-cyan-800 py-2 px-4 rounded-xl flex flex-row items-center justify-center gap-2"
           >
             <Ionicons name="cloud-upload-outline" size={18} color="white" />
             <Text className="text-white font-quicksandBold text-sm">
@@ -68,7 +68,7 @@ export default function LogoUploader({
         </View>
       </View>
 
-      <Text className="text-xs font-quicksandMedium text-gray-500 mt-2">
+      <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 mt-2">
         Recommended: Square image, PNG or JPG, max 2MB
       </Text>
     </View>

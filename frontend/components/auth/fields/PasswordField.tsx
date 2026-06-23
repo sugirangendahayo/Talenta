@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface PasswordFieldProps extends Omit<TextInputProps, "secureTextEntry"> {
   hasIcon?: boolean;
@@ -24,6 +25,7 @@ export default function PasswordField({
   onChangeText,
   ...props
 }: PasswordFieldProps) {
+  const { t } = useTranslation("auth");
   const [internalShowPassword, setInternalShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -79,22 +81,22 @@ export default function PasswordField({
         label = "";
         color = "#D1D5DB";
       } else if (score <= 2) {
-        label = "Weak";
+        label = t("passwordStrength.weak");
         color = "#EF4444";
       } else if (score === 3) {
-        label = "Fair";
+        label = t("passwordStrength.fair");
         color = "#F59E0B";
       } else if (score === 4) {
-        label = "Good";
+        label = t("passwordStrength.good");
         color = "#3B82F6";
       } else {
-        label = "Strong";
+        label = t("passwordStrength.strong");
         color = "#10B981";
       }
 
       setStrength({ score, label, color, checks });
     }
-  }, [value, showStrengthIndicator]);
+  }, [value, showStrengthIndicator, t]);
 
   // Determine which requirements are missing (for compact display)
   const missingRequirements = [];
@@ -109,14 +111,14 @@ export default function PasswordField({
   return (
     <View>
       {/* Main Input Container with Integrated Feedback */}
-      <View className="bg-white rounded-2xl">
+      <View className="bg-white dark:bg-[#080A08] rounded-2xl">
         {/* Input Row */}
         <View
           className={`flex-row items-center px-4 border ${
             showStrengthIndicator && value && value.toString().length > 0
               ? "rounded-t-2xl border-b-0"
-              : "rounded-2xl border-gray-200"
-          } ${isFocused ? "border-gray-200" : "border-gray-200"}`}
+              : "rounded-2xl border-gray-200 dark:border-[#2a2a2a]"
+          } ${isFocused ? "border-gray-200 dark:border-[#2a2a2a]" : "border-gray-200 dark:border-[#2a2a2a]"}`}
         >
           {/* Lock Icon */}
           {hasIcon && (
@@ -130,7 +132,7 @@ export default function PasswordField({
 
           {/* Text Input */}
           <TextInput
-            className={`flex-1 py-3 text-gray-800 ${showPassword ? "font-quicksandMedium" : ""} ${hasIcon ? "" : ""}`}
+            className={`flex-1 py-3 text-gray-800 dark:text-gray-200 ${showPassword ? "font-quicksandMedium" : ""} ${hasIcon ? "" : ""}`}
             secureTextEntry={!showPassword}
             autoCapitalize="none"
             value={value}
@@ -168,12 +170,12 @@ export default function PasswordField({
         {showStrengthIndicator && value && value.toString().length > 0 && (
           <View
             className={`px-4 border border-t-0 rounded-b-2xl ${
-              isFocused ? "border-gray-200 border-t-0" : "border-gray-200"
+              isFocused ? "border-gray-200 dark:border-[#2a2a2a] border-t-0" : "border-gray-200 dark:border-[#2a2a2a]"
             }`}
           >
             {/* Strength Bar with Label */}
             <View className="flex-row items-center py-2">
-              <View className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <View className="flex-1 h-1.5 bg-gray-100 dark:bg-[#141414] rounded-full overflow-hidden">
                 <View
                   className="h-full rounded-full transition-all duration-300"
                   style={{
@@ -193,8 +195,10 @@ export default function PasswordField({
             {/* Compact Missing Requirements (only show if password is weak) */}
             {strength.score < 3 && missingRequirements.length > 0 && (
               <View className="pb-2">
-                <Text className="text-xs text-gray-600 mb-1">
-                  Add: {missingRequirements.join(", ")}
+                <Text className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  {t("passwordStrength.addRequirements", {
+                    requirements: missingRequirements.join(", "),
+                  })}
                 </Text>
 
                 {/* Visual Progress Dots */}
@@ -211,7 +215,7 @@ export default function PasswordField({
                               : index < 4
                                 ? "bg-blue-500"
                                 : "bg-green-500"
-                          : "bg-gray-200"
+                          : "bg-gray-200 dark:bg-[#1e1e1e]"
                       }`}
                     />
                   ))}

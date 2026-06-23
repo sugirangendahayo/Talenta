@@ -220,7 +220,7 @@ export default function Step1() {
           <Text className="font-quicksandMedium text-gray-400">
             {t("step1.titleLight", { defaultValue: "Welcome\nto the " })}
           </Text>
-          <Text className="font-quicksandBold text-gray-800">
+          <Text className="font-quicksandBold text-gray-800 dark:text-gray-200">
             {t("step1.titleBold", { defaultValue: "Talenta" })}
           </Text>
         </Text>
@@ -236,7 +236,7 @@ export default function Step1() {
         <TouchableOpacity
           onPress={() => router.push("/welcome/Step2")}
           activeOpacity={0.85}
-          className="bg-cyan-700 rounded-full py-4 flex-row items-center justify-center gap-2"
+          className="bg-cyan-700 dark:bg-cyan-800 rounded-full py-4 flex-row items-center justify-center gap-2"
         >
           <Text className="text-white font-quicksandBold text-base">
             {t("step1.nextButton", { defaultValue: "Continue" })}

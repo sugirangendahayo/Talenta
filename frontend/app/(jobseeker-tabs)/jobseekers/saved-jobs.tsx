@@ -112,20 +112,20 @@ export default function SavedJobsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       {/* ── HEADER ── */}
-      <View className="pt-16 pb-5 px-5 bg-white border-b border-gray-100">
+      <View className="pt-16 pb-5 px-5 bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#222]">
         <View className="flex-row items-center justify-between mb-1">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center"
+            className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
             activeOpacity={0.7}
           >
             <Ionicons name="arrow-back" size={18} color="#374151" />
           </TouchableOpacity>
 
           <View className="items-center flex-1 mx-3">
-            <Text className="text-[18px] font-quicksandBold text-gray-900">
+            <Text className="text-[18px] font-quicksandBold text-gray-900 dark:text-gray-100">
               Saved Jobs
             </Text>
             {bookmarks.length > 0 && (
@@ -159,25 +159,25 @@ export default function SavedJobsScreen() {
                   activeOpacity={0.7}
                   className={`flex-row items-center gap-1.5 px-4 py-2 rounded-full border ${
                     isActive
-                      ? "bg-cyan-700 border-cyan-700"
-                      : "bg-white border-gray-200"
+                      ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700"
+                      : "bg-white dark:bg-[#080A08] border-gray-200 dark:border-[#2a2a2a]"
                   }`}
                 >
                   <Text
                     className={`text-xs font-quicksandBold ${
-                      isActive ? "text-white" : "text-gray-500"
+                      isActive ? "text-white" : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {tab.label}
                   </Text>
                   <View
                     className={`px-1.5 py-0.5 rounded-full ${
-                      isActive ? "bg-white/20" : "bg-gray-100"
+                      isActive ? "bg-white dark:bg-[#080A08]/20" : "bg-gray-100 dark:bg-[#141414]"
                     }`}
                   >
                     <Text
                       className={`text-[10px] font-quicksandBold ${
-                        isActive ? "text-white" : "text-gray-500"
+                        isActive ? "text-white" : "text-gray-500 dark:text-gray-400"
                       }`}
                     >
                       {count}
@@ -196,7 +196,7 @@ export default function SavedJobsScreen() {
           <View className="w-20 h-20 rounded-3xl bg-cyan-50 items-center justify-center mb-5">
             <Ionicons name="bookmark-outline" size={36} color="#0E7490" />
           </View>
-          <Text className="text-[18px] font-quicksandBold text-gray-800 text-center mb-2">
+          <Text className="text-[18px] font-quicksandBold text-gray-800 dark:text-gray-200 text-center mb-2">
             No saved jobs yet
           </Text>
           <Text className="text-sm font-quicksandMedium text-gray-400 text-center leading-5 mb-6">
@@ -205,7 +205,7 @@ export default function SavedJobsScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             activeOpacity={0.8}
-            className="bg-cyan-700 px-6 py-3 rounded-2xl flex-row items-center gap-2"
+            className="bg-cyan-700 dark:bg-cyan-800 px-6 py-3 rounded-2xl flex-row items-center gap-2"
           >
             <Ionicons name="search-outline" size={16} color="white" />
             <Text className="text-white font-quicksandBold text-sm">
@@ -216,10 +216,10 @@ export default function SavedJobsScreen() {
       ) : filteredBookmarks.length === 0 ? (
         // Filter empty state
         <View className="flex-1 items-center justify-center px-10">
-          <View className="w-16 h-16 rounded-3xl bg-gray-100 items-center justify-center mb-4">
+          <View className="w-16 h-16 rounded-3xl bg-gray-100 dark:bg-[#141414] items-center justify-center mb-4">
             <Ionicons name="filter-outline" size={28} color="#9CA3AF" />
           </View>
-          <Text className="text-[16px] font-quicksandBold text-gray-700 text-center mb-1">
+          <Text className="text-[16px] font-quicksandBold text-gray-700 dark:text-gray-300 text-center mb-1">
             No jobs here
           </Text>
           <Text className="text-sm font-quicksandMedium text-gray-400 text-center">
@@ -265,7 +265,7 @@ export default function SavedJobsScreen() {
                   })
                 }
                 activeOpacity={0.8}
-                className="bg-white rounded-3xl overflow-hidden"
+                className="bg-white dark:bg-[#080A08] rounded-3xl overflow-hidden"
                 style={{
                   shadowColor: "#94A3B8",
                   shadowOffset: { width: 0, height: 2 },
@@ -292,7 +292,7 @@ export default function SavedJobsScreen() {
                     <View className="flex-row items-center flex-1 mr-3">
                       {/* Company avatar */}
                       <View className="w-13 h-13 w-[52px] h-[52px] rounded-2xl bg-cyan-50 border border-cyan-100 items-center justify-center">
-                        <Text className="text-xl font-quicksandBold text-cyan-600">
+                        <Text className="text-xl font-quicksandBold text-cyan-600 dark:text-cyan-400">
                           {companyName.charAt(0).toUpperCase()}
                         </Text>
                       </View>
@@ -300,7 +300,7 @@ export default function SavedJobsScreen() {
                       <View className="flex-1 ml-3">
                         <View className="flex-row items-center gap-1 mb-0.5">
                           <Text
-                            className="text-gray-500 font-quicksandMedium text-xs"
+                            className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs"
                             numberOfLines={1}
                           >
                             {companyName}
@@ -312,7 +312,7 @@ export default function SavedJobsScreen() {
                           />
                         </View>
                         <Text
-                          className="text-[15px] font-quicksandBold text-gray-900 leading-tight"
+                          className="text-[15px] font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight"
                           numberOfLines={2}
                         >
                           {job.title}
@@ -337,7 +337,7 @@ export default function SavedJobsScreen() {
                     <TouchableOpacity
                       onPress={() => handleRemove(item.job_id, job.title)}
                       activeOpacity={0.7}
-                      className="w-8 h-8 rounded-full bg-cyan-700 items-center justify-center"
+                      className="w-8 h-8 rounded-full bg-cyan-700 dark:bg-cyan-800 items-center justify-center"
                     >
                       <Ionicons name="bookmark" size={15} color="#fff" />
                     </TouchableOpacity>
@@ -361,15 +361,15 @@ export default function SavedJobsScreen() {
                     {jobTypes.slice(0, 2).map((type: string, i: number) => (
                       <View
                         key={i}
-                        className="bg-gray-100 px-3 py-1 rounded-full"
+                        className="bg-gray-100 dark:bg-[#141414] px-3 py-1 rounded-full"
                       >
-                        <Text className="text-gray-600 text-[11px] font-quicksandMedium">
+                        <Text className="text-gray-600 dark:text-gray-400 text-[11px] font-quicksandMedium">
                           {type}
                         </Text>
                       </View>
                     ))}
 
-                    <View className="bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
+                    <View className="bg-gray-50 dark:bg-[#080A08] px-2.5 py-1 rounded-full border border-gray-100 dark:border-[#222]">
                       <Text className="text-gray-400 text-[11px] font-quicksandMedium">
                         Saved {savedAgo}
                       </Text>
@@ -377,7 +377,7 @@ export default function SavedJobsScreen() {
                   </View>
 
                   {/* ── Footer: salary + CTA ── */}
-                  <View className="flex-row items-center justify-between pt-3 border-t border-gray-100">
+                  <View className="flex-row items-center justify-between pt-3 border-t border-gray-100 dark:border-[#222]">
                     <Text className="text-cyan-700 text-sm font-quicksandBold">
                       {salary}
                     </Text>
@@ -396,7 +396,7 @@ export default function SavedJobsScreen() {
                       </View>
                     ) : isExpiredOrClosed ? (
                       // Can't apply
-                      <View className="bg-gray-100 px-3 py-1.5 rounded-full">
+                      <View className="bg-gray-100 dark:bg-[#141414] px-3 py-1.5 rounded-full">
                         <Text className="text-gray-400 text-[11px] font-quicksandBold">
                           Not available
                         </Text>

@@ -53,7 +53,7 @@ export default function Jobs() {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <View className="flex-1">
         <JobsHeader />
         <SearchAndSort

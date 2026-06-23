@@ -86,5 +86,83 @@
     "verified": "Vérifié",
     "businessPro": "Business Pro"
   },
-  "version": "Version 1.0.0"
+  "version": "Version 1.0.0",
+  "completeProfile": {
+    "title": "Compléter le Profil",
+    "progress": {
+      "label": "Complétion du profil",
+      "remaining": "{{count}} champ restant",
+      "remaining_plural": "{{count}} champs restants"
+    },
+    "sections": {
+      "personal": {
+        "title": "Informations Personnelles",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "phone": "Numéro de Téléphone",
+        "dob": "Date de Naissance",
+        "gender": "Genre"
+      },
+      "location": {
+        "title": "Localisation",
+        "country": "Pays",
+        "city": "Ville"
+      },
+      "education": {
+        "title": "Éducation & Expérience",
+        "level": "Niveau d'éducation",
+        "experience": "Niveau d'expérience"
+      },
+      "skills": {
+        "title": "Compétences",
+        "addPlaceholder": "Ajouter une compétence (ex. JavaScript)",
+        "noSkills": "Aucune compétence ajoutée"
+      }
+    },
+    "cvNote": {
+      "title": "CV requis",
+      "description": "Vous devrez télécharger votre CV avant de postuler à des emplois. Vous pouvez le faire depuis Profil → Documents."
+    },
+    "completionBadge": {
+      "title": "Profil complété à 100%",
+      "description": "Vous êtes prêt à postuler à des emplois"
+    },
+    "buttons": {
+      "save": "Enregistrer le Profil"
+    },
+    "options": {
+      "gender": {
+        "male": "Homme",
+        "female": "Femme",
+        "other": "Autre",
+        "preferNotToSay": "Préfère ne pas dire"
+      },
+      "education": {
+        "highSchool": "Lycée",
+        "associateDegree": "BTS / DUT",
+        "bachelorsDegree": "Licence",
+        "mastersDegree": "Master",
+        "phd": "Doctorat",
+        "other": "Autre"
+      },
+      "experience": {
+        "entryLevel": "Débutant",
+        "intermediate": "Intermédiaire",
+        "senior": "Senior",
+        "expert": "Expert"
+      }
+    },
+    "placeholders": {
+      "firstName": "Entrez votre prénom",
+      "lastName": "Entrez votre nom",
+      "dob": "Sélectionnez votre date de naissance",
+      "country": "ex., Rwanda",
+      "city": "ex., Kigali",
+      "phoneExample": "ex., 788 123 456"
+    },
+    "phone": {
+      "selectCountry": "Sélectionner le Pays",
+      "searchCountry": "Rechercher un pays..."
+    }
+  }
 }

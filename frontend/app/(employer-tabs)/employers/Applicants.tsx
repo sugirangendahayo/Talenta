@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   ActivityIndicator,
   FlatList,
@@ -46,6 +47,7 @@ type RawApplication = {
 export default function ApplicantsScreen() {
   const { user } = useAuth();
   const { t } = useTranslation("applicants");
+  const { isDark } = useTheme();
   const params = useLocalSearchParams();
   const jobId = params.jobId as string | undefined;
 
@@ -207,14 +209,14 @@ export default function ApplicantsScreen() {
 
   const renderEmptyState = () => (
     <View className="flex-1 items-center justify-center flex px-6 py-20">
-      <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center flex mb-4">
+      <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center flex mb-4">
         <Ionicons name="people-outline" size={40} color="#9CA3AF" />
       </View>
-      <Text className="font-quicksandBold text-lg text-gray-900 mb-2">
+      <Text className="font-quicksandBold text-lg text-gray-900 dark:text-gray-100 mb-2">
         {selectedFilter !== "all" ? t(`status.${selectedFilter}`) : ""}{" "}
         {t("empty.title")}
       </Text>
-      <Text className="font-quicksandMedium text-sm text-gray-500 text-center">
+      <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 text-center">
         {selectedFilter === "all"
           ? t("empty.allApplications")
           : t("empty.noStatusApplications", {
@@ -226,18 +228,18 @@ export default function ApplicantsScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]">
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-          <Text className="font-quicksandBold text-xl text-gray-900 mt-4 mb-2">
+          <Text className="font-quicksandBold text-xl text-gray-900 dark:text-gray-100 mt-4 mb-2">
             {t("errors.title")}
           </Text>
-          <Text className="font-quicksandMedium text-sm text-gray-500 text-center mb-6">
+          <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
             {error}
           </Text>
           <TouchableOpacity
             onPress={fetchApplicants}
-            className="px-6 py-3 bg-cyan-700 rounded-xl"
+            className="px-6 py-3 bg-cyan-700 dark:bg-cyan-800 rounded-xl"
             activeOpacity={0.7}
           >
             <Text className="font-quicksandBold text-white">
@@ -250,32 +252,32 @@ export default function ApplicantsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       {/* Header with Job Title */}
-      <View className="bg-white px-4 pt-3 pb-3 border-b border-gray-100">
+      <View className="bg-white dark:bg-[#080A08] px-4 pt-3 pb-3 border-b border-gray-100 dark:border-[#222]">
         <View className="flex flex-row items-center justify-between">
           <View className="flex flex-row items-center flex-1">
             <TouchableOpacity
               onPress={() => router.back()}
-              className="mr-3 w-9 h-9 items-center justify-center flex rounded-full bg-gray-100"
+              className="mr-3 w-9 h-9 items-center justify-center flex rounded-full bg-gray-100 dark:bg-[#141414]"
               activeOpacity={0.7}
             >
-              <Ionicons name="arrow-back" size={20} color="#111827" />
+              <Ionicons name="arrow-back" size={20} color={isDark ? "#f3f4f6" : "#111827"} />
             </TouchableOpacity>
             <View className="flex-1">
-              <Text className="font-quicksandBold text-xl text-gray-900">
+              <Text className="font-quicksandBold text-xl text-gray-900 dark:text-gray-100">
                 {t("header.title")}
               </Text>
               {jobTitle && (
-                <Text className="font-quicksandMedium text-xs text-gray-500 mt-0.5">
+                <Text className="font-quicksandMedium text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {jobTitle}
                 </Text>
               )}
             </View>
           </View>
 
-          <View className="bg-cyan-50 px-3 py-1.5 rounded-full border border-cyan-100">
-            <Text className="font-quicksandBold text-sm text-cyan-700">
+          <View className="bg-cyan-50 dark:bg-cyan-900/30 px-3 py-1.5 rounded-full border border-cyan-100 dark:border-cyan-800">
+            <Text className="font-quicksandBold text-sm text-cyan-700 dark:text-cyan-300">
               {filteredApplicants.length}
             </Text>
           </View>
@@ -295,7 +297,7 @@ export default function ApplicantsScreen() {
       {isLoading && applicants.length === 0 ? (
         <View className="flex-1 items-center justify-center flex">
           <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="font-quicksandMedium text-gray-500 mt-4">
+          <Text className="font-quicksandMedium text-gray-500 dark:text-gray-400 mt-4">
             {t("states.loading", {ns: "applicants"})}
           </Text>
         </View>

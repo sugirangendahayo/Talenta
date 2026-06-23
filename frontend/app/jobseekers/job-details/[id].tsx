@@ -7,9 +7,12 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -37,7 +40,27 @@ interface Job {
   };
 }
 
+// Static fallback copy used as the i18next `defaultValue` until `jobs:categories.*`
+// keys exist in the translation files — keeps behavior identical to before,
+// just translatable. Hoisted out of the component so it isn't rebuilt per render.
+const CATEGORY_FALLBACK_NAMES: Record<string, string> = {
+  it: "IT & Software",
+  design: "Design",
+  business: "Business",
+  construction: "Construction",
+  finance: "Finance",
+  healthcare: "Healthcare",
+  education: "Education",
+  sales: "Sales & Marketing",
+  hospitality: "Hospitality",
+  transport: "Transport",
+  creative: "Creative",
+  agriculture: "Agriculture",
+  security: "Security & Law",
+};
+
 export default function JobDetailsScreen() {
+  const { t } = useTranslation(["jobs", "common"]);
   const [showInfoAlert, setShowInfoAlert] = useState(false);
   const [infoAlertTitle, setInfoAlertTitle] = useState("");
   const [infoAlertMessage, setInfoAlertMessage] = useState("");
@@ -82,13 +105,15 @@ export default function JobDetailsScreen() {
         .single();
       if (fetchError) throw fetchError;
       if (!data) {
-        setError("Job not found");
+        setError(t("jobs:details.notFoundTitle", { defaultValue: "Job not found" }));
         return;
       }
       setJob(data);
     } catch (err: any) {
       console.error("Error fetching job:", err);
-      setError(err.message || "Failed to load job details");
+      setError(
+        err.message || t("jobs:details.loadError", { defaultValue: "Failed to load job details" })
+      );
     } finally {
       setLoading(false);
     }
@@ -98,15 +123,29 @@ export default function JobDetailsScreen() {
     if (!id) return;
     const requirements = await checkRequirements(id as string);
     if (!requirements.hasProfile) {
-      setInfoAlertTitle("Profile Not Found");
-      setInfoAlertMessage("Please create your jobseeker profile first.");
+      setInfoAlertTitle(
+        t("jobs:details.profileNotFoundTitle", { defaultValue: "Profile Not Found" })
+      );
+      setInfoAlertMessage(
+        t("jobs:details.profileNotFoundMessage", {
+          defaultValue: "Please create your jobseeker profile first.",
+        })
+      );
       setShowInfoAlert(true);
       return;
     }
     if (requirements.missingFields.length > 0) {
-      setInfoAlertTitle("Profile Incomplete");
+      const intro = t("jobs:details.missingFieldsIntro", {
+        defaultValue: "Please complete the following before applying:",
+      });
+      const outro = t("jobs:details.missingFieldsOutro", {
+        defaultValue: "Go to your Profile to complete it.",
+      });
+      setInfoAlertTitle(
+        t("jobs:details.profileIncompleteTitle", { defaultValue: "Profile Incomplete" })
+      );
       setInfoAlertMessage(
-        `Please complete the following before applying:\n\n• ${requirements.missingFields.join("\n• ")}\n\nGo to your Profile to complete it.`,
+        `${intro}\n\n• ${requirements.missingFields.join("\n• ")}\n\n${outro}`
       );
       setShowInfoAlert(true);
       return;
@@ -129,45 +168,30 @@ export default function JobDetailsScreen() {
     return `${fmt(min)} - ${fmt(max)}`;
   };
 
+  // Same keys Applications/Home/JobsList already use — this screen previously
+  // hardcoded its own English-only copy of this exact logic.
   const getTimeAgo = (dateString: string) => {
-    const seconds = Math.floor(
-      (Date.now() - new Date(dateString).getTime()) / 1000,
-    );
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
-    return `${Math.floor(seconds / 604800)} weeks ago`;
+    const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+    if (seconds < 60) return t("jobs:time.justNow");
+    if (seconds < 3600) return t("jobs:time.minutesAgo", { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t("jobs:time.hoursAgo", { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t("jobs:time.daysAgo", { days: Math.floor(seconds / 86400) });
+    return t("jobs:time.weeksAgo", { weeks: Math.floor(seconds / 604800) });
   };
 
   const getCategoryDisplay = (category: string) => {
-    const categoryNames: { [key: string]: string } = {
-      it: "IT & Software",
-      design: "Design",
-      business: "Business",
-      construction: "Construction",
-      finance: "Finance",
-      healthcare: "Healthcare",
-      education: "Education",
-      sales: "Sales & Marketing",
-      hospitality: "Hospitality",
-      transport: "Transport",
-      creative: "Creative",
-      agriculture: "Agriculture",
-      security: "Security & Law",
-    };
-    return (
-      categoryNames[category] ||
-      category.charAt(0).toUpperCase() + category.slice(1)
-    );
+    const fallback =
+      CATEGORY_FALLBACK_NAMES[category] ||
+      category.charAt(0).toUpperCase() + category.slice(1);
+    return t(`jobs:categories.${category}`, { defaultValue: fallback });
   };
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
+      <View className="flex-1 justify-center items-center bg-gray-100 dark:bg-[#141414]">
         <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-500 font-quicksandMedium mt-3 text-sm">
-          Loading job details...
+        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-3 text-sm">
+          {t("jobs:details.loading", { defaultValue: "Loading job details..." })}
         </Text>
       </View>
     );
@@ -175,21 +199,27 @@ export default function JobDetailsScreen() {
 
   if (error || !job) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100 px-8">
+      <View className="flex-1 justify-center items-center bg-gray-100 dark:bg-[#141414] px-8">
         <View className="w-16 h-16 rounded-2xl bg-red-50 items-center justify-center mb-4">
           <Ionicons name="alert-circle-outline" size={32} color="#EF4444" />
         </View>
-        <Text className="text-base font-quicksandBold text-gray-800 text-center mb-1">
-          {error || "Job not found"}
+        <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 text-center mb-1">
+          {error || t("jobs:details.notFoundTitle", { defaultValue: "Job not found" })}
         </Text>
         <Text className="text-sm font-quicksandMedium text-gray-400 text-center mb-6">
-          This listing may have been removed or expired.
+          {t("jobs:details.notFoundSubtitle", {
+            defaultValue: "This listing may have been removed or expired.",
+          })}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="bg-cyan-700 px-6 py-3 rounded-2xl"
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          className="bg-cyan-700 dark:bg-cyan-800 px-6 py-3 rounded-2xl"
         >
-          <Text className="text-white font-quicksandBold">Go Back</Text>
+          <Text className="text-white font-quicksandBold">
+            {t("common:buttons.goBack", { defaultValue: "Go Back" })}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -204,40 +234,54 @@ export default function JobDetailsScreen() {
   const categoryDisplay = getCategoryDisplay(job.category);
 
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-gray-100 dark:bg-[#141414]">
       {/* ── TOP HERO ── */}
-      <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700">
+      <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700 dark:bg-cyan-800">
         <View className="flex flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()} className="p-2">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="p-2"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common:buttons.goBack", { defaultValue: "Go back" })}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text className="text-lg font-quicksandBold text-white">
-            Job Details
+            {t("jobs:details.headerTitle", { defaultValue: "Job Details" })}
           </Text>
 
-          {/* ── Bookmark button in header ── */}
+          {/* ── Bookmark button ── translucent-white overlay states (matches
+              the bg-black/40 modal backdrop technique already used further
+              down this same file) instead of an inline style block. Icon
+              stays white in both states — the cyan-700 hero already can't
+              host the app's usual solid-cyan bookmark fill, so state reads
+              through background intensity + outline→filled icon swap rather
+              than introducing a one-off gold accent used nowhere else. */}
           <TouchableOpacity
             onPress={toggleBookmark}
             disabled={toggling}
             className="p-2"
             activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityState={{ selected: isBookmarked }}
+            accessibilityLabel={
+              isBookmarked
+                ? t("jobs:details.unsaveJob", { defaultValue: "Remove from saved jobs" })
+                : t("jobs:details.saveJob", { defaultValue: "Save job" })
+            }
           >
             {toggling ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <View
-                style={{
-                  backgroundColor: isBookmarked
-                    ? "rgba(255,255,255,0.25)"
-                    : "rgba(255,255,255,0.12)",
-                  borderRadius: 10,
-                  padding: 6,
-                }}
+                className={`rounded-[10px] p-1.5 ${isBookmarked ? "bg-white dark:bg-[#080A08]/25" : "bg-white dark:bg-[#080A08]/10"}`}
               >
                 <Ionicons
                   name={isBookmarked ? "bookmark" : "bookmark-outline"}
                   size={22}
-                  color={isBookmarked ? "#FDE68A" : "#fff"}
+                  color="#fff"
                 />
               </View>
             )}
@@ -250,24 +294,24 @@ export default function JobDetailsScreen() {
         <View className="px-4 pt-6">
           <View className="flex flex-row items-start justify-between mb-4">
             <View className="flex flex-row items-center flex-1 mr-3">
-              <View className="w-20 h-20 rounded-full border border-gray-200 bg-white items-center justify-center flex">
-                <Text className="text-3xl font-quicksandBold text-cyan-600">
+              <View className="w-20 h-20 rounded-full border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08] items-center justify-center flex">
+                <Text className="text-3xl font-quicksandBold text-cyan-600 dark:text-cyan-400">
                   {companyName.charAt(0).toUpperCase()}
                 </Text>
               </View>
               <View className="flex-1 ml-4">
                 <View className="flex flex-row items-center gap-2 mb-1">
-                  <Text className="text-gray-600 font-quicksandMedium text-base">
+                  <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base">
                     {companyName}
                   </Text>
                   <MaterialIcons name="verified" size={16} color="#0E7490" />
                 </View>
-                <Text className="text-2xl font-quicksandBold text-gray-800 mb-1">
+                <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200 mb-1">
                   {job.title}
                 </Text>
                 <View className="flex flex-row items-center gap-1">
                   <Ionicons name="location-sharp" size={16} color="#0E7490" />
-                  <Text className="text-gray-600 font-quicksandMedium text-base">
+                  <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base">
                     {job.location}
                   </Text>
                 </View>
@@ -275,23 +319,26 @@ export default function JobDetailsScreen() {
             </View>
           </View>
 
-          {/* Applied badge — shown inline under title when already applied */}
-          {hasApplied && (
-            <View className="flex-row items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2.5 mb-4">
-              <Ionicons name="checkmark-circle" size={16} color="#059669" />
-              <Text className="font-quicksandBold text-[13px] text-emerald-700">
-                You've already applied for this role
-              </Text>
-            </View>
-          )}
-
-          {/* Bookmarked badge */}
-          {isBookmarked && (
-            <View className="flex-row items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-2xl px-4 py-2.5 mb-4">
-              <Ionicons name="bookmark" size={14} color="#0E7490" />
-              <Text className="font-quicksandMedium text-[13px] text-cyan-700">
-                Saved to your bookmarks
-              </Text>
+          {/* Applied + bookmarked status — compact chips instead of two
+              stacked full-width banners when both happen to be true */}
+          {(hasApplied || isBookmarked) && (
+            <View className="flex-row flex-wrap gap-2 mb-4">
+              {hasApplied && (
+                <View className="flex-row items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1.5">
+                  <Ionicons name="checkmark-circle" size={14} color="#059669" />
+                  <Text className="font-quicksandBold text-xs text-emerald-700">
+                    {t("jobs:details.appliedBadge", { defaultValue: "Already applied" })}
+                  </Text>
+                </View>
+              )}
+              {isBookmarked && (
+                <View className="flex-row items-center gap-1.5 bg-cyan-50 border border-cyan-100 rounded-full px-3 py-1.5">
+                  <Ionicons name="bookmark" size={13} color="#0E7490" />
+                  <Text className="font-quicksandMedium text-xs text-cyan-700">
+                    {t("jobs:details.savedBadge", { defaultValue: "Saved" })}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
 
@@ -303,8 +350,8 @@ export default function JobDetailsScreen() {
               </Text>
             </View>
             {jobTypes.map((type, index) => (
-              <View key={index} className="bg-white px-4 py-3 rounded-2xl">
-                <Text className="text-gray-700 font-quicksandMedium text-sm">
+              <View key={index} className="bg-white dark:bg-[#080A08] px-4 py-3 rounded-2xl">
+                <Text className="text-gray-700 dark:text-gray-300 font-quicksandMedium text-sm">
                   {type}
                 </Text>
               </View>
@@ -313,12 +360,12 @@ export default function JobDetailsScreen() {
         </View>
 
         {/* Description */}
-        <View className="mx-4 mb-3 bg-white rounded-2xl overflow-hidden">
+        <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl overflow-hidden">
           <View className="px-4 pt-4 pb-2">
-            <Text className="font-quicksandBold text-[15px] text-gray-900 mb-3">
-              About the role
+            <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100 mb-3">
+              {t("jobs:details.aboutRole", { defaultValue: "About the role" })}
             </Text>
-            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 leading-[22px]">
+            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 dark:text-gray-400 leading-[22px]">
               {job.description}
             </Text>
           </View>
@@ -327,16 +374,16 @@ export default function JobDetailsScreen() {
 
         {/* Experience */}
         {job.experience_level && (
-          <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
+          <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 py-4">
             <View className="flex-row items-center gap-2 mb-2">
               <View className="w-7 h-7 rounded-lg bg-cyan-50 items-center justify-center">
                 <Ionicons name="briefcase-outline" size={15} color="#0E7490" />
               </View>
-              <Text className="font-quicksandBold text-[15px] text-gray-900">
-                Experience
+              <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100">
+                {t("jobs:details.experience", { defaultValue: "Experience" })}
               </Text>
             </View>
-            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 ml-9">
+            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 dark:text-gray-400 ml-9">
               {job.experience_level}
             </Text>
           </View>
@@ -344,22 +391,22 @@ export default function JobDetailsScreen() {
 
         {/* Skills */}
         {job.skills_required && job.skills_required.length > 0 && (
-          <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
+          <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 py-4">
             <View className="flex-row items-center gap-2 mb-3">
               <View className="w-7 h-7 rounded-lg bg-cyan-50 items-center justify-center">
                 <Octicons name="checklist" size={15} color="#0E7490" />
               </View>
-              <Text className="font-quicksandBold text-[15px] text-gray-900">
-                Skills required
+              <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100">
+                {t("jobs:details.skillsRequired", { defaultValue: "Skills required" })}
               </Text>
             </View>
             <View className="flex-row flex-wrap gap-2">
               {job.skills_required.map((skill, index) => (
                 <View
                   key={index}
-                  className="bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full"
+                  className="bg-gray-50 dark:bg-[#080A08] border border-gray-200 dark:border-[#2a2a2a] px-3 py-1.5 rounded-full"
                 >
-                  <Text className="font-quicksandSemiBold text-[12px] text-gray-700">
+                  <Text className="font-quicksandSemiBold text-[12px] text-gray-700 dark:text-gray-300">
                     {skill}
                   </Text>
                 </View>
@@ -369,17 +416,28 @@ export default function JobDetailsScreen() {
         )}
 
         {/* Overview */}
-        <View className="mx-4 mb-3 bg-white rounded-2xl px-4 pt-4 pb-1">
-          <Text className="font-quicksandBold text-[15px] text-gray-900 mb-1">
-            Overview
+        <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 pt-4 pb-1">
+          <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100 mb-1">
+            {t("jobs:details.overview", { defaultValue: "Overview" })}
           </Text>
           {[
-            { label: "Posted", value: timeAgo },
-            { label: "Category", value: categoryDisplay },
-            { label: "Job type", value: jobTypes.join(", ") },
-            { label: "Salary", value: salary },
+            { label: t("jobs:details.overviewLabels.posted", { defaultValue: "Posted" }), value: timeAgo },
+            {
+              label: t("jobs:details.overviewLabels.category", { defaultValue: "Category" }),
+              value: categoryDisplay,
+            },
+            {
+              label: t("jobs:details.overviewLabels.jobType", { defaultValue: "Job type" }),
+              value: jobTypes.join(", "),
+            },
+            { label: t("jobs:details.overviewLabels.salary", { defaultValue: "Salary" }), value: salary },
             ...(job.experience_level
-              ? [{ label: "Experience", value: job.experience_level }]
+              ? [
+                  {
+                    label: t("jobs:details.overviewLabels.experience", { defaultValue: "Experience" }),
+                    value: job.experience_level,
+                  },
+                ]
               : []),
           ].map((row, i, arr) => (
             <View key={i}>
@@ -387,29 +445,29 @@ export default function JobDetailsScreen() {
                 <Text className="font-quicksandMedium text-[13px] text-gray-400">
                   {row.label}
                 </Text>
-                <Text className="font-quicksandBold text-[13px] text-gray-800">
+                <Text className="font-quicksandBold text-[13px] text-gray-800 dark:text-gray-200">
                   {row.value}
                 </Text>
               </View>
-              {i < arr.length - 1 && <View className="h-px bg-gray-100" />}
+              {i < arr.length - 1 && <View className="h-px bg-gray-100 dark:bg-[#141414]" />}
             </View>
           ))}
         </View>
 
         {/* Company */}
-        <View className="mx-4 mb-3 bg-white rounded-2xl px-4 py-4">
-          <Text className="font-quicksandBold text-[15px] text-gray-900 mb-3">
-            About the company
+        <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 py-4">
+          <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100 mb-3">
+            {t("jobs:details.aboutCompany", { defaultValue: "About the company" })}
           </Text>
           <View className="flex-row items-center gap-3">
             <View className="w-12 h-12 rounded-2xl bg-cyan-50 border border-cyan-100 items-center justify-center">
-              <Text className="font-quicksandBold text-lg text-cyan-600">
+              <Text className="font-quicksandBold text-lg text-cyan-600 dark:text-cyan-400">
                 {companyName.charAt(0).toUpperCase()}
               </Text>
             </View>
             <View className="flex-1">
               <View className="flex-row items-center gap-1.5 mb-0.5">
-                <Text className="font-quicksandBold text-[14px] text-gray-900">
+                <Text className="font-quicksandBold text-[14px] text-gray-900 dark:text-gray-100">
                   {companyName}
                 </Text>
                 <MaterialIcons name="verified" size={14} color="#0E7490" />
@@ -428,12 +486,12 @@ export default function JobDetailsScreen() {
       </ScrollView>
 
       {/* ── APPLY BAR ── */}
-      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-4">
+      <View className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#080A08] border-t border-gray-100 dark:border-[#222] px-4 py-4">
         {hasApplied ? (
           <View className="flex-row items-center justify-center gap-2 bg-green-50 border border-green-100 rounded-2xl py-4">
             <Ionicons name="checkmark-circle" size={18} color="#059669" />
             <Text className="font-quicksandBold text-[15px] text-green-700">
-              Application submitted
+              {t("jobs:details.applicationSubmitted", { defaultValue: "Application submitted" })}
             </Text>
           </View>
         ) : (
@@ -441,14 +499,15 @@ export default function JobDetailsScreen() {
             onPress={handleApplyClick}
             disabled={checkingRequirements}
             activeOpacity={0.85}
-            className="bg-gray-900 rounded-2xl py-4 flex-row items-center justify-center gap-2"
+            accessibilityRole="button"
+            className="bg-cyan-700 dark:bg-cyan-800 rounded-2xl py-4 flex-row items-center justify-center gap-2"
           >
             {checkingRequirements ? (
               <ActivityIndicator color="white" size="small" />
             ) : (
               <>
                 <Text className="font-quicksandBold text-[15px] text-white">
-                  Apply now
+                  {t("jobs:details.applyNow", { defaultValue: "Apply now" })}
                 </Text>
                 <MaterialIcons name="arrow-outward" size={18} color="white" />
               </>
@@ -464,32 +523,41 @@ export default function JobDetailsScreen() {
         transparent
         onRequestClose={() => setShowApplyModal(false)}
       >
-        <View className="flex-1 justify-end bg-black/40">
-          <View className="bg-white rounded-t-3xl px-5 pt-4 pb-8 max-h-[85%]">
-            <View className="w-10 h-1 rounded-full bg-gray-200 self-center mb-5" />
+        {/* KeyboardAvoidingView was missing — the cover letter field is
+            multiline and meant for real typing, so without this the keyboard
+            could sit on top of it on iOS instead of the sheet making room. */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1 justify-end bg-black/40"
+        >
+          <View className="bg-white dark:bg-[#080A08] rounded-t-3xl px-5 pt-4 pb-8 max-h-[85%]">
+            <View className="w-10 h-1 rounded-full bg-gray-200 dark:bg-[#1e1e1e] self-center mb-5" />
 
             <View className="flex-row items-center justify-between mb-5">
-              <Text className="font-quicksandBold text-[20px] text-gray-900">
-                Apply for role
+              <Text className="font-quicksandBold text-[20px] text-gray-900 dark:text-gray-100">
+                {t("jobs:details.applyModalTitle", { defaultValue: "Apply for role" })}
               </Text>
               <TouchableOpacity
                 onPress={() => setShowApplyModal(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("common:buttons.close", { defaultValue: "Close" })}
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
               >
                 <Ionicons name="close" size={16} color="#374151" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {/* Job summary */}
-              <View className="flex-row items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-4">
+              <View className="flex-row items-center gap-3 bg-gray-50 dark:bg-[#080A08] border border-gray-100 dark:border-[#222] rounded-2xl p-4 mb-4">
                 <View className="w-10 h-10 rounded-xl bg-cyan-50 items-center justify-center">
                   <Text className="font-quicksandBold text-[15px] text-cyan-700">
                     {companyName.charAt(0).toUpperCase()}
                   </Text>
                 </View>
                 <View className="flex-1">
-                  <Text className="font-quicksandBold text-[14px] text-gray-900 leading-tight">
+                  <Text className="font-quicksandBold text-[14px] text-gray-900 dark:text-gray-100 leading-tight">
                     {job.title}
                   </Text>
                   <Text className="font-quicksandMedium text-[12px] text-gray-400">
@@ -503,7 +571,7 @@ export default function JobDetailsScreen() {
                 <View className="flex-row items-center gap-2 bg-green-50 border border-green-100 rounded-2xl px-4 py-3 mb-4">
                   <Ionicons name="checkmark-circle" size={16} color="#059669" />
                   <Text className="font-quicksandMedium text-[13px] text-green-700 flex-1">
-                    Applying as{" "}
+                    {t("jobs:details.applyingAs", { defaultValue: "Applying as" })}{" "}
                     <Text className="font-quicksandBold">
                       {profile.first_name} {profile.last_name}
                     </Text>
@@ -514,24 +582,29 @@ export default function JobDetailsScreen() {
               {/* Cover letter */}
               <View className="mb-2">
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="font-quicksandSemiBold text-[14px] text-gray-900">
-                    Cover letter
+                  <Text className="font-quicksandSemiBold text-[14px] text-gray-900 dark:text-gray-100">
+                    {t("jobs:details.coverLetter", { defaultValue: "Cover letter" })}
                   </Text>
                   <Text className="font-quicksandMedium text-[12px] text-gray-400">
-                    Optional
+                    {t("jobs:details.optional", { defaultValue: "Optional" })}
                   </Text>
                 </View>
                 <TextInput
                   value={coverLetter}
                   onChangeText={setCoverLetter}
-                  placeholder="Why are you a great fit for this role?"
+                  placeholder={t("jobs:details.coverLetterPlaceholder", {
+                    defaultValue: "Why are you a great fit for this role?",
+                  })}
                   placeholderTextColor="#D1D5DB"
                   multiline
                   textAlignVertical="top"
-                  className="bg-gray-50 border border-gray-200 rounded-2xl p-4 font-quicksandMedium text-gray-800 min-h-[140px] text-[14px]"
+                  className="bg-gray-50 dark:bg-[#080A08] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl p-4 font-quicksandMedium text-gray-800 dark:text-gray-200 min-h-[140px] text-[14px]"
                 />
                 <Text className="font-quicksandMedium text-[11px] text-gray-300 mt-1.5 text-right">
-                  {coverLetter.length} chars
+                  {t("jobs:details.charsCount", {
+                    count: coverLetter.length,
+                    defaultValue: `${coverLetter.length} chars`,
+                  })}
                 </Text>
               </View>
 
@@ -540,14 +613,15 @@ export default function JobDetailsScreen() {
                 onPress={handleSubmitApplication}
                 disabled={applying}
                 activeOpacity={0.85}
-                className="bg-gray-900 rounded-2xl py-4 flex-row items-center justify-center gap-2 mt-3 mb-3"
+                accessibilityRole="button"
+                className="bg-cyan-700 dark:bg-cyan-800 rounded-2xl py-4 flex-row items-center justify-center gap-2 mt-3 mb-3"
               >
                 {applying ? (
                   <ActivityIndicator color="white" size="small" />
                 ) : (
                   <>
                     <Text className="font-quicksandBold text-[15px] text-white">
-                      Submit application
+                      {t("jobs:details.submitApplication", { defaultValue: "Submit application" })}
                     </Text>
                     <Ionicons name="send" size={15} color="white" />
                   </>
@@ -555,18 +629,21 @@ export default function JobDetailsScreen() {
               </TouchableOpacity>
 
               <Text className="text-center font-quicksandMedium text-[12px] text-gray-300 mb-2">
-                Your application will be sent directly to {companyName}
+                {t("jobs:details.sentDirectly", {
+                  company: companyName,
+                  defaultValue: `Your application will be sent directly to ${companyName}`,
+                })}
               </Text>
             </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <InfoAlertModal
         visible={showInfoAlert}
         title={infoAlertTitle}
         message={infoAlertMessage}
-        buttonText="Go to profile"
+        buttonText={t("common:buttons.goToProfile", { defaultValue: "Go to profile" })}
         onClose={() => {
           setShowInfoAlert(false);
           router.push("/(jobseeker-tabs)/jobseekers/Profile");

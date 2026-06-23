@@ -83,8 +83,8 @@ const ContactCard = ({ contact }: ContactCardProps) => {
       default:
         return {
           text: contact.status,
-          className: "bg-gray-100",
-          textClassName: "text-gray-600",
+          className: "bg-gray-100 dark:bg-[#141414]",
+          textClassName: "text-gray-600 dark:text-gray-400",
         };
     }
   };
@@ -105,7 +105,7 @@ const ContactCard = ({ contact }: ContactCardProps) => {
   };
 
   return (
-    <View className="bg-gray-50 rounded-xl p-3 border border-gray-100 mb-3">
+    <View className="bg-gray-50 dark:bg-[#080A08] rounded-xl p-3 border border-gray-100 dark:border-[#222] mb-3">
       {/* Candidate info row */}
       <TouchableOpacity
         className="mb-3"
@@ -125,10 +125,10 @@ const ContactCard = ({ contact }: ContactCardProps) => {
               </Text>
             </View>
             <View className="flex-1">
-              <Text className="text-sm font-quicksandBold text-gray-800">
+              <Text className="text-sm font-quicksandBold text-gray-800 dark:text-gray-200">
                 {contact.candidate_name}
               </Text>
-              <Text className="text-xs font-quicksandMedium text-gray-500 mt-0.5">
+              <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
                 {contact.job_title}
               </Text>
             </View>
@@ -150,25 +150,25 @@ const ContactCard = ({ contact }: ContactCardProps) => {
       </TouchableOpacity>
 
       {/* Contact actions — ghost buttons, single color family */}
-      <View className="flex-row items-center gap-2 pt-2.5 border-t border-gray-200">
+      <View className="flex-row items-center gap-2 pt-2.5 border-t border-gray-200 dark:border-[#2a2a2a]">
         {contact.phone && (
           <>
             <TouchableOpacity
-              className="flex-1 border border-gray-200 bg-white px-3 py-2 rounded-full flex-row items-center justify-center gap-1"
+              className="flex-1 border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08] px-3 py-2 rounded-full flex-row items-center justify-center gap-1"
               onPress={handleCall}
             >
               <Ionicons name="call-outline" size={14} color="#374151" />
-              <Text className="text-xs font-quicksandBold text-gray-700">
+              <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300">
                 {t("buttons.call", { ns: "common" })}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-1 border border-gray-200 bg-white px-3 py-2 rounded-full flex-row items-center justify-center gap-1"
+              className="flex-1 border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08] px-3 py-2 rounded-full flex-row items-center justify-center gap-1"
               onPress={handleWhatsApp}
             >
               <Ionicons name="logo-whatsapp" size={14} color="#374151" />
-              <Text className="text-xs font-quicksandBold text-gray-700">
+              <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300">
                 {t("buttons.whatsapp", { ns: "common" })}
               </Text>
             </TouchableOpacity>
@@ -177,7 +177,7 @@ const ContactCard = ({ contact }: ContactCardProps) => {
 
         {/* Email — primary CTA, slightly more prominent */}
         <TouchableOpacity
-          className="flex-1 bg-cyan-700 px-3 py-2 rounded-full flex-row items-center justify-center gap-1"
+          className="flex-1 bg-cyan-700 dark:bg-cyan-800 px-3 py-2 rounded-full flex-row items-center justify-center gap-1"
           onPress={handleEmail}
         >
           <Ionicons name="mail-outline" size={14} color="#fff" />
@@ -204,7 +204,7 @@ export default function RecentContactsSection({
 
   return (
     <View className="mx-4 my-2 mb-4">
-      <View className="bg-white rounded-2xl p-4 border border-gray-100">
+      <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-100 dark:border-[#222]">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2">
@@ -212,7 +212,7 @@ export default function RecentContactsSection({
               <Ionicons name="people-outline" size={17} color="#0E7490" />
             </View>
             <View>
-              <Text className="text-base font-quicksandBold text-gray-800">
+              <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
                 {t("sections.recentContacts.title")}
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-400">

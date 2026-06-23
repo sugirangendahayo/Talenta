@@ -106,18 +106,18 @@ export default function ApplicantFilters({
   const { t } = useTranslation("applicants");
 
   return (
-    <View className="bg-white border-b border-gray-200 pb-3">
+    <View className="bg-white dark:bg-[#080A08] border-b border-gray-200 dark:border-[#2a2a2a] pb-3">
       {/* Search Bar */}
 
       <View className="px-4 pt-3 pb-2">
-        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3">
+        <View className="flex-row items-center bg-gray-100 dark:bg-[#141414] rounded-xl px-4 py-3">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
 
           <TextInput
             placeholder={t("filters.searchPlaceholder", { ns: "applicants" })}
             value={searchQuery}
             onChangeText={onSearchChange}
-            className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
+            className="flex-1 ml-2 text-gray-800 dark:text-gray-200 font-quicksandMedium"
             placeholderTextColor="#9CA3AF"
           />
 
@@ -148,8 +148,8 @@ export default function ApplicantFilters({
                 onPress={() => onStatusChange(status.id)}
                 className={`flex-row items-center gap-2 px-4 py-2 rounded-full border ${
                   isSelected
-                    ? "bg-cyan-700 border-cyan-700"
-                    : "bg-white border-gray-300"
+                    ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700"
+                    : "bg-white dark:bg-[#080A08] border-gray-300"
                 }`}
                 activeOpacity={0.7}
               >
@@ -161,7 +161,7 @@ export default function ApplicantFilters({
 
                 <Text
                   className={`text-sm font-quicksandBold ${
-                    isSelected ? "text-white" : "text-gray-700"
+                    isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {t(status.label)} ({count})

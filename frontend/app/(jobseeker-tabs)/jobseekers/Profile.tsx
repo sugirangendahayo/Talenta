@@ -16,7 +16,6 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
-  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -27,8 +26,6 @@ export default function JobseekerProfile() {
   const { setIsVisible } = useTabBarVisibility();
   const { t, i18n } = useTranslation("profile");
   const router = useRouter();
-  const [notifications, setNotifications] = useState(true);
-  const [jobAlerts, setJobAlerts] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [applicationCount, setApplicationCount] = useState(0);
@@ -161,26 +158,6 @@ export default function JobseekerProfile() {
       ],
     },
     {
-      title: t("sections.preferences.title", { defaultValue: "Notifications" }),
-      icon: "notifications-outline",
-      items: [
-        {
-          icon: "notifications",
-          label: t("sections.preferences.jobAlerts", { defaultValue: "Job Alerts" }),
-          type: "toggle",
-          value: jobAlerts,
-          onValueChange: setJobAlerts,
-        },
-        {
-          icon: "email",
-          label: t("sections.preferences.emailNotifications", { defaultValue: "Email Notifications" }),
-          type: "toggle",
-          value: notifications,
-          onValueChange: setNotifications,
-        },
-      ],
-    },
-    {
       title: t("sections.documents.title", { defaultValue: "Documents" }),
       icon: "folder-outline",
       items: [
@@ -220,20 +197,20 @@ export default function JobseekerProfile() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-gray-50 items-center justify-center">
+      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] items-center justify-center">
         <ActivityIndicator size="large" color="#0E7490" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       {/* Header */}
-      <View className="bg-white px-6 pt-16 pb-6">
-        <Text className="text-3xl font-quicksandBold text-gray-800">
+      <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-6">
+        <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-200">
           {t("title", { defaultValue: "My Profile" })}
         </Text>
-        <Text className="text-gray-500 font-quicksandMedium mt-1">
+        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
           {t("subtitle", { defaultValue: "Manage your account and preferences" })}
         </Text>
       </View>
@@ -246,7 +223,7 @@ export default function JobseekerProfile() {
       >
         {/* Profile Card */}
         <View
-          className="mx-6 my-4 bg-white rounded-3xl p-4 border border-gray-100"
+          className="mx-6 my-4 bg-white dark:bg-[#080A08] rounded-3xl p-4 border border-gray-100 dark:border-[#222]"
           style={{
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 1 },
@@ -270,7 +247,7 @@ export default function JobseekerProfile() {
 
             {/* Name / email / status */}
             <View className="ml-3 flex-1">
-              <Text className="text-base font-quicksandBold text-gray-900 leading-tight">
+              <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
                 {jobseekerData?.first_name && jobseekerData?.last_name
                   ? `${jobseekerData.first_name} ${jobseekerData.last_name}`
                   : "Your Name"}
@@ -278,7 +255,7 @@ export default function JobseekerProfile() {
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5" numberOfLines={1}>
                 {jobseekerData?.email || "email@example.com"}
               </Text>
-              {/* Status chip — single, on-brand only */}
+              {/* Status chip */}
               <View className="flex-row items-center gap-1 mt-1.5 self-start bg-cyan-50 border border-cyan-100 px-2.5 py-1 rounded-full">
                 <MaterialIcons
                   name={jobseekerData?.profile_completed ? "verified" : "pending"}
@@ -294,34 +271,34 @@ export default function JobseekerProfile() {
             </View>
 
             {/* QR */}
-            <TouchableOpacity className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center">
+            <TouchableOpacity className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center">
               <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
             </TouchableOpacity>
           </View>
 
           {/* Divider */}
-          <View className="h-px bg-gray-100 mt-4 mb-3" />
+          <View className="h-px bg-gray-100 dark:bg-[#141414] mt-4 mb-3" />
 
           {/* Stats row */}
           <View className="flex-row">
             <View className="flex-1 items-center">
-              <Text className="text-lg font-quicksandBold text-gray-800">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                 {applicationCount}
               </Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.applications", { defaultValue: "Applications" })}
               </Text>
             </View>
-            <View className="w-px bg-gray-100" />
+            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
             <View className="flex-1 items-center">
-              <Text className="text-lg font-quicksandBold text-gray-800">0</Text>
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">0</Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.interviews", { defaultValue: "Interviews" })}
               </Text>
             </View>
-            <View className="w-px bg-gray-100" />
+            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
             <View className="flex-1 items-center">
-              <Text className="text-lg font-quicksandBold text-gray-800">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                 {completionPercentage}%
               </Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
@@ -335,11 +312,11 @@ export default function JobseekerProfile() {
         {settingsSections.map((section, sectionIndex) => (
           <View
             key={sectionIndex}
-            className="mx-6 mb-4 bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden"
+            className="mx-6 mb-4 bg-white dark:bg-[#080A08] rounded-3xl shadow-sm border border-gray-200 dark:border-[#2a2a2a] overflow-hidden"
           >
-            <View className="flex-row items-center px-6 py-4 border-b border-gray-100">
+            <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
               <Ionicons name={section.icon as any} size={20} color="#0E7490" />
-              <Text className="text-base font-quicksandBold text-gray-800 ml-3">
+              <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
                 {section.title}
               </Text>
             </View>
@@ -349,7 +326,7 @@ export default function JobseekerProfile() {
                 key={itemIndex}
                 className={`flex-row items-center justify-between px-6 py-4 ${
                   itemIndex !== section.items.length - 1
-                    ? "border-b border-gray-100"
+                    ? "border-b border-gray-100 dark:border-[#222]"
                     : ""
                 }`}
                 onPress={item.type === "link" ? (item as any).onPress : undefined}
@@ -359,31 +336,44 @@ export default function JobseekerProfile() {
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons name={item.icon as any} size={22} color="#6B7280" />
                   <View className="ml-4 flex-1">
-                    <Text className="text-gray-800 font-quicksandMedium">
+                    <Text className="text-gray-800 dark:text-gray-200 font-quicksandMedium">
                       {item.label}
                     </Text>
-                    {item.value && typeof item.value === "string" && item.type !== "toggle" && (
-                      <Text className="text-gray-500 text-sm font-quicksandMedium mt-0.5">
+                    {item.value && typeof item.value === "string" && (
+                      <Text className="text-gray-500 dark:text-gray-400 text-sm font-quicksandMedium mt-0.5">
                         {item.value}
                       </Text>
                     )}
                   </View>
                 </View>
-
-                {item.type === "toggle" ? (
-                  <Switch
-                    value={item.value as boolean}
-                    onValueChange={(item as any).onValueChange}
-                    trackColor={{ false: "#D1D5DB", true: "#0E7490" }}
-                    thumbColor="#FFFFFF"
-                  />
-                ) : (
-                  <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-                )}
+                <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
               </TouchableOpacity>
             ))}
           </View>
         ))}
+
+        {/* Preferences — Theme only (MVP) */}
+        <View className="mx-6 mb-4 bg-white dark:bg-[#080A08] rounded-3xl shadow-sm border border-gray-200 dark:border-[#2a2a2a] overflow-hidden">
+          <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
+            <Ionicons name="color-palette-outline" size={20} color="#0E7490" />
+            <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
+              Preferences
+            </Text>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center justify-between px-6 py-4"
+            onPress={() => router.push("/layout/ui/ThemeScreen")}
+            activeOpacity={0.7}
+          >
+            <View className="flex-row items-center flex-1">
+              <MaterialIcons name="brightness-6" size={22} color="#6B7280" />
+              <Text className="ml-4 text-gray-800 dark:text-gray-200 font-quicksandMedium">
+                Theme
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
 
         <View className="h-2" />
 

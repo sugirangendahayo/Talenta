@@ -14,21 +14,20 @@ import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";
 import React from "react";
 import { View } from "react-native";
-import { SkeletonCircle, SkeletonLine } from "./SkeletonBase";
+import { SkeletonCircle, SkeletonLine, useSkeletonColorMode } from "./SkeletonBase";
 
-const C = "light" as const; // colorMode shorthand
 const Spacer = ({ h }: { h: number }) => <View style={{ height: h }} />;
 
 // ─── Header ──────────────────────────────────────────────────────────────────
-export const DashboardHeaderSkeleton: React.FC = () => (
+export const DashboardHeaderSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]"
     style={{
-      backgroundColor: "#fff",
       paddingHorizontal: 24,
       paddingTop: 16,
       paddingBottom: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: "#F3F4F6",
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -47,17 +46,19 @@ export const DashboardHeaderSkeleton: React.FC = () => (
     <Skeleton colorMode={C} width={36} height={36} radius={18} />
   </View>
 );
+};
 
 // ─── Stat Cards (2×2 grid) ────────────────────────────────────────────────────
-const StatCardSkeleton: React.FC = () => (
+const StatCardSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
     style={{
       flex: 1,
-      backgroundColor: "#fff",
       borderRadius: 16,
       padding: 16,
       borderWidth: 1,
-      borderColor: "#E5E7EB",
       marginHorizontal: 4,
       alignItems: "center",
     }}
@@ -72,6 +73,7 @@ const StatCardSkeleton: React.FC = () => (
     <SkeletonLine width={64} height={10} />
   </View>
 );
+};
 
 export const StatCardsSkeleton: React.FC = () => (
   <View
@@ -94,12 +96,11 @@ export const StatCardsSkeleton: React.FC = () => (
 const SectionShell = ({ children }: { children: React.ReactNode }) => (
   <View style={{ marginHorizontal: 16, marginVertical: 8 }}>
     <View
+      className="bg-white dark:bg-[#141414] border-gray-100 dark:border-[#2a2a2a]"
       style={{
-        backgroundColor: "#fff",
         borderRadius: 16,
         padding: 16,
         borderWidth: 1,
-        borderColor: "#F3F4F6",
       }}
     >
       {children}
@@ -110,7 +111,9 @@ const SectionShell = ({ children }: { children: React.ReactNode }) => (
 // ─── Section header row (icon circle + two lines + "View all" stub) ───────────
 const SectionHeaderSkeleton: React.FC<{ titleWidth?: number }> = ({
   titleWidth = 140,
-}) => (
+}) => {
+  const C = useSkeletonColorMode();
+  return (
   <View
     style={{
       flexDirection: "row",
@@ -130,18 +133,21 @@ const SectionHeaderSkeleton: React.FC<{ titleWidth?: number }> = ({
     <Skeleton colorMode={C} width={58} height={16} radius={4} />
   </View>
 );
+};
 
 // ─── Attention Section ────────────────────────────────────────────────────────
 // Each row: avatar circle + name+job lines + match chip + chevron
-const ApplicantRowSkeleton: React.FC = () => (
+const ApplicantRowSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="border-b border-gray-50 dark:border-[#222]"
     style={{
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingVertical: 12,
       borderBottomWidth: 1,
-      borderBottomColor: "#F9FAFB",
     }}
   >
     {/* Avatar */}
@@ -161,6 +167,7 @@ const ApplicantRowSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 export const AttentionSectionSkeleton: React.FC = () => (
   <SectionShell>
@@ -173,8 +180,11 @@ export const AttentionSectionSkeleton: React.FC = () => (
 
 // ─── Active Jobs Section ──────────────────────────────────────────────────────
 // Each job sub-card: title → chips row → footer (applicants + pause button)
-const JobSubCardSkeleton: React.FC = () => (
+const JobSubCardSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-gray-50 dark:bg-[#1e1e1e] border-gray-100 dark:border-[#2a2a2a]"
     style={{
       backgroundColor: "#F9FAFB",
       borderRadius: 12,
@@ -197,13 +207,13 @@ const JobSubCardSkeleton: React.FC = () => (
 
     {/* Footer */}
     <View
+      className="border-t border-gray-200 dark:border-[#2a2a2a]"
       style={{
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         paddingTop: 10,
         borderTopWidth: 1,
-        borderTopColor: "#E5E7EB",
       }}
     >
       <Skeleton colorMode={C} width={90} height={20} radius={4} />
@@ -211,6 +221,7 @@ const JobSubCardSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 export const ActiveJobsSectionSkeleton: React.FC = () => (
   <SectionShell>
@@ -223,8 +234,11 @@ export const ActiveJobsSectionSkeleton: React.FC = () => (
 
 // ─── Recent Contacts Section ──────────────────────────────────────────────────
 // Each contact sub-card: avatar+name+job+status → last contact line → 3 action buttons
-const ContactSubCardSkeleton: React.FC = () => (
+const ContactSubCardSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-gray-50 dark:bg-[#1e1e1e] border-gray-100 dark:border-[#2a2a2a]"
     style={{
       backgroundColor: "#F9FAFB",
       borderRadius: 12,
@@ -261,7 +275,7 @@ const ContactSubCardSkeleton: React.FC = () => (
     <Spacer h={10} />
 
     {/* Divider */}
-    <View style={{ height: 1, backgroundColor: "#E5E7EB", marginBottom: 10 }} />
+    <View className="bg-gray-200 dark:bg-[#2a2a2a]" style={{ height: 1, marginBottom: 10 }} />
 
     {/* Action buttons row: Call + WhatsApp + Email */}
     <View style={{ flexDirection: "row", gap: 8 }}>
@@ -271,6 +285,7 @@ const ContactSubCardSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 export const RecentContactsSectionSkeleton: React.FC = () => (
   <SectionShell>

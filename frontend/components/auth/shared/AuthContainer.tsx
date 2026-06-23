@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import { ReactNode } from "react";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"; // Add this import
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface AuthContainerProps {
   children: ReactNode;
@@ -11,9 +12,10 @@ export default function AuthContainer({
   children,
   stickyHeaderIndices,
 }: AuthContainerProps) {
+  const { isDark } = useTheme();
   return (
     <KeyboardAwareScrollView
-      style={{ flex: 1, backgroundColor: 'white' }} // Ensures it fills the screen and has a white background
+      style={{ flex: 1, backgroundColor: isDark ? '#080A08' : 'white' }} // Ensures it fills the screen and has a white background
       contentContainerStyle={{ flexGrow: 1 }} // Allows content to grow/scroll
       enableOnAndroid={true} // Better Android support
       keyboardShouldPersistTaps="handled" // Dismiss on taps outside inputs

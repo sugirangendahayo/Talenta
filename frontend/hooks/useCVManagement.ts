@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
+import { useTranslation } from "react-i18next";
 
 export interface CVInfo {
   url: string | null;
@@ -12,6 +13,7 @@ export interface CVInfo {
 }
 
 export function useCVManagement() {
+  const { t } = useTranslation("profile");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -33,7 +35,7 @@ export function useCVManagement() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        throw new Error("Not authenticated");
+        throw new Error(t("cv.messages.notAuthenticated"));
       }
 
       const { data, error } = await supabase
@@ -65,11 +67,11 @@ export function useCVManagement() {
       }
     } catch (err: any) {
       console.error("Error fetching CV info:", err);
-      toast.error(err.message || "Failed to load CV information");
+      toast.error(err.message || t("cv.messages.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Pick and upload CV
   const uploadCV = useCallback(async (): Promise<boolean> => {
@@ -90,7 +92,7 @@ export function useCVManagement() {
 
       // Validate file size (max 5MB)
       if (pickedFile.size && pickedFile.size > 5 * 1024 * 1024) {
-        toast.error("File too large. Maximum size is 5MB");
+        toast.error(t("cv.messages.fileTooLarge"));
         return false;
       }
 
@@ -101,7 +103,7 @@ export function useCVManagement() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        throw new Error("Not authenticated");
+        throw new Error(t("cv.messages.notAuthenticated"));
       }
 
       // Create File instance from URI using the new API
@@ -158,12 +160,12 @@ export function useCVManagement() {
       return true;
     } catch (err: any) {
       console.error("Error uploading CV:", err);
-      toast.error(err.message || "Failed to upload CV");
+      toast.error(err.message || t("cv.messages.uploadFailed"));
       return false;
     } finally {
       setUploading(false);
     }
-  }, [cvInfo.url, fetchCVInfo]);
+  }, [cvInfo.url, fetchCVInfo, t]);
 
   // Delete CV
   const deleteCV = useCallback(async (): Promise<boolean> => {
@@ -171,7 +173,7 @@ export function useCVManagement() {
       setDeleting(true);
 
       if (!cvInfo.url) {
-        toast.error("No CV to delete");
+        toast.error(t("cv.messages.noCVToDelete"));
         return false;
       }
 
@@ -181,7 +183,7 @@ export function useCVManagement() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        throw new Error("Not authenticated");
+        throw new Error(t("cv.messages.notAuthenticated"));
       }
 
       // Delete from storage
@@ -207,7 +209,7 @@ export function useCVManagement() {
 
       if (updateError) throw updateError;
 
-      toast.success("CV deleted successfully");
+      toast.success(t("cv.messages.deleteSuccess"));
 
       // Clear CV info
       setCvInfo({
@@ -220,17 +222,17 @@ export function useCVManagement() {
       return true;
     } catch (err: any) {
       console.error("Error deleting CV:", err);
-      toast.error(err.message || "Failed to delete CV");
+      toast.error(err.message || t("cv.messages.deleteFailed"));
       return false;
     } finally {
       setDeleting(false);
     }
-  }, [cvInfo.url]);
+  }, [cvInfo.url, t]);
 
   // Download/View CV (opens in browser)
   const viewCV = useCallback(() => {
     if (!cvInfo.url) {
-      toast.error("No CV available");
+      toast.error(t("cv.messages.noCVAvailable"));
       return;
     }
 

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface Language {
   code: string;
@@ -37,6 +38,7 @@ export default function LanguageSelector({
   userId,
 }: LanguageSelectorProps) {
   const { t, i18n } = useTranslation("profile");
+  const { isDark } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
   const handleSelectLanguage = async (languageCode: string) => {
@@ -60,21 +62,21 @@ export default function LanguageSelector({
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, isDark && { backgroundColor: "#141414" }]}>
           {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>
+          <View style={[styles.header, isDark && { borderBottomColor: "#222" }]}>
+            <Text style={[styles.title, isDark && { color: "#FFF" }]}>
               {t("sections.language.selectLanguage")}
             </Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#6B7280" />
+              <Ionicons name="close" size={24} color={isDark ? "#9CA3AF" : "#6B7280"} />
             </TouchableOpacity>
           </View>
 
           {/* Current Language Info */}
-          <View style={styles.currentLanguageContainer}>
-            <Ionicons name="globe-outline" size={20} color="#0E7490" />
-            <Text style={styles.currentLanguageText}>
+          <View style={[styles.currentLanguageContainer, isDark && { backgroundColor: "#083344" }]}>
+            <Ionicons name="globe-outline" size={20} color={isDark ? "#22d3ee" : "#0E7490"} />
+            <Text style={[styles.currentLanguageText, isDark && { color: "#22d3ee" }]}>
               {t("sections.language.currentLanguage")}:{" "}
               {LANGUAGES.find((l) => l.code === i18n.language)?.nativeName}
             </Text>
@@ -93,7 +95,9 @@ export default function LanguageSelector({
                   key={language.code}
                   style={[
                     styles.languageItem,
+                    isDark && { backgroundColor: "#1e1e1e" },
                     isSelected && styles.languageItemSelected,
+                    isSelected && isDark && { backgroundColor: "#083344", borderColor: "#22d3ee" },
                   ]}
                   onPress={() => handleSelectLanguage(language.code)}
                   activeOpacity={0.7}
@@ -104,7 +108,9 @@ export default function LanguageSelector({
                       <Text
                         style={[
                           styles.languageName,
+                          isDark && { color: "#FFF" },
                           isSelected && styles.languageNameSelected,
+                          isSelected && isDark && { color: "#22d3ee" },
                         ]}
                       >
                         {language.nativeName}
@@ -120,7 +126,7 @@ export default function LanguageSelector({
                       <Ionicons
                         name="checkmark-circle"
                         size={24}
-                        color="#0E7490"
+                        color={isDark ? "#22d3ee" : "#0E7490"}
                       />
                     </View>
                   )}

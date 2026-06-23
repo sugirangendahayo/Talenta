@@ -72,16 +72,16 @@ export default function EmployerJobFilters({
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
 
   return (
-    <View className="bg-white border-b border-gray-200 pb-3">
+    <View className="bg-white dark:bg-[#080A08] border-b border-gray-200 dark:border-[#2a2a2a] pb-3">
       {/* Search Bar */}
       <View className="px-4 pt-3 pb-2">
-        <View className="flex flex-row items-center bg-gray-100 rounded-xl p-4">
+        <View className="flex flex-row items-center bg-gray-100 dark:bg-[#141414] rounded-xl p-4">
           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           <TextInput
             placeholder={t("filters.searchPlaceholder")}
             value={searchQuery}
             onChangeText={onSearchChange}
-            className="flex-1 ml-2 text-gray-800 font-quicksandMedium"
+            className="flex-1 ml-2 text-gray-800 dark:text-gray-200 font-quicksandMedium"
             placeholderTextColor="#9CA3AF"
           />
           {searchQuery.length > 0 && (
@@ -107,8 +107,8 @@ export default function EmployerJobFilters({
                 onPress={() => onStatusChange(status.id)}
                 className={`flex flex-row items-center gap-2 px-4 py-2 rounded-full border ${
                   isSelected
-                    ? "bg-cyan-700 border-cyan-700"
-                    : "bg-white border-gray-300"
+                    ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700"
+                    : "bg-white dark:bg-[#080A08] border-gray-300"
                 }`}
               >
                 <Ionicons
@@ -118,7 +118,7 @@ export default function EmployerJobFilters({
                 />
                 <Text
                   className={`text-sm font-quicksandBold ${
-                    isSelected ? "text-white" : "text-gray-700"
+                    isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {t(status.label)}
@@ -137,7 +137,7 @@ export default function EmployerJobFilters({
         >
           <View className="flex flex-row items-center gap-2">
             <Ionicons name="grid-outline" size={18} color="#0E7490" />
-            <Text className="text-sm font-quicksandBold text-gray-700">
+            <Text className="text-sm font-quicksandBold text-gray-700 dark:text-gray-300">
               {t("filters.category")}:{" "}
               <Text className="text-cyan-700">
                 {categories.find((c) => c.id === selectedCategory)?.name ||
@@ -164,12 +164,12 @@ export default function EmployerJobFilters({
                   className={`px-4 py-2 rounded-full border ${
                     isSelected
                       ? "bg-cyan-100 border-cyan-700"
-                      : "bg-white border-gray-300"
+                      : "bg-white dark:bg-[#080A08] border-gray-300"
                   }`}
                 >
                   <Text
                     className={`text-xs font-quicksandBold ${
-                      isSelected ? "text-cyan-700" : "text-gray-700"
+                      isSelected ? "text-cyan-700" : "text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {category.name}

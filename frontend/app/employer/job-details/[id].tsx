@@ -92,8 +92,8 @@ export default function EmployerJobDetailsScreen() {
         return {
           text: "Closed",
           icon: "close-circle",
-          bgColor: "bg-gray-200",
-          textColor: "text-gray-700",
+          bgColor: "bg-gray-200 dark:bg-[#1e1e1e]",
+          textColor: "text-gray-700 dark:text-gray-300",
           iconColor: "#6B7280",
         };
       case "paused":
@@ -116,8 +116,8 @@ export default function EmployerJobDetailsScreen() {
         return {
           text: status,
           icon: "help-circle",
-          bgColor: "bg-gray-100",
-          textColor: "text-gray-700",
+          bgColor: "bg-gray-100 dark:bg-[#141414]",
+          textColor: "text-gray-700 dark:text-gray-300",
           iconColor: "#6B7280",
         };
     }
@@ -319,9 +319,9 @@ export default function EmployerJobDetailsScreen() {
   // Loading state
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
+      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#080A08]">
         <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-600 font-quicksandMedium mt-4">
+        <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium mt-4">
           Loading job details...
         </Text>
       </View>
@@ -331,14 +331,14 @@ export default function EmployerJobDetailsScreen() {
   // Error state
   if (error || !job) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50 px-6">
+      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#080A08] px-6">
         <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-        <Text className="text-lg font-quicksandBold text-gray-800 mt-4 text-center">
+        <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200 mt-4 text-center">
           {error || "Job not found"}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
-          className="mt-6 bg-cyan-700 px-6 py-3 rounded-2xl"
+          className="mt-6 bg-cyan-700 dark:bg-cyan-800 px-6 py-3 rounded-2xl"
         >
           <Text className="text-white font-quicksandBold">Go Back</Text>
         </TouchableOpacity>
@@ -355,9 +355,9 @@ export default function EmployerJobDetailsScreen() {
   const daysLeft = getDaysUntilExpiry(job.expires_at);
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       {/* Header */}
-      <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700">
+      <View className="pt-16 pb-8 px-6 rounded-b-[40px] bg-cyan-700 dark:bg-cyan-800">
         <View className="flex flex-row items-center justify-between">
           <TouchableOpacity onPress={() => router.back()} className="p-2">
             <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -376,12 +376,12 @@ export default function EmployerJobDetailsScreen() {
         <View className="px-4 pt-6">
           <View className="flex flex-row items-start justify-between mb-4">
             <View className="flex-1 mr-3">
-              <Text className="text-2xl font-quicksandBold text-gray-800 mb-2">
+              <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200 mb-2">
                 {job.title}
               </Text>
               <View className="flex flex-row items-center gap-1 mb-3">
                 <Ionicons name="location-sharp" size={16} color="#0E7490" />
-                <Text className="text-gray-600 font-quicksandMedium text-base">
+                <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base">
                   {job.location}
                 </Text>
               </View>
@@ -410,8 +410,8 @@ export default function EmployerJobDetailsScreen() {
               </Text>
             </View>
             {jobTypes.map((type, index) => (
-              <View key={index} className="bg-white px-4 py-3 rounded-2xl">
-                <Text className="text-gray-700 font-quicksandMedium text-sm">
+              <View key={index} className="bg-white dark:bg-[#080A08] px-4 py-3 rounded-2xl">
+                <Text className="text-gray-700 dark:text-gray-300 font-quicksandMedium text-sm">
                   {type}
                 </Text>
               </View>
@@ -421,15 +421,15 @@ export default function EmployerJobDetailsScreen() {
 
         {/* Action Buttons Section */}
         <View className="mx-4 mb-4">
-          <Text className="text-lg font-quicksandBold text-gray-800 mb-3">
+          <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200 mb-3">
             Manage Job
           </Text>
-          <View className="bg-white rounded-2xl p-4">
+          <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4">
             <View className="flex flex-row flex-wrap gap-3">
               {/* View Applicants */}
               <TouchableOpacity
                 onPress={handleViewApplicants}
-                className="flex-1 min-w-[45%] bg-cyan-700 px-4 py-3 rounded-xl flex flex-row items-center justify-center gap-2"
+                className="flex-1 min-w-[45%] bg-cyan-700 dark:bg-cyan-800 px-4 py-3 rounded-xl flex flex-row items-center justify-center gap-2"
               >
                 <Ionicons name="people" size={20} color="white" />
                 <Text className="text-white font-quicksandBold">
@@ -506,27 +506,27 @@ export default function EmployerJobDetailsScreen() {
         </View>
 
         {/* Job Description */}
-        <View className="p-4 m-3 bg-white rounded-2xl">
-          <Text className="text-xl font-quicksandBold text-gray-800 mb-3">
+        <View className="p-4 m-3 bg-white dark:bg-[#080A08] rounded-2xl">
+          <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200 mb-3">
             Job Description
           </Text>
-          <Text className="text-gray-600 font-quicksandMedium text-base leading-6">
+          <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base leading-6">
             {job.description}
           </Text>
         </View>
 
         {/* Experience Level */}
         {job.experience_level && (
-          <View className="p-4 m-3 bg-white rounded-2xl">
+          <View className="p-4 m-3 bg-white dark:bg-[#080A08] rounded-2xl">
             <View className="flex flex-row items-center gap-2 mb-3">
-              <View className="p-3 bg-gray-200 rounded-full">
+              <View className="p-3 bg-gray-200 dark:bg-[#1e1e1e] rounded-full">
                 <Ionicons name="briefcase" size={22} color="black" />
               </View>
-              <Text className="text-xl font-quicksandBold text-gray-800">
+              <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200">
                 Experience Required
               </Text>
             </View>
-            <Text className="text-gray-600 font-quicksandMedium text-base">
+            <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base">
               {job.experience_level}
             </Text>
           </View>
@@ -534,12 +534,12 @@ export default function EmployerJobDetailsScreen() {
 
         {/* Skills Required */}
         {job.skills_required && job.skills_required.length > 0 && (
-          <View className="p-4 m-3 bg-white rounded-2xl">
+          <View className="p-4 m-3 bg-white dark:bg-[#080A08] rounded-2xl">
             <View className="flex flex-row items-center gap-2 mb-3">
-              <View className="p-3 bg-gray-200 rounded-full">
+              <View className="p-3 bg-gray-200 dark:bg-[#1e1e1e] rounded-full">
                 <Octicons name="checklist" size={22} color="black" />
               </View>
-              <Text className="text-xl font-quicksandBold text-gray-800">
+              <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200">
                 Required Skills
               </Text>
             </View>
@@ -559,21 +559,21 @@ export default function EmployerJobDetailsScreen() {
         )}
 
         {/* Job Information */}
-        <View className="p-4 m-3 bg-white rounded-2xl">
-          <Text className="text-xl font-quicksandBold text-gray-800 mb-3">
+        <View className="p-4 m-3 bg-white dark:bg-[#080A08] rounded-2xl">
+          <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200 mb-3">
             Job Information
           </Text>
           <View className="bg-cyan-50 rounded-2xl p-4 space-y-3">
             <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">Posted</Text>
-              <Text className="text-gray-800 font-quicksandBold">
+              <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium">Posted</Text>
+              <Text className="text-gray-800 dark:text-gray-200 font-quicksandBold">
                 {timeAgo}
               </Text>
             </View>
             <View className="h-px bg-cyan-200" />
 
             <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">
+              <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium">
                 Expires
               </Text>
               <Text
@@ -582,7 +582,7 @@ export default function EmployerJobDetailsScreen() {
                     ? "text-red-600"
                     : daysLeft < 30
                       ? "text-yellow-600"
-                      : "text-gray-800"
+                      : "text-gray-800 dark:text-gray-200"
                 }`}
               >
                 {daysLeft > 0
@@ -595,26 +595,26 @@ export default function EmployerJobDetailsScreen() {
             <View className="h-px bg-cyan-200" />
 
             <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">
+              <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium">
                 Category
               </Text>
-              <Text className="text-gray-800 font-quicksandBold">
+              <Text className="text-gray-800 dark:text-gray-200 font-quicksandBold">
                 {categoryDisplay}
               </Text>
             </View>
             <View className="h-px bg-cyan-200" />
 
             <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">Type</Text>
-              <Text className="text-gray-800 font-quicksandBold">
+              <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium">Type</Text>
+              <Text className="text-gray-800 dark:text-gray-200 font-quicksandBold">
                 {jobTypes.join(", ")}
               </Text>
             </View>
             <View className="h-px bg-cyan-200" />
 
             <View className="flex flex-row justify-between py-2">
-              <Text className="text-gray-600 font-quicksandMedium">Salary</Text>
-              <Text className="text-gray-800 font-quicksandBold">{salary}</Text>
+              <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium">Salary</Text>
+              <Text className="text-gray-800 dark:text-gray-200 font-quicksandBold">{salary}</Text>
             </View>
           </View>
         </View>

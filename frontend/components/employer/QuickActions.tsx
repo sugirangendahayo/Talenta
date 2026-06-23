@@ -16,12 +16,12 @@ const ActionButton = ({ icon, label, color, onPress }: ActionButtonProps) => (
     activeOpacity={0.7}
   >
     <View
-      className="w-full aspect-square rounded-2xl items-center justify-center mb-2 border border-gray-200"
+      className="w-full aspect-square rounded-2xl items-center justify-center mb-2 border border-gray-200 dark:border-[#2a2a2a]"
       style={{ backgroundColor: `${color}15` }}
     >
       <Ionicons name={icon} size={28} color={color} />
     </View>
-    <Text className="text-xs font-quicksandBold text-gray-700 text-center">
+    <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300 text-center">
       {label}
     </Text>
   </TouchableOpacity>
