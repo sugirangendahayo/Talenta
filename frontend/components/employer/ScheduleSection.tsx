@@ -18,7 +18,7 @@ const ScheduleItem = ({ time, type, title, candidate }: ScheduleItemProps) => {
   const config = typeConfig[type];
 
   return (
-    <TouchableOpacity className="flex flex-row items-start py-3 border-b border-gray-100">
+    <TouchableOpacity className="flex flex-row items-start py-3 border-b border-gray-100 dark:border-[#222]">
       <View
         className="w-10 h-10 rounded-full items-center justify-center mr-3"
         style={{ backgroundColor: config.bg }}
@@ -28,15 +28,15 @@ const ScheduleItem = ({ time, type, title, candidate }: ScheduleItemProps) => {
       <View className="flex-1">
         <View className="flex flex-row items-center gap-2 mb-1">
           <Ionicons name="time-outline" size={14} color="#6B7280" />
-          <Text className="text-xs font-quicksandBold text-gray-600">
+          <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-400">
             {time}
           </Text>
         </View>
-        <Text className="text-sm font-quicksandBold text-gray-800">
+        <Text className="text-sm font-quicksandBold text-gray-800 dark:text-gray-200">
           {title}
         </Text>
         {candidate && (
-          <Text className="text-xs font-quicksandMedium text-gray-500 mt-0.5">
+          <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
             with {candidate}
           </Text>
         )}
@@ -69,7 +69,7 @@ export default function ScheduleSection() {
 
   return (
     <View className="mx-4 my-2">
-      <View className="bg-white rounded-2xl p-4 border border-gray-200">
+      <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-200 dark:border-[#2a2a2a]">
         {/* Header */}
         <View className="flex flex-row items-center justify-between mb-3">
           <View className="flex flex-row items-center gap-2">
@@ -77,15 +77,15 @@ export default function ScheduleSection() {
               <Ionicons name="calendar" size={18} color="#8B5CF6" />
             </View>
             <View>
-              <Text className="text-base font-quicksandBold text-gray-800">
+              <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
                 Today&apos;s Schedule
               </Text>
-              <Text className="text-xs font-quicksandMedium text-gray-500">
+              <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400">
                 {schedule.length} events planned
               </Text>
             </View>
           </View>
-          <TouchableOpacity className="bg-cyan-700 rounded-full p-1.5">
+          <TouchableOpacity className="bg-cyan-700 dark:bg-cyan-800 rounded-full p-1.5">
             <Ionicons name="add" size={18} color="white" />
           </TouchableOpacity>
         </View>
