@@ -162,20 +162,20 @@ export default function InterviewDetailsModal({
         className="flex-1"
       >
         <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-white rounded-t-3xl max-h-[90%]">
+          <View className="bg-white dark:bg-[#080A08] rounded-t-3xl max-h-[90%]">
             {/* Header */}
-            <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
+            <View className="flex-row justify-between items-center p-6 border-b border-gray-200 dark:border-[#2a2a2a]">
               <View className="flex-1">
-                <Text className="text-2xl font-quicksandBold text-gray-900">
+                <Text className="text-2xl font-quicksandBold text-gray-900 dark:text-gray-100">
                   Schedule Interview
                 </Text>
-                <Text className="text-sm font-quicksandMedium text-gray-500 mt-1">
+                <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mt-1">
                   {applicantName} • {jobTitle}
                 </Text>
               </View>
               <TouchableOpacity
                 onPress={handleCancel}
-                className="ml-4 p-2 rounded-full bg-gray-100"
+                className="ml-4 p-2 rounded-full bg-gray-100 dark:bg-[#141414]"
               >
                 <Ionicons name="close" size={24} color="#374151" />
               </TouchableOpacity>
@@ -187,7 +187,7 @@ export default function InterviewDetailsModal({
             >
               {/* Interview Type Selection */}
               <View className="mb-6">
-                <Text className="text-base font-quicksandSemibold text-gray-900 mb-3">
+                <Text className="text-base font-quicksandSemibold text-gray-900 dark:text-gray-100 mb-3">
                   Interview Type
                 </Text>
                 <View className="flex-row gap-3">
@@ -196,7 +196,7 @@ export default function InterviewDetailsModal({
                     className={`flex-1 flex-row items-center justify-center p-4 rounded-xl border-2 ${
                       interviewType === "physical"
                         ? "border-cyan-700 bg-cyan-50"
-                        : "border-gray-200 bg-white"
+                        : "border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08]"
                     }`}
                   >
                     <Ionicons
@@ -210,7 +210,7 @@ export default function InterviewDetailsModal({
                       className={`ml-2 font-quicksandSemibold ${
                         interviewType === "physical"
                           ? "text-cyan-700"
-                          : "text-gray-600"
+                          : "text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       Physical
@@ -222,7 +222,7 @@ export default function InterviewDetailsModal({
                     className={`flex-1 flex-row items-center justify-center p-4 rounded-xl border-2 ${
                       interviewType === "online"
                         ? "border-cyan-700 bg-cyan-50"
-                        : "border-gray-200 bg-white"
+                        : "border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08]"
                     }`}
                   >
                     <Ionicons
@@ -234,7 +234,7 @@ export default function InterviewDetailsModal({
                       className={`ml-2 font-quicksandSemibold ${
                         interviewType === "online"
                           ? "text-cyan-700"
-                          : "text-gray-600"
+                          : "text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       Online
@@ -245,15 +245,15 @@ export default function InterviewDetailsModal({
 
               {/* Date Picker */}
               <View className="mb-6">
-                <Text className="text-base font-quicksandSemibold text-gray-900 mb-3">
+                <Text className="text-base font-quicksandSemibold text-gray-900 dark:text-gray-100 mb-3">
                   Interview Date
                 </Text>
                 <TouchableOpacity
                   onPress={() => setShowDatePicker(true)}
-                  className="flex-row items-center p-4 bg-gray-50 rounded-xl border border-gray-200"
+                  className="flex-row items-center p-4 bg-gray-50 dark:bg-[#080A08] rounded-xl border border-gray-200 dark:border-[#2a2a2a]"
                 >
                   <Ionicons name="calendar-outline" size={20} color="#0E7490" />
-                  <Text className="ml-3 flex-1 font-quicksandMedium text-gray-900">
+                  <Text className="ml-3 flex-1 font-quicksandMedium text-gray-900 dark:text-gray-100">
                     {formatDate(selectedDate)}
                   </Text>
                   <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
@@ -267,15 +267,15 @@ export default function InterviewDetailsModal({
 
               {/* Time Picker */}
               <View className="mb-6">
-                <Text className="text-base font-quicksandSemibold text-gray-900 mb-3">
+                <Text className="text-base font-quicksandSemibold text-gray-900 dark:text-gray-100 mb-3">
                   Interview Time
                 </Text>
                 <TouchableOpacity
                   onPress={() => setShowTimePicker(true)}
-                  className="flex-row items-center p-4 bg-gray-50 rounded-xl border border-gray-200"
+                  className="flex-row items-center p-4 bg-gray-50 dark:bg-[#080A08] rounded-xl border border-gray-200 dark:border-[#2a2a2a]"
                 >
                   <Ionicons name="time-outline" size={20} color="#0E7490" />
-                  <Text className="ml-3 flex-1 font-quicksandMedium text-gray-900">
+                  <Text className="ml-3 flex-1 font-quicksandMedium text-gray-900 dark:text-gray-100">
                     {formatTime(selectedTime)}
                   </Text>
                   <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
@@ -285,7 +285,7 @@ export default function InterviewDetailsModal({
               {/* Location (Physical) */}
               {interviewType === "physical" && (
                 <View className="mb-6">
-                  <Text className="text-base font-quicksandSemibold text-gray-900 mb-3">
+                  <Text className="text-base font-quicksandSemibold text-gray-900 dark:text-gray-100 mb-3">
                     Location <Text className="text-red-500">*</Text>
                   </Text>
                   <TextInput
@@ -296,7 +296,7 @@ export default function InterviewDetailsModal({
                     }}
                     placeholder="Enter interview location (e.g., Office Address, Room)"
                     placeholderTextColor="#9CA3AF"
-                    className="p-4 bg-gray-50 rounded-xl border border-gray-200 font-quicksandMedium text-gray-900"
+                    className="p-4 bg-gray-50 dark:bg-[#080A08] rounded-xl border border-gray-200 dark:border-[#2a2a2a] font-quicksandMedium text-gray-900 dark:text-gray-100"
                     multiline
                     numberOfLines={3}
                     textAlignVertical="top"
@@ -312,7 +312,7 @@ export default function InterviewDetailsModal({
               {/* Meeting Link (Online) */}
               {interviewType === "online" && (
                 <View className="mb-6">
-                  <Text className="text-base font-quicksandSemibold text-gray-900 mb-3">
+                  <Text className="text-base font-quicksandSemibold text-gray-900 dark:text-gray-100 mb-3">
                     Meeting Link <Text className="text-red-500">*</Text>
                   </Text>
                   <TextInput
@@ -323,7 +323,7 @@ export default function InterviewDetailsModal({
                     }}
                     placeholder="Paste meeting link (Zoom, Google Meet, Teams, etc.)"
                     placeholderTextColor="#9CA3AF"
-                    className="p-4 bg-gray-50 rounded-xl border border-gray-200 font-quicksandMedium text-gray-900"
+                    className="p-4 bg-gray-50 dark:bg-[#080A08] rounded-xl border border-gray-200 dark:border-[#2a2a2a] font-quicksandMedium text-gray-900 dark:text-gray-100"
                     keyboardType="url"
                     autoCapitalize="none"
                   />
@@ -337,7 +337,7 @@ export default function InterviewDetailsModal({
 
               {/* Additional Notes */}
               <View className="mb-6">
-                <Text className="text-base font-quicksandSemibold text-gray-900 mb-3">
+                <Text className="text-base font-quicksandSemibold text-gray-900 dark:text-gray-100 mb-3">
                   Additional Notes (Optional)
                 </Text>
                 <TextInput
@@ -345,7 +345,7 @@ export default function InterviewDetailsModal({
                   onChangeText={setAdditionalNotes}
                   placeholder="Any special instructions or information..."
                   placeholderTextColor="#9CA3AF"
-                  className="p-4 bg-gray-50 rounded-xl border border-gray-200 font-quicksandMedium text-gray-900"
+                  className="p-4 bg-gray-50 dark:bg-[#080A08] rounded-xl border border-gray-200 dark:border-[#2a2a2a] font-quicksandMedium text-gray-900 dark:text-gray-100"
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
@@ -366,9 +366,9 @@ export default function InterviewDetailsModal({
                 <TouchableOpacity
                   onPress={handleCancel}
                   disabled={isSubmitting}
-                  className="flex-1 p-4 rounded-xl border-2 border-gray-300 bg-white"
+                  className="flex-1 p-4 rounded-xl border-2 border-gray-300 bg-white dark:bg-[#080A08]"
                 >
-                  <Text className="text-center font-quicksandBold text-gray-700">
+                  <Text className="text-center font-quicksandBold text-gray-700 dark:text-gray-300">
                     Cancel
                   </Text>
                 </TouchableOpacity>
@@ -376,7 +376,7 @@ export default function InterviewDetailsModal({
                 <TouchableOpacity
                   onPress={handleSubmit}
                   disabled={isSubmitting}
-                  className="flex-1 p-4 rounded-xl bg-cyan-700"
+                  className="flex-1 p-4 rounded-xl bg-cyan-700 dark:bg-cyan-800"
                 >
                   {isSubmitting ? (
                     <ActivityIndicator color="white" />
