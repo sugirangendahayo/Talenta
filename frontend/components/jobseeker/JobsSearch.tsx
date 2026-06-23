@@ -1,6 +1,7 @@
 // components/JobSearch.tsx
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   Text,
@@ -26,23 +27,25 @@ const JobSearch: React.FC<JobSearchProps> = ({
   searchQuery,
   categories,
 }) => {
+  const { t } = useTranslation(["home", "common"]);
+
   return (
     <View className="pb-3">
       <View className="px-4 py-3">
-        <View className="flex flex-row items-center bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-200">
+        <View className="flex flex-row items-center bg-gray-50 dark:bg-[#080A08] rounded-2xl px-4 py-3 shadow-sm border border-gray-200 dark:border-[#2a2a2a]">
           <Ionicons name="search" size={20} color="#6B7280" />
           <TextInput
-            placeholder="Search jobs, companies...."
+            placeholder={t("home:search.placeholder")}
             placeholderTextColor="#9CA3AF"
-            className="flex-1 ml-3 text-gray-800 font-quicksandMedium text-base"
+            className="flex-1 ml-3 text-gray-800 dark:text-gray-200 font-quicksandMedium text-base"
             onChangeText={onSearchChange}
             value={searchQuery}
           />
           <View className="h-6 w-px bg-gray-300 mx-2" />
-          <TouchableOpacity className="flex flex-row items-center bg-cyan-700 rounded-xl px-3 py-2 shadow-sm">
+          <TouchableOpacity className="flex flex-row items-center bg-cyan-700 dark:bg-cyan-800 rounded-xl px-3 py-2 shadow-sm">
             <Ionicons name="options-outline" size={16} color="white" />
             <Text className="text-white font-quicksandBold text-sm ml-1">
-              Filter
+              {t("common:buttons.filter")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -59,8 +62,8 @@ const JobSearch: React.FC<JobSearchProps> = ({
               key={category.id}
               className={`flex flex-row items-center px-4 py-2 rounded-full border ${
                 category.id === selectedCategory
-                  ? "bg-cyan-700 border-cyan-600 border"
-                  : "bg-gray-100 border-gray-200 border"
+                  ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-600 border"
+                  : "bg-gray-100 dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a] border"
               }`}
               onPress={() => onCategoryChange(category.id)}
             >
@@ -68,7 +71,7 @@ const JobSearch: React.FC<JobSearchProps> = ({
                 className={`font-quicksandMedium text-sm ${
                   category.id === selectedCategory
                     ? "text-white"
-                    : "text-gray-700"
+                    : "text-gray-700 dark:text-gray-300"
                 }`}
               >
                 {category.name}
