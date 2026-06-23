@@ -11,17 +11,18 @@ import { MotiView } from "moti";
 import { Skeleton } from "moti/skeleton";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { SkeletonLine } from "./SkeletonBase";
+import { SkeletonLine, useSkeletonColorMode } from "./SkeletonBase";
 
-const C = "light" as const;
 const Spacer = ({ h }: { h: number }) => <View style={{ height: h }} />;
 
 // ─── Header ──────────────────────────────────────────────────────────────────
 // Title + subtitle on left, "Post Job" pill button on right
-export const EmployerJobsHeaderSkeleton: React.FC = () => (
+export const EmployerJobsHeaderSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#080A08]"
     style={{
-      backgroundColor: "#fff",
       paddingHorizontal: 24,
       paddingTop: 40,
       paddingBottom: 24,
@@ -40,16 +41,18 @@ export const EmployerJobsHeaderSkeleton: React.FC = () => (
     <Skeleton colorMode={C} width={108} height={38} radius={999} />
   </View>
 );
+};
 
 // ─── Filters Bar ─────────────────────────────────────────────────────────────
 // Search bar → horizontal status chip row → category toggle row
-export const EmployerJobsFiltersSkeleton: React.FC = () => (
+export const EmployerJobsFiltersSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#080A08] border-b border-gray-200 dark:border-[#2a2a2a]"
     style={{
-      backgroundColor: "#fff",
-      borderBottomWidth: 1,
-      borderBottomColor: "#E5E7EB",
       paddingBottom: 12,
+      borderBottomWidth: 1,
     }}
   >
     {/* Search bar */}
@@ -86,20 +89,22 @@ export const EmployerJobsFiltersSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 // ─── Job Card Skeleton ────────────────────────────────────────────────────────
 // Mirrors renderJobItem in EmployerJobsList:
 //   title + location → type badges → stats row → description → salary + action buttons
-const EmployerJobCardSkeleton: React.FC = () => (
+const EmployerJobCardSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  return (
   <View
+    className="bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
     style={{
-      backgroundColor: "#fff",
       marginHorizontal: 16,
       marginVertical: 8,
       padding: 16,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: "#E5E7EB",
       shadowColor: "#000",
       shadowOpacity: 0.03,
       shadowRadius: 3,
@@ -160,12 +165,13 @@ const EmployerJobCardSkeleton: React.FC = () => (
     </View>
   </View>
 );
+};
 
 // ─── Jobs List Skeleton ───────────────────────────────────────────────────────
 export const EmployerJobsListSkeleton: React.FC<{ count?: number }> = ({
   count = 4,
 }) => (
-  <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+  <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
     {/* Count header */}
     <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
       <SkeletonLine width={160} height={16} />
