@@ -74,7 +74,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
 
   return (
     <TouchableOpacity
-      className="bg-gray-50 rounded-xl p-3 border border-gray-100 mb-3"
+      className="bg-gray-50 dark:bg-[#080A08] rounded-xl p-3 border border-gray-100 dark:border-[#222] mb-3"
       onPress={() =>
         router.push({
           pathname: "/(employer-tabs)/employers/job-details/[id]",
@@ -83,22 +83,22 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
       }
     >
       {/* Job title */}
-      <Text className="text-sm font-quicksandBold text-gray-800 mb-2">
+      <Text className="text-sm font-quicksandBold text-gray-800 dark:text-gray-200 mb-2">
         {job.title}
       </Text>
 
       {/* Meta chips row */}
       <View className="flex-row flex-wrap gap-2 mb-3">
-        <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-2.5 py-1">
+        <View className="flex-row items-center gap-1 bg-gray-100 dark:bg-[#141414] rounded-full px-2.5 py-1">
           <Ionicons name="cash-outline" size={12} color="#6B7280" />
-          <Text className="text-xs font-quicksandMedium text-gray-600">
+          <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
             {formatSalary()}
           </Text>
         </View>
 
-        <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-2.5 py-1">
+        <View className="flex-row items-center gap-1 bg-gray-100 dark:bg-[#141414] rounded-full px-2.5 py-1">
           <Ionicons name="location-outline" size={12} color="#6B7280" />
-          <Text className="text-xs font-quicksandMedium text-gray-600">
+          <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
             {job.location}
           </Text>
         </View>
@@ -106,7 +106,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
         {daysUntilExpiry !== null && daysUntilExpiry > 0 && (
           <View
             className={`flex-row items-center gap-1 rounded-full px-2.5 py-1 ${
-              daysUntilExpiry < 7 ? "bg-red-50" : "bg-gray-100"
+              daysUntilExpiry < 7 ? "bg-red-50" : "bg-gray-100 dark:bg-[#141414]"
             }`}
           >
             <Ionicons
@@ -116,7 +116,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
             />
             <Text
               className={`text-xs font-quicksandMedium ${
-                daysUntilExpiry < 7 ? "text-red-500" : "text-gray-600"
+                daysUntilExpiry < 7 ? "text-red-500" : "text-gray-600 dark:text-gray-400"
               }`}
             >
               {daysUntilExpiry}d left
@@ -126,7 +126,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
       </View>
 
       {/* Footer: applicants count + pause action */}
-      <View className="flex-row items-center justify-between pt-2.5 border-t border-gray-200">
+      <View className="flex-row items-center justify-between pt-2.5 border-t border-gray-200 dark:border-[#2a2a2a]">
         <TouchableOpacity
           className="flex-row items-center gap-1.5"
           onPress={(e) => {
@@ -145,14 +145,14 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="flex-row items-center gap-1 border border-gray-200 bg-white px-3 py-1.5 rounded-full"
+          className="flex-row items-center gap-1 border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08] px-3 py-1.5 rounded-full"
           onPress={(e) => {
             e.stopPropagation();
             handlePause();
           }}
         >
           <Ionicons name="pause" size={12} color="#6B7280" />
-          <Text className="text-xs font-quicksandBold text-gray-500">
+          <Text className="text-xs font-quicksandBold text-gray-500 dark:text-gray-400">
             {t("jobs.pause")}
           </Text>
         </TouchableOpacity>
@@ -177,7 +177,7 @@ export default function ActiveJobsSection({
 
   return (
     <View className="mx-4 my-2">
-      <View className="bg-white rounded-2xl p-4 border border-gray-100">
+      <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-100 dark:border-[#222]">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2">
@@ -185,7 +185,7 @@ export default function ActiveJobsSection({
               <Ionicons name="briefcase-outline" size={17} color="#0E7490" />
             </View>
             <View>
-              <Text className="text-base font-quicksandBold text-gray-800">
+              <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
                 {t("sections.activeJobs.title")}
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-400">
