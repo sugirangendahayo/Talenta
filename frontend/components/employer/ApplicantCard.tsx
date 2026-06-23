@@ -170,19 +170,19 @@ export default function ApplicantCard({
   };
 
   return (
-    <View className="bg-white rounded-2xl p-4 mb-3 border border-gray-200">
+    <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 mb-3 border border-gray-200 dark:border-[#2a2a2a]">
       {/* Header Section */}
       <TouchableOpacity onPress={handleViewDetails} activeOpacity={0.7}>
         <View className="flex-row items-start justify-between mb-3">
           <View className="flex-1">
-            <Text className="text-lg font-quicksandBold text-gray-900">
+            <Text className="text-lg font-quicksandBold text-gray-900 dark:text-gray-100">
               {candidateName}
             </Text>
-            <Text className="text-sm font-quicksandMedium text-gray-500 mt-0.5">
+            <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
               {email}
             </Text>
             {phone && (
-              <Text className="text-sm font-quicksandMedium text-gray-500 mt-0.5">
+              <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
                 {phone}
               </Text>
             )}
@@ -209,14 +209,14 @@ export default function ApplicantCard({
           {applicant.jobseeker_profiles.experience_level && (
             <View className="flex-row items-center gap-1">
               <Ionicons name="briefcase-outline" size={14} color="#6B7280" />
-              <Text className="text-xs font-quicksandMedium text-gray-600">
+              <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
                 {applicant.jobseeker_profiles.experience_level}
               </Text>
             </View>
           )}
           <View className="flex-row items-center gap-1">
             <Ionicons name="calendar-outline" size={14} color="#6B7280" />
-            <Text className="text-xs font-quicksandMedium text-gray-600">
+            <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
               {t("applied")} {formatDate(applicant.created_at)}
             </Text>
           </View>
@@ -239,8 +239,8 @@ export default function ApplicantCard({
                   </View>
                 ))}
               {applicant.jobseeker_profiles.skills.length > 3 && (
-                <View className="bg-gray-100 px-2.5 py-1 rounded-full">
-                  <Text className="text-xs font-quicksandMedium text-gray-600">
+                <View className="bg-gray-100 dark:bg-[#141414] px-2.5 py-1 rounded-full">
+                  <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
                     +{applicant.jobseeker_profiles.skills.length - 3}{" "}
                     {t("more")}
                   </Text>
@@ -251,7 +251,7 @@ export default function ApplicantCard({
       </TouchableOpacity>
 
       {/* Action Buttons */}
-      <View className="border-t border-gray-100 pt-3">
+      <View className="border-t border-gray-100 dark:border-[#222] pt-3">
         {/* Status Update Buttons - Only show if not hired */}
         {applicant.status !== "hired" && (
           <View className="flex-row gap-2 mb-3">
@@ -297,7 +297,7 @@ export default function ApplicantCard({
         {/* Contact Quick Actions - Only for hired candidates */}
         {applicant.status === "hired" && (
           <View className="mb-3">
-            <Text className="text-xs font-quicksandBold text-gray-600 mb-2">
+            <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-400 mb-2">
               {t("quickContact.title")}
             </Text>
             <View className="flex-row gap-2">
@@ -345,11 +345,11 @@ export default function ApplicantCard({
         <View className="flex-row gap-2">
           <TouchableOpacity
             onPress={handleViewDetails}
-            className="flex-1 bg-gray-100 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
+            className="flex-1 bg-gray-100 dark:bg-[#141414] py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
             activeOpacity={0.7}
           >
             <Ionicons name="document-text-outline" size={16} color="#374151" />
-            <Text className="text-gray-700 text-xs font-quicksandBold">
+            <Text className="text-gray-700 dark:text-gray-300 text-xs font-quicksandBold">
               {t("buttons.viewDetails")}
             </Text>
           </TouchableOpacity>
