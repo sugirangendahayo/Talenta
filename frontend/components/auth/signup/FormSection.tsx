@@ -5,6 +5,7 @@ import FileUploadField from "../fields/FileUploadField";
 import MultiSelectField from "../fields/MultiSelectField";
 import TextField from "../fields/TextField";
 import PasswordField from "../fields/PasswordField";
+import { useTranslation } from "react-i18next";
 
 interface FieldConfig {
   key: string;
@@ -36,14 +37,37 @@ export default function FormSection({
   getDropdownData,
   skillsList = [],
 }: FormSectionProps) {
+  const { t } = useTranslation("auth");
+
+  const getFieldLabel = (field: FieldConfig) => {
+    if (field.label === "Company Website (Optional)") {
+      return t("fields.companyWebsiteOptional", { defaultValue: field.label });
+    }
+    return t(`fields.${field.key}`, { defaultValue: field.label });
+  };
+
+  const getFieldPlaceholder = (field: FieldConfig) => {
+    if (field.placeholder === "Enter company email") {
+      return t("placeholders.companyEmail", { defaultValue: field.placeholder });
+    }
+    if (field.placeholder === "Enter company website") {
+      return t("placeholders.companyWebsite", {
+        defaultValue: field.placeholder,
+      });
+    }
+    return t(`placeholders.${field.key}`, { defaultValue: field.placeholder });
+  };
+
   const renderField = (field: FieldConfig) => {
     const hasIcon = field.type !== "dropdown" && field.type !== "file";
+    const label = getFieldLabel(field);
+    const placeholder = getFieldPlaceholder(field);
 
     switch (field.type) {
       case "dropdown":
         return (
           <FieldWrapper
-            label={field.label}
+            label={label}
             required={
               !field.placeholder?.includes("optional") &&
               !field.placeholder?.includes("Optional")
@@ -54,7 +78,7 @@ export default function FormSection({
             <DropdownField
               data={getDropdownData ? getDropdownData(field.key) : []}
               value={formData[field.key]}
-              placeholder={field.placeholder}
+              placeholder={placeholder}
               onChange={(value) => onInputChange(field.key, value)}
             />
           </FieldWrapper>
@@ -63,7 +87,7 @@ export default function FormSection({
       case "multiselect":
         return (
           <FieldWrapper
-            label={field.label}
+            label={label}
             required={
               !field.placeholder?.includes("optional") &&
               !field.placeholder?.includes("Optional")
@@ -82,7 +106,7 @@ export default function FormSection({
       case "file":
         return (
           <FieldWrapper
-            label={field.label}
+            label={label}
             required={
               !field.placeholder?.includes("optional") &&
               !field.placeholder?.includes("Optional")
@@ -91,7 +115,7 @@ export default function FormSection({
             showIconInside={false}
           >
             <FileUploadField
-              placeholder={field.placeholder}
+              placeholder={placeholder}
               isUploaded={!!formData[field.key]}
               onPress={() => onFileUpload && onFileUpload(field.key)}
             />
@@ -103,7 +127,7 @@ export default function FormSection({
         if (field.secureTextEntry) {
           return (
             <FieldWrapper
-              label={field.label}
+              label={label}
               required={
                 !field.placeholder?.includes("optional") &&
                 !field.placeholder?.includes("Optional")
@@ -113,7 +137,7 @@ export default function FormSection({
             >
               <PasswordField
                 hasIcon={hasIcon}
-                placeholder={field.placeholder}
+                placeholder={placeholder}
                 value={formData[field.key]}
                 onChangeText={(value) => onInputChange(field.key, value)}
                 // Show strength indicator only for the main password field
@@ -126,7 +150,7 @@ export default function FormSection({
         // Regular text field
         return (
           <FieldWrapper
-            label={field.label}
+            label={label}
             required={
               !field.placeholder?.includes("optional") &&
               !field.placeholder?.includes("Optional")
@@ -136,7 +160,7 @@ export default function FormSection({
           >
             <TextField
               hasIcon={hasIcon}
-              placeholder={field.placeholder}
+              placeholder={placeholder}
               value={formData[field.key]}
               onChangeText={(value) => onInputChange(field.key, value)}
               keyboardType={field.keyboardType}
