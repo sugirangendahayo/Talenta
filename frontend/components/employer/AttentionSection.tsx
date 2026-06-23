@@ -14,7 +14,7 @@ const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
 
   return (
     <TouchableOpacity
-      className="flex-row items-center justify-between py-3 border-b border-gray-100"
+      className="flex-row items-center justify-between py-3 border-b border-gray-100 dark:border-[#222]"
       onPress={() =>
         router.push({
           pathname: "/(employer-tabs)/employers/Applicants",
@@ -31,26 +31,26 @@ const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
 
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
-          <Text className="text-sm font-quicksandBold text-gray-800">
+          <Text className="text-sm font-quicksandBold text-gray-800 dark:text-gray-200">
             {applicant.applicant_name}
           </Text>
           {applicant.is_new && (
-            <View className="bg-cyan-700 px-2 py-0.5 rounded-full">
+            <View className="bg-cyan-700 dark:bg-cyan-800 px-2 py-0.5 rounded-full">
               <Text className="text-[10px] font-quicksandBold text-white">
                 {t("priority.new")}
               </Text>
             </View>
           )}
         </View>
-        <Text className="text-xs font-quicksandMedium text-gray-500 mt-0.5">
+        <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
           {applicant.job_title}
         </Text>
       </View>
 
       <View className="flex-row items-center gap-2">
         {/* Neutral match score chip — no green */}
-        <View className="bg-gray-100 px-2 py-1 rounded-full">
-          <Text className="text-xs font-quicksandBold text-gray-700">
+        <View className="bg-gray-100 dark:bg-[#141414] px-2 py-1 rounded-full">
+          <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300">
             {applicant.match_score}% {t("priority.match")}
           </Text>
         </View>
@@ -74,7 +74,7 @@ export default function AttentionSection({
 
   return (
     <View className="mx-4 my-2">
-      <View className="bg-white rounded-2xl p-4 border border-gray-100">
+      <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-100 dark:border-[#222]">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-1">
           <View className="flex-row items-center gap-2">
@@ -82,7 +82,7 @@ export default function AttentionSection({
               <Ionicons name="alert-circle-outline" size={18} color="#0E7490" />
             </View>
             <View>
-              <Text className="text-base font-quicksandBold text-gray-800">
+              <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
                 {t("sections.attention.title")}
               </Text>
               <Text className="text-xs font-quicksandMedium text-gray-400">
