@@ -19,13 +19,13 @@ export default function MultiSelectField({
           onPress={() => onToggle(option)}
           className={`px-3 py-2 rounded-full border ${
             selectedValues.includes(option)
-              ? "bg-cyan-700 border-cyan-700 border"
-              : "bg-white border-gray-300 border"
+              ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700 border"
+              : "bg-white dark:bg-[#080A08] border-gray-300 border"
           }`}
         >
           <Text
             className={`font-quicksandMedium text-sm ${
-              selectedValues.includes(option) ? "text-white" : "text-gray-700"
+              selectedValues.includes(option) ? "text-white" : "text-gray-700 dark:text-gray-300"
             }`}
           >
             {option}
