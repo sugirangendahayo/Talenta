@@ -1,0 +1,14 @@
+diff --git a/src/loadConfig.js b/src/loadConfig.js
+index aaaaaaa..bbbbbbb 100644
+--- a/src/loadConfig.js
++++ b/src/loadConfig.js
+@@ -289,7 +289,8 @@ async function loadConfigFile(absolutePath) {
+       }
+     } catch (e) {
+       try {
+-        const configModule = await import(absolutePath);
++        const { pathToFileURL } = require('url');
++        const configModule = await import(pathToFileURL(absolutePath).href);
+         config = await configModule.default;
+       } catch (error) {
+         let prefix = `Error loading Metro config at: ${absolutePath}\n`;
