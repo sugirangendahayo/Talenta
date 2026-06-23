@@ -88,7 +88,7 @@ export default function NotificationsScreen() {
         onPress={() => handleNotificationPress(item)}
         className={`mx-4 mb-3 p-4 rounded-2xl border ${
           item.is_read
-            ? "bg-white border-gray-200"
+            ? "bg-white dark:bg-[#080A08] border-gray-200 dark:border-[#2a2a2a]"
             : "bg-cyan-50 border-cyan-200"
         }`}
         style={{
@@ -110,7 +110,7 @@ export default function NotificationsScreen() {
           {/* Content */}
           <View className="flex-1">
             <View className="flex-row items-start justify-between mb-1">
-              <Text className="flex-1 font-quicksandBold text-base text-gray-900">
+              <Text className="flex-1 font-quicksandBold text-base text-gray-900 dark:text-gray-100">
                 {item.title}
               </Text>
               {!item.is_read && (
@@ -118,7 +118,7 @@ export default function NotificationsScreen() {
               )}
             </View>
 
-            <Text className="font-quicksandMedium text-sm text-gray-600 mb-2">
+            <Text className="font-quicksandMedium text-sm text-gray-600 dark:text-gray-400 mb-2">
               {item.message}
             </Text>
 
@@ -126,7 +126,7 @@ export default function NotificationsScreen() {
             {item.data?.job_title && (
               <View className="flex-row items-center mb-2">
                 <Ionicons name="briefcase-outline" size={14} color="#6B7280" />
-                <Text className="ml-1 font-quicksandMedium text-xs text-gray-500">
+                <Text className="ml-1 font-quicksandMedium text-xs text-gray-500 dark:text-gray-400">
                   {item.data.job_title}
                   {item.data.company_name && ` • ${item.data.company_name}`}
                 </Text>
@@ -154,7 +154,7 @@ export default function NotificationsScreen() {
   const renderEmptyState = () => (
     <View className="flex-1 items-center justify-center px-6 py-20">
       <View
-        className="w-24 h-24 rounded-full bg-gray-100 items-center justify-center mb-6"
+        className="w-24 h-24 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center mb-6"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
@@ -164,10 +164,10 @@ export default function NotificationsScreen() {
       >
         <Ionicons name="notifications-off-outline" size={48} color="#9CA3AF" />
       </View>
-      <Text className="font-quicksandBold text-xl text-gray-900 mb-2">
+      <Text className="font-quicksandBold text-xl text-gray-900 dark:text-gray-100 mb-2">
         {t("common:notificationsScreen.emptyTitle", { defaultValue: "No Notifications Yet" })}
       </Text>
-      <Text className="font-quicksandMedium text-sm text-gray-500 text-center">
+      <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 text-center">
         {t("common:notificationsScreen.emptyMessage", { defaultValue: "When you receive updates about your applications, they'll appear here." })}
       </Text>
     </View>
@@ -175,18 +175,18 @@ export default function NotificationsScreen() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]">
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-          <Text className="font-quicksandBold text-xl text-gray-900 mt-4 mb-2">
+          <Text className="font-quicksandBold text-xl text-gray-900 dark:text-gray-100 mt-4 mb-2">
             {t("common:messages.somethingWentWrong", { defaultValue: "Something went wrong. Please try again." })}
           </Text>
-          <Text className="font-quicksandMedium text-sm text-gray-500 text-center mb-6">
+          <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
             {error}
           </Text>
           <TouchableOpacity
             onPress={refetch}
-            className="px-6 py-3 bg-cyan-700 rounded-xl"
+            className="px-6 py-3 bg-cyan-700 dark:bg-cyan-800 rounded-xl"
           >
             <Text className="font-quicksandBold text-white">{t("common:buttons.retry", { defaultValue: "Try Again" })}</Text>
           </TouchableOpacity>
@@ -196,20 +196,20 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       {/* Header */}
-      <View className="bg-white border-b border-gray-200 px-4 py-4">
+      <View className="bg-white dark:bg-[#080A08] border-b border-gray-200 dark:border-[#2a2a2a] px-4 py-4">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
             <TouchableOpacity onPress={() => router.back()} className="mr-3">
               <Ionicons name="arrow-back" size={24} color="#111827" />
             </TouchableOpacity>
             <View>
-              <Text className="font-quicksandBold text-2xl text-gray-900">
+              <Text className="font-quicksandBold text-2xl text-gray-900 dark:text-gray-100">
                 {t("common:notificationsScreen.title", { defaultValue: "Notifications" })}
               </Text>
               {unreadCount > 0 && (
-                <Text className="font-quicksandMedium text-sm text-cyan-600">
+                <Text className="font-quicksandMedium text-sm text-cyan-600 dark:text-cyan-400">
                   {t("common:notificationsScreen.unreadCount", { count: unreadCount, defaultValue: `${unreadCount} unread` })}
                 </Text>
               )}
@@ -234,7 +234,7 @@ export default function NotificationsScreen() {
       {isLoading && notifications.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="font-quicksandMedium text-gray-500 mt-4">
+          <Text className="font-quicksandMedium text-gray-500 dark:text-gray-400 mt-4">
             {t("common:notificationsScreen.loading", { defaultValue: "Loading notifications..." })}
           </Text>
         </View>
