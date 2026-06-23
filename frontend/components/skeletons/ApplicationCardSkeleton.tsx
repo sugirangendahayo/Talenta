@@ -9,21 +9,23 @@
 import { Skeleton } from "moti/skeleton";
 import React from "react";
 import { View } from "react-native";
-import { SkeletonLine, SkeletonRoundedSquare } from "./SkeletonBase";
-
-const COLOR_MODE = "light" as const;
+import { SkeletonLine, SkeletonRoundedSquare, useSkeletonColorMode } from "./SkeletonBase";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Spacer = ({ h }: { h: number }) => <View style={{ height: h }} />;
 
-export const ApplicationCardSkeleton: React.FC = () => (
+export const ApplicationCardSkeleton: React.FC = () => {
+  const C = useSkeletonColorMode();
+  const { isDark } = useTheme();
+  
+  return (
   <View
+    className="bg-white dark:bg-[#080A08] border-gray-200 dark:border-[#2a2a2a]"
     style={{
-      backgroundColor: "#fff",
       borderRadius: 24,
       padding: 20,
       marginBottom: 16,
       borderWidth: 1,
-      borderColor: "#E5E7EB",
       shadowColor: "#000",
       shadowOpacity: 0.04,
       shadowRadius: 4,
@@ -44,16 +46,16 @@ export const ApplicationCardSkeleton: React.FC = () => (
       </View>
 
       {/* Status badge pill */}
-      <Skeleton colorMode={COLOR_MODE} width={72} height={26} radius={999} />
+      <Skeleton colorMode={C} width={72} height={26} radius={999} />
     </View>
 
     {/* ── Info pills row: location + salary ── */}
     <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
       {/* Location pill */}
       <View
+        className="bg-gray-50 dark:bg-[#141414]"
         style={{
           flex: 1,
-          backgroundColor: "#F9FAFB",
           borderRadius: 12,
           padding: 10,
           flexDirection: "row",
@@ -62,15 +64,15 @@ export const ApplicationCardSkeleton: React.FC = () => (
         }}
       >
         {/* Icon placeholder */}
-        <Skeleton colorMode={COLOR_MODE} width={26} height={26} radius={8} />
-        <Skeleton colorMode={COLOR_MODE} width={80} height={11} radius={4} />
+        <Skeleton colorMode={C} width={26} height={26} radius={8} />
+        <Skeleton colorMode={C} width={80} height={11} radius={4} />
       </View>
 
       {/* Salary pill */}
       <View
+        className="bg-green-50 dark:bg-green-900/20"
         style={{
           flex: 1,
-          backgroundColor: "#F0FDF4",
           borderRadius: 12,
           padding: 10,
           flexDirection: "row",
@@ -78,15 +80,15 @@ export const ApplicationCardSkeleton: React.FC = () => (
           gap: 8,
         }}
       >
-        <Skeleton colorMode={COLOR_MODE} width={26} height={26} radius={8} />
-        <Skeleton colorMode={COLOR_MODE} width={68} height={11} radius={4} />
+        <Skeleton colorMode={C} width={26} height={26} radius={8} />
+        <Skeleton colorMode={C} width={68} height={11} radius={4} />
       </View>
     </View>
 
     {/* ── Applied-at row ── */}
     <View
+      className="bg-gray-50 dark:bg-[#141414]"
       style={{
-        backgroundColor: "#F9FAFB",
         borderRadius: 12,
         padding: 10,
         flexDirection: "row",
@@ -95,18 +97,19 @@ export const ApplicationCardSkeleton: React.FC = () => (
         marginBottom: 16,
       }}
     >
-      <Skeleton colorMode={COLOR_MODE} width={26} height={26} radius={8} />
-      <Skeleton colorMode={COLOR_MODE} width={140} height={11} radius={4} />
+      <Skeleton colorMode={C} width={26} height={26} radius={8} />
+      <Skeleton colorMode={C} width={140} height={11} radius={4} />
     </View>
 
     {/* ── Action buttons row ── */}
     <View style={{ flexDirection: "row", gap: 8 }}>
       {/* View Job button */}
-      <Skeleton colorMode={COLOR_MODE} width="48%" height={40} radius={16} />
+      <Skeleton colorMode={C} width="48%" height={40} radius={16} />
       {/* Withdraw button */}
-      <Skeleton colorMode={COLOR_MODE} width="48%" height={40} radius={16} />
+      <Skeleton colorMode={C} width="48%" height={40} radius={16} />
     </View>
   </View>
 );
+};
 
 export default ApplicationCardSkeleton;
