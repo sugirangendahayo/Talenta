@@ -25,7 +25,7 @@ export default function AuthLink({
   return (
     <View className={`flex flex-row  ${alignmentClass} ${className}`}>
       {text && (
-        <Text className="text-gray-600 font-quicksandMedium mr-1">{text}</Text>
+        <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium mr-1">{text}</Text>
       )}
       <TouchableOpacity onPress={onPress}>
         <Text className="text-cyan-700 font-quicksandBold">{linkText}</Text>
