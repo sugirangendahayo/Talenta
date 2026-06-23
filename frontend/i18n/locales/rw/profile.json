@@ -86,5 +86,83 @@
     "verified": "Yagenwe neza",
     "businessPro": "Business Pro"
   },
-  "version": "Verisiyo 1.0.0"
+  "version": "Version 1.0.0",
+  "completeProfile": {
+    "title": "Uzuza Imyirondoro",
+    "progress": {
+      "label": "Iyuzuzwa ry'imyirondoro",
+      "remaining": "Hasigaye umwanya {{count}}",
+      "remaining_plural": "Hasigaye imyanya {{count}}"
+    },
+    "sections": {
+      "personal": {
+        "title": "Amakuru Yite",
+        "firstName": "Izina rya mbere",
+        "lastName": "Izina rya nyuma",
+        "phone": "Nomero ya Terefone",
+        "dob": "Itariki y'amavuko",
+        "gender": "Igitsina"
+      },
+      "location": {
+        "title": "Aho Uherereye",
+        "country": "Igihugu",
+        "city": "Umujyi"
+      },
+      "education": {
+        "title": "Amashuri n'Uburambe",
+        "level": "Urwego rw'amashuri",
+        "experience": "Urwego rw'uburambe"
+      },
+      "skills": {
+        "title": "Ubumenyi",
+        "addPlaceholder": "Ongera ubumenyi (urugero, JavaScript)",
+        "noSkills": "Nta bumenyi burongerwamo"
+      }
+    },
+    "cvNote": {
+      "title": "CV irakenewe",
+      "description": "Urasabwa gushyiraho CV mbere yo gusaba akazi. Ushobora kubikora unyuze muri Imyirondoro → Inyandiko."
+    },
+    "completionBadge": {
+      "title": "Imyirondoro yuzuye 100%",
+      "description": "Witeguye gusaba akazi"
+    },
+    "buttons": {
+      "save": "Bika Imyirondoro"
+    },
+    "options": {
+      "gender": {
+        "male": "Gabo",
+        "female": "Gore",
+        "other": "Ibindi",
+        "preferNotToSay": "Nahitamo kutabivuga"
+      },
+      "education": {
+        "highSchool": "Amashuri Yisumbuye",
+        "associateDegree": "Impamyabumenyi y'Icyiciro cya Mbere",
+        "bachelorsDegree": "Kaminuza (Bachelor)",
+        "mastersDegree": "Icyiciro cya Gatatu (Master)",
+        "phd": "Dogitera (PhD)",
+        "other": "Ibindi"
+      },
+      "experience": {
+        "entryLevel": "Ugitangira",
+        "intermediate": "Hagati",
+        "senior": "Inararibonye",
+        "expert": "Impuguke"
+      }
+    },
+    "placeholders": {
+      "firstName": "Andika izina rya mbere",
+      "lastName": "Andika izina rya nyuma",
+      "dob": "Hitamo itariki y'amavuko",
+      "country": "urugero, Rwanda",
+      "city": "urugero, Kigali",
+      "phoneExample": "urugero, 788 123 456"
+    },
+    "phone": {
+      "selectCountry": "Hitamo Igihugu",
+      "searchCountry": "Shaka igihugu..."
+    }
+  }
 }
