@@ -32,7 +32,7 @@ export default function DashboardHeader({
   const initial = companyName.charAt(0).toUpperCase();
 
   return (
-    <View className="bg-white px-6 pt-4 pb-4 border-b border-gray-100">
+    <View className="bg-white dark:bg-[#080A08] px-6 pt-4 pb-4 border-b border-gray-100 dark:border-[#222]">
       <View className="flex-row items-center justify-between">
         {/* Left: Avatar + greeting */}
         <View className="flex-row items-center gap-3">
@@ -45,7 +45,7 @@ export default function DashboardHeader({
             <Text className="text-xs font-quicksandMedium text-gray-400">
               {getGreeting()}
             </Text>
-            <Text className="text-base font-quicksandBold text-gray-900">
+            <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100">
               {companyName}
             </Text>
           </View>
@@ -54,7 +54,7 @@ export default function DashboardHeader({
         {/* Right: action icons */}
         <View className="flex-row items-center gap-2">
           <TouchableOpacity
-            className="w-9 h-9 bg-gray-100 rounded-full items-center justify-center"
+            className="w-9 h-9 bg-gray-100 dark:bg-[#141414] rounded-full items-center justify-center"
             onPress={() => router.push("/(employer-tabs)/employers/Profile")}
           >
             <View className="relative">
