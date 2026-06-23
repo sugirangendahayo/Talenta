@@ -21,7 +21,7 @@ const StatCard = ({
   onPress,
 }: StatCardProps) => (
   <TouchableOpacity
-    className="flex-1 bg-white rounded-2xl p-4 border border-gray-200 mx-1"
+    className="flex-1 bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-200 dark:border-[#2a2a2a] mx-1"
     onPress={onPress}
     disabled={!onPress}
   >
@@ -32,8 +32,8 @@ const StatCard = ({
       >
         <Ionicons name={icon} size={24} color={iconColor} />
       </View>
-      <Text className="text-2xl font-quicksandBold text-gray-800">{value}</Text>
-      <Text className="text-xs font-quicksandMedium text-gray-500 text-center mt-1">
+      <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200">{value}</Text>
+      <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 text-center mt-1">
         {label}
       </Text>
       {badge && (
