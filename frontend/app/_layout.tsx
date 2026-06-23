@@ -8,15 +8,14 @@ import {
   useFonts,
 } from "@expo-google-fonts/quicksand";
 import "react-native-url-polyfill/auto";
-// REMOVED: AsyncStorage import (no longer needed here)
 import "@/i18n/config"; // Import i18n configuration
+import { ThemeProvider, ThemeSync, useTheme } from "@/contexts/ThemeContext";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Text as RNText,
   View,
-  useColorScheme,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -26,25 +25,35 @@ import "../global.css";
 export const unstable_settings = { anchor: "(jobseeker-tabs)" };
 
 function useAppBackground() {
-  const colorScheme = useColorScheme();
-  return colorScheme === "dark" ? "#141414" : "#ffffff";
+  const { isDark } = useTheme();
+  return isDark ? "#080A08" : "#ffffff";
 }
 
 // Navigation logic component
 function RootLayoutNav() {
-  const { user, role, loading: authLoading, hasSeenOnboarding } = useAuth(); // UPDATED: Add hasSeenOnboarding from context
+  const { user, role, loading: authLoading, hasSeenOnboarding } = useAuth();
+  const { loadThemeForUser, resetTheme } = useTheme();
   const segments = useSegments();
   const router = useRouter();
-  // REMOVED: Local hasSeenOnboarding state
   const [isReady, setIsReady] = useState(false);
   const APP_BACKGROUND = useAppBackground();
 
-  // UPDATED: New useEffect to set isReady when hasSeenOnboarding is loaded (not null)
+  // Set isReady when hasSeenOnboarding is loaded (not null)
   useEffect(() => {
     if (hasSeenOnboarding !== null) {
       setIsReady(true);
     }
   }, [hasSeenOnboarding]);
+
+  // Load the correct per-user theme when auth state resolves
+  useEffect(() => {
+    if (user && role) {
+      loadThemeForUser(user.id, role);
+    } else if (!user && isReady) {
+      // Signed out – reset to app default (light)
+      resetTheme();
+    }
+  }, [user, role, isReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigation logic
   useEffect(() => {
@@ -164,6 +173,12 @@ function RootLayoutNav() {
         options={{ headerShown: false }}
       />
 
+      {/* Shared layout screens */}
+      <Stack.Screen
+        name="layout/ui/ThemeScreen"
+        options={{ headerShown: false }}
+      />
+
       {/* Auth screens */}
       <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
       <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
@@ -201,7 +216,6 @@ export default function RootLayout() {
     Quicksand_600SemiBold,
     Quicksand_700Bold,
   });
-  const backgroundColor = useAppBackground();
 
   if (!fontsLoaded) {
     return (
@@ -216,18 +230,21 @@ export default function RootLayout() {
   (RNText as any).defaultProps.style = { fontFamily: "Quicksand_400Regular" };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor }}>
-      <SafeAreaProvider>
-        <AuthProvider>
-          <RootLayoutNav />
-          <Toaster
-            position="top-center"
-            duration={2000}
-            richColors
-            visibleToasts={2}
-          />
-        </AuthProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <ThemeSync />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <AuthProvider>
+            <RootLayoutNav />
+            <Toaster
+              position="top-center"
+              duration={2000}
+              richColors
+              visibleToasts={2}
+            />
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 }
