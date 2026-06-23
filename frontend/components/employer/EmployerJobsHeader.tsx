@@ -13,19 +13,19 @@ export default function EmployerJobsHeader({
   const { t } = useTranslation("jobs");
 
   return (
-    <View className="bg-white px-6 pt-10 pb-6">
+    <View className="bg-white dark:bg-[#080A08] px-6 pt-10 pb-6">
       <View className="flex flex-row justify-between items-center">
         <View>
-          <Text className="font-quicksandBold text-2xl text-gray-800">
+          <Text className="font-quicksandBold text-2xl text-gray-800 dark:text-gray-200">
             {t("header.title")}
           </Text>
-          <Text className="text-gray-500 font-quicksandMedium mt-1">
+          <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
             {t("header.subtitle")}
           </Text>
         </View>
 
         <TouchableOpacity
-          className="bg-cyan-700 rounded-full px-4 py-2 flex flex-row items-center gap-2"
+          className="bg-cyan-700 dark:bg-cyan-800 rounded-full px-4 py-2 flex flex-row items-center gap-2"
           onPress={onPostJob}
           activeOpacity={0.85}
         >
