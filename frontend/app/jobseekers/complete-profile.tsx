@@ -5,6 +5,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
@@ -43,6 +44,8 @@ const COUNTRIES = [
 
 type Country = (typeof COUNTRIES)[number];
 
+
+
 function PhoneInputField({
   value,
   onChange,
@@ -54,6 +57,7 @@ function PhoneInputField({
   const [nationalNumber, setNationalNumber] = useState("");
   const [showPicker, setShowPicker] = useState(false);
   const [search, setSearch] = useState("");
+
 
   const filteredCountries = COUNTRIES.filter(
     (c) =>
@@ -74,19 +78,20 @@ function PhoneInputField({
     onChange(`${country.dialCode}${nationalNumber}`);
   };
 
+
   return (
     <>
       <View
-        className="flex-row rounded-2xl overflow-hidden border border-gray-200"
+        className="flex-row rounded-2xl overflow-hidden border border-gray-200 dark:border-[#2a2a2a]"
         style={{ backgroundColor: "#F8FAFC" }}
       >
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
-          className="flex-row items-center px-3 py-3.5 gap-1.5 border-r border-gray-200"
+          className="flex-row items-center px-3 py-3.5 gap-1.5 border-r border-gray-200 dark:border-[#2a2a2a]"
           activeOpacity={0.7}
         >
           <Text style={{ fontSize: 18 }}>{selectedCountry.flag}</Text>
-          <Text className="font-quicksandSemibold text-sm text-gray-800">
+          <Text className="font-quicksandSemibold text-sm text-gray-800 dark:text-gray-200">
             {selectedCountry.dialCode}
           </Text>
           <Ionicons name="chevron-down" size={13} color="#6B7280" />
@@ -98,7 +103,7 @@ function PhoneInputField({
           placeholder="e.g. 78 000 0000"
           placeholderTextColor="#9CA3AF"
           keyboardType="phone-pad"
-          className="flex-1 font-quicksandMedium text-sm text-gray-800 px-3 py-3.5"
+          className="flex-1 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 px-3 py-3.5"
         />
       </View>
 
@@ -113,7 +118,7 @@ function PhoneInputField({
           style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
         >
           <View
-            className="bg-white pt-4"
+            className="bg-white dark:bg-[#080A08] pt-4"
             style={{
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
@@ -121,12 +126,12 @@ function PhoneInputField({
             }}
           >
             <View className="flex-row items-center justify-between px-5 mb-3">
-              <Text className="font-quicksandBold text-lg text-gray-900">
+              <Text className="font-quicksandBold text-lg text-gray-900 dark:text-gray-100">
                 Select Country
               </Text>
               <TouchableOpacity
                 onPress={() => setShowPicker(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
                 activeOpacity={0.7}
               >
                 <Ionicons name="close" size={16} color="#374151" />
@@ -134,7 +139,7 @@ function PhoneInputField({
             </View>
 
             <View
-              className="mx-5 mb-3 flex-row items-center rounded-xl border border-gray-200 px-3"
+              className="mx-5 mb-3 flex-row items-center rounded-xl border border-gray-200 dark:border-[#2a2a2a] px-3"
               style={{ backgroundColor: "#F8FAFC" }}
             >
               <Ionicons name="search" size={15} color="#9CA3AF" />
@@ -143,7 +148,7 @@ function PhoneInputField({
                 onChangeText={setSearch}
                 placeholder="Search country..."
                 placeholderTextColor="#9CA3AF"
-                className="flex-1 font-quicksandMedium text-sm text-gray-800 py-2.5 px-2"
+                className="flex-1 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 py-2.5 px-2"
               />
             </View>
 
@@ -161,7 +166,7 @@ function PhoneInputField({
                   activeOpacity={0.7}
                 >
                   <Text style={{ fontSize: 22 }}>{item.flag}</Text>
-                  <Text className="flex-1 font-quicksandSemibold text-sm text-gray-800">
+                  <Text className="flex-1 font-quicksandSemibold text-sm text-gray-800 dark:text-gray-200">
                     {item.name}
                   </Text>
                   <Text className="font-quicksandMedium text-xs text-gray-400">
@@ -182,9 +187,9 @@ function PhoneInputField({
 
 function FieldLabel({ label, required }: { label: string; required?: boolean }) {
   return (
-    <Text className="text-gray-600 font-quicksandSemibold text-sm mb-2">
+    <Text className="text-gray-600 dark:text-gray-400 font-quicksandSemibold text-sm mb-2">
       {label}
-      {required && <Text className="text-cyan-600"> *</Text>}
+      {required && <Text className="text-cyan-600 dark:text-cyan-400"> *</Text>}
     </Text>
   );
 }
@@ -200,7 +205,7 @@ function SectionCard({
 }) {
   return (
     <View
-      className="mx-6 mt-4 bg-white rounded-3xl p-5 border border-gray-100"
+      className="mx-6 mt-4 bg-white dark:bg-[#080A08] rounded-3xl p-5 border border-gray-100 dark:border-[#222]"
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -210,7 +215,7 @@ function SectionCard({
     >
       <View className="flex-row items-center mb-5 gap-2.5">
         {icon}
-        <Text className="text-base font-quicksandBold text-gray-800">{title}</Text>
+        <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">{title}</Text>
       </View>
       {children}
     </View>
@@ -234,14 +239,14 @@ function ChipGroup({
           onPress={() => onSelect(option)}
           className={`px-4 py-2 rounded-full border ${
             selected === option
-              ? "bg-cyan-700 border-cyan-700"
-              : "bg-gray-50 border-gray-200"
+              ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700"
+              : "bg-gray-50 dark:bg-[#080A08] border-gray-200 dark:border-[#2a2a2a]"
           }`}
           activeOpacity={0.7}
         >
           <Text
             className={`font-quicksandSemibold text-sm ${
-              selected === option ? "text-white" : "text-gray-600"
+              selected === option ? "text-white" : "text-gray-600 dark:text-gray-400"
             }`}
           >
             {option}
@@ -267,7 +272,7 @@ function InputField({
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor="#9CA3AF"
-      className="rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 border border-gray-200"
+      className="rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a]"
       style={{ backgroundColor: "#F8FAFC" }}
     />
   );
@@ -276,6 +281,7 @@ function InputField({
 // ────────────────────────────────────────────────────────────────────────────
 export default function CompleteProfileScreen() {
   const router = useRouter();
+  const { t } = useTranslation("profile");
   const {
     loading,
     saving,
@@ -323,7 +329,7 @@ export default function CompleteProfileScreen() {
   // ─── Skeleton loading state ───────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]" edges={["top"]}>
         <ProfileFormSkeleton />
       </SafeAreaView>
     );
@@ -332,21 +338,21 @@ export default function CompleteProfileScreen() {
   const pct = completionStatus.completionPercentage;
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]" edges={["top"]}>
       {/* Header */}
-      <View className="flex-row items-center px-5 py-4 border-b border-gray-100">
+      <View className="flex-row items-center px-5 py-4 border-b border-gray-100 dark:border-[#222]">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3"
+          className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center mr-3"
           activeOpacity={0.7}
         >
           <Ionicons name="arrow-back" size={18} color="#374151" />
         </TouchableOpacity>
-        <Text className="text-xl font-quicksandBold text-gray-900 flex-1">
-          Complete Profile
+        <Text className="text-xl font-quicksandBold text-gray-900 dark:text-gray-100 flex-1">
+          {t("completeProfile.title")}
         </Text>
-        <View className="bg-gray-100 rounded-full px-3 py-1 border border-gray-200">
-          <Text className="font-quicksandBold text-xs text-gray-700">{pct}%</Text>
+        <View className="bg-gray-100 dark:bg-[#141414] rounded-full px-3 py-1 border border-gray-200 dark:border-[#2a2a2a]">
+          <Text className="font-quicksandBold text-xs text-gray-700 dark:text-gray-300">{pct}%</Text>
         </View>
       </View>
 
@@ -358,25 +364,24 @@ export default function CompleteProfileScreen() {
       >
         {/* Progress card */}
         <View
-          className="mx-6 mt-5 rounded-2xl border border-gray-100 px-4 py-4"
+          className="mx-6 mt-5 rounded-2xl border border-gray-100 dark:border-[#222] px-4 py-4"
           style={{ backgroundColor: "#F8FAFC" }}
         >
           <View className="flex-row items-center justify-between mb-2.5">
-            <Text className="font-quicksandSemibold text-sm text-gray-600">
-              Profile completion
+            <Text className="font-quicksandSemibold text-sm text-gray-600 dark:text-gray-400">
+              {t("completeProfile.progress.label")}
             </Text>
             <Text className="font-quicksandBold text-sm text-cyan-700">{pct}%</Text>
           </View>
-          <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <View className="h-2 bg-gray-200 dark:bg-[#1e1e1e] rounded-full overflow-hidden">
             <View
-              className="h-full bg-cyan-700 rounded-full"
+              className="h-full bg-cyan-700 dark:bg-cyan-800 rounded-full"
               style={{ width: `${pct}%` }}
             />
           </View>
           {completionStatus.missingFields.length > 0 && (
             <Text className="text-gray-400 font-quicksandMedium text-xs mt-2">
-              {completionStatus.missingFields.length} field
-              {completionStatus.missingFields.length > 1 ? "s" : ""} remaining
+              {t("completeProfile.progress.remaining", { count: completionStatus.missingFields.length })}
             </Text>
           )}
         </View>
@@ -384,28 +389,28 @@ export default function CompleteProfileScreen() {
         {/* ── Personal Information ── */}
         <SectionCard
           icon={<Ionicons name="person-outline" size={18} color="#0E7490" />}
-          title="Personal Information"
+          title={t("completeProfile.sections.personal.title")}
         >
           <View className="mb-4">
-            <FieldLabel label="First Name" required />
+            <FieldLabel label={t("completeProfile.sections.personal.firstName")} required />
             <InputField
               value={formData.first_name}
               onChangeText={(t) => updateField("first_name", t)}
-              placeholder="Enter your first name"
+              placeholder={t("completeProfile.placeholders.firstName")}
             />
           </View>
 
           <View className="mb-4">
-            <FieldLabel label="Last Name" required />
+            <FieldLabel label={t("completeProfile.sections.personal.lastName")} required />
             <InputField
               value={formData.last_name}
               onChangeText={(t) => updateField("last_name", t)}
-              placeholder="Enter your last name"
+              placeholder={t("completeProfile.placeholders.lastName")}
             />
           </View>
 
           <View className="mb-4">
-            <FieldLabel label="Phone Number" required />
+            <FieldLabel label={t("completeProfile.sections.personal.phone")} required />
             <PhoneInputField
               value={formData.phone}
               onChange={(n) => updateField("phone", n)}
@@ -413,19 +418,19 @@ export default function CompleteProfileScreen() {
           </View>
 
           <View className="mb-4">
-            <FieldLabel label="Date of Birth" required />
+            <FieldLabel label={t("completeProfile.sections.personal.dob")} required />
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
-              className="flex-row items-center justify-between rounded-2xl px-4 py-3 border border-gray-200"
+              className="flex-row items-center justify-between rounded-2xl px-4 py-3 border border-gray-200 dark:border-[#2a2a2a]"
               style={{ backgroundColor: "#F8FAFC" }}
               activeOpacity={0.7}
             >
               <Text
                 className={`font-quicksandMedium text-sm ${
-                  formData.date_of_birth ? "text-gray-800" : "text-gray-400"
+                  formData.date_of_birth ? "text-gray-800 dark:text-gray-200" : "text-gray-400"
                 }`}
               >
-                {formData.date_of_birth || "Select date of birth"}
+                {formData.date_of_birth || t("completeProfile.placeholders.dob")}
               </Text>
               <Ionicons name="calendar-outline" size={17} color="#9CA3AF" />
             </TouchableOpacity>
@@ -444,7 +449,7 @@ export default function CompleteProfileScreen() {
           )}
 
           <View>
-            <FieldLabel label="Gender" required />
+            <FieldLabel label={t("completeProfile.sections.personal.gender")} required />
             <ChipGroup
               options={genderOptions}
               selected={formData.gender}
@@ -456,22 +461,22 @@ export default function CompleteProfileScreen() {
         {/* ── Location ── */}
         <SectionCard
           icon={<Ionicons name="location-outline" size={18} color="#0E7490" />}
-          title="Location"
+          title={t("completeProfile.sections.location.title")}
         >
           <View className="mb-4">
-            <FieldLabel label="Country" required />
+            <FieldLabel label={t("completeProfile.sections.location.country")} required />
             <InputField
               value={formData.country}
               onChangeText={(t) => updateField("country", t)}
-              placeholder="e.g., Rwanda"
+              placeholder={t("completeProfile.placeholders.country")}
             />
           </View>
           <View>
-            <FieldLabel label="City" required />
+            <FieldLabel label={t("completeProfile.sections.location.city")} required />
             <InputField
               value={formData.city}
               onChangeText={(t) => updateField("city", t)}
-              placeholder="e.g., Kigali"
+              placeholder={t("completeProfile.placeholders.city")}
             />
           </View>
         </SectionCard>
@@ -479,10 +484,10 @@ export default function CompleteProfileScreen() {
         {/* ── Education & Experience ── */}
         <SectionCard
           icon={<Ionicons name="school-outline" size={18} color="#0E7490" />}
-          title="Education & Experience"
+          title={t("completeProfile.sections.education.title")}
         >
           <View className="mb-5">
-            <FieldLabel label="Education Level" required />
+            <FieldLabel label={t("completeProfile.sections.education.level")} required />
             <ChipGroup
               options={educationLevels}
               selected={formData.education_level}
@@ -490,7 +495,7 @@ export default function CompleteProfileScreen() {
             />
           </View>
           <View>
-            <FieldLabel label="Experience Level" required />
+            <FieldLabel label={t("completeProfile.sections.education.experience")} required />
             <ChipGroup
               options={experienceLevels}
               selected={formData.experience_level}
@@ -502,22 +507,22 @@ export default function CompleteProfileScreen() {
         {/* ── Skills ── */}
         <SectionCard
           icon={<MaterialIcons name="stars" size={18} color="#0E7490" />}
-          title="Skills"
+          title={t("completeProfile.sections.skills.title")}
         >
           <View className="flex-row gap-2 mb-4">
             <TextInput
               value={newSkill}
               onChangeText={setNewSkill}
-              placeholder="Add a skill (e.g., JavaScript)"
+              placeholder={t("completeProfile.sections.skills.addPlaceholder")}
               placeholderTextColor="#9CA3AF"
-              className="flex-1 rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 border border-gray-200"
+              className="flex-1 rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a]"
               style={{ backgroundColor: "#F8FAFC" }}
               onSubmitEditing={handleAddSkill}
               returnKeyType="done"
             />
             <TouchableOpacity
               onPress={handleAddSkill}
-              className="w-12 bg-cyan-700 rounded-2xl items-center justify-center"
+              className="w-12 bg-cyan-700 dark:bg-cyan-800 rounded-2xl items-center justify-center"
               activeOpacity={0.85}
             >
               <Ionicons name="add" size={22} color="white" />
@@ -529,10 +534,10 @@ export default function CompleteProfileScreen() {
               {formData.skills.map((skill, index) => (
                 <View
                   key={index}
-                  className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200"
+                  className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-[#2a2a2a]"
                   style={{ backgroundColor: "#F8FAFC" }}
                 >
-                  <Text className="text-gray-700 font-quicksandSemibold text-xs">
+                  <Text className="text-gray-700 dark:text-gray-300 font-quicksandSemibold text-xs">
                     {skill}
                   </Text>
                   <TouchableOpacity onPress={() => removeSkill(index)} activeOpacity={0.7}>
@@ -545,7 +550,7 @@ export default function CompleteProfileScreen() {
             <View className="items-center py-5">
               <Ionicons name="sparkles-outline" size={24} color="#D1D5DB" />
               <Text className="text-gray-400 font-quicksandMedium text-sm mt-2">
-                No skills added yet
+                {t("completeProfile.sections.skills.noSkills")}
               </Text>
             </View>
           )}
@@ -553,17 +558,16 @@ export default function CompleteProfileScreen() {
 
         {/* CV note */}
         <View
-          className="mx-6 mt-4 rounded-2xl border border-gray-100 p-4 flex-row items-start gap-3"
+          className="mx-6 mt-4 rounded-2xl border border-gray-100 dark:border-[#222] p-4 flex-row items-start gap-3"
           style={{ backgroundColor: "#F8FAFC" }}
         >
           <Ionicons name="information-circle-outline" size={18} color="#0E7490" />
           <View className="flex-1">
-            <Text className="font-quicksandBold text-sm text-gray-700 mb-0.5">
-              CV / Resume required
+            <Text className="font-quicksandBold text-sm text-gray-700 dark:text-gray-300 mb-0.5">
+              {t("completeProfile.cvNote.title")}
             </Text>
             <Text className="font-quicksandMedium text-xs text-gray-400 leading-relaxed">
-              You&apos;ll need to upload your CV before applying for jobs. You can do
-              this from Profile → Documents.
+              {t("completeProfile.cvNote.description")}
             </Text>
           </View>
         </View>
@@ -576,11 +580,11 @@ export default function CompleteProfileScreen() {
           >
             <Ionicons name="checkmark-circle" size={18} color="#0E7490" />
             <View className="flex-1">
-              <Text className="font-quicksandBold text-sm text-cyan-800">
-                Profile 100% complete
+              <Text className="font-quicksandBold text-sm text-cyan-800 dark:text-cyan-300">
+                {t("completeProfile.completionBadge.title")}
               </Text>
-              <Text className="font-quicksandMedium text-xs text-cyan-600 mt-0.5">
-                You&apos;re all set to apply for jobs
+              <Text className="font-quicksandMedium text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">
+                {t("completeProfile.completionBadge.description")}
               </Text>
             </View>
           </View>
@@ -591,14 +595,14 @@ export default function CompleteProfileScreen() {
           <TouchableOpacity
             onPress={handleSave}
             disabled={saving}
-            className="bg-cyan-700 rounded-2xl py-4 flex-row items-center justify-center gap-2"
+            className="bg-cyan-700 dark:bg-cyan-800 rounded-2xl py-4 flex-row items-center justify-center gap-2"
             activeOpacity={0.85}
           >
             {saving ? (
               <ActivityIndicator color="white" />
             ) : (
               <>
-                <Text className="text-white font-quicksandBold text-sm">Save Profile</Text>
+                <Text className="text-white font-quicksandBold text-sm">{t("completeProfile.buttons.save")}</Text>
                 <Ionicons name="checkmark-circle-outline" size={18} color="white" />
               </>
             )}
