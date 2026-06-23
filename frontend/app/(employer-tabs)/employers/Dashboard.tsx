@@ -56,7 +56,7 @@ export default function Dashboard() {
   // ─── Skeleton loading state ─────────────────────────────────────────────
   if (loading && !refreshing) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]" edges={["top"]}>
         {/* Header always visible — keeps the screen grounded */}
         <DashboardHeaderSkeleton />
         <ScrollView
@@ -73,7 +73,7 @@ export default function Dashboard() {
   // ─── Error state ────────────────────────────────────────────────────────
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]">
         <DashboardHeader />
         <View className="flex-1 items-center justify-center px-8">
           <Ionicons name="cloud-offline-outline" size={40} color="#D1D5DB" />
@@ -87,7 +87,7 @@ export default function Dashboard() {
 
   // ─── Loaded state ───────────────────────────────────────────────────────
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
