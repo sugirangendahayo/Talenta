@@ -3,6 +3,7 @@
 import { InterviewDetails } from "@/components/modal/InterviewDetailsModal";
 import { supabase } from "@/lib/supabase";
 import { ApplicationStatus } from "@/types/job.types";
+import { usePushNotification } from "@/hooks/usePushNotification";
 import { useState } from "react";
 
 interface UpdateStatusParams {
@@ -15,6 +16,7 @@ interface UpdateStatusParams {
 export function useApplicationStatus() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { sendPushToUser } = usePushNotification();
 
   const updateApplicationStatus = async ({
     applicationId,
@@ -178,6 +180,61 @@ export function useApplicationStatus() {
           console.error("Email service error:", emailError);
           // Don't throw - notification will still be sent via trigger
         }
+      }
+
+      // 6. Send push notification to the job seeker
+      try {
+        // Fetch company name for richer notification content
+        const { data: employerProfile } = await supabase
+          .from("employer_profiles")
+          .select("company_name")
+          .eq("id", user.id)
+          .single();
+
+        const companyName = employerProfile?.company_name ?? "The employer";
+        const jobTitle = application.jobs.title;
+        const jobseekerId = application.jobseeker_id;
+
+        // Build message per status
+        const notificationMap: Record<
+          string,
+          { title: string; body: string }
+        > = {
+          preselected: {
+            title: "Application Preselected ✅",
+            body: `Your application for ${jobTitle} has been preselected by ${companyName}. They are reviewing your profile.`,
+          },
+          shortlisted: {
+            title: "Shortlisted for Interview 🎉",
+            body: `Congratulations! You've been shortlisted for ${jobTitle} at ${companyName}. Check your interview details in the app.`,
+          },
+          hired: {
+            title: "You're Hired! 🎊",
+            body: `Fantastic news! ${companyName} has officially offered you the ${jobTitle} position. Congratulations!`,
+          },
+          rejected: {
+            title: "Application Update",
+            body: `Thank you for applying to ${jobTitle} at ${companyName}. Unfortunately, you were not selected at this time. Keep applying!`,
+          },
+        };
+
+        const notif = notificationMap[newStatus];
+        if (notif && jobseekerId) {
+          await sendPushToUser({
+            recipientUserId: jobseekerId,
+            title: notif.title,
+            body: notif.body,
+            data: {
+              type: "application_status_changed",
+              application_id: applicationId,
+              status: newStatus,
+              job_id: application.job_id,
+            },
+          });
+        }
+      } catch (pushErr) {
+        // Non-fatal: status update already succeeded
+        console.warn("[useApplicationStatus] Push notification failed:", pushErr);
       }
 
       return { success: true };
