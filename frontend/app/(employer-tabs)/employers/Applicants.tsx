@@ -1,4 +1,4 @@
-// app/(employer)/applicants.tsx - IMPROVED VERSION with Beautiful Filters
+// app/(employer)/applicants.tsx
 import ApplicantCard from "@/components/employer/ApplicantCard";
 import ApplicantFilters from "@/components/employer/ApplicantFilters";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,8 +60,9 @@ export default function ApplicantsScreen() {
   const [jobTitle, setJobTitle] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const transformApplications = (rawApps: RawApplication[]): Applicant[] => {
-    return rawApps
+  // ── Data helpers (untouched) ─────────────────────────────────────────────
+  const transformApplications = (rawApps: RawApplication[]): Applicant[] =>
+    rawApps
       .filter((app) => app.jobseeker_profiles && app.jobs)
       .map((app) => ({
         id: app.id,
@@ -73,14 +74,9 @@ export default function ApplicantsScreen() {
         jobseeker_profiles: app.jobseeker_profiles,
         jobs: app.jobs,
       }));
-  };
 
   const fetchApplicants = async () => {
-    if (!user) {
-      console.log("No user found");
-      return;
-    }
-
+    if (!user) return;
     try {
       setIsLoading(true);
       setError(null);
@@ -88,58 +84,35 @@ export default function ApplicantsScreen() {
       let query = supabase
         .from("job_applications")
         .select(
-          `
-          id,
-          job_id,
-          jobseeker_id,
-          status,
-          cover_letter,
-          created_at,
-          updated_at,
+          `id, job_id, jobseeker_id, status, cover_letter, created_at, updated_at,
           jobseeker_profiles!job_applications_jobseeker_id_fkey (
-            first_name,
-            last_name,
-            email,
-            phone,
-            experience_level,
-            skills,
-            cv_document_url
+            first_name, last_name, email, phone, experience_level, skills, cv_document_url
           ),
-          jobs!job_applications_job_id_fkey (
-            title,
-            employer_id
-          )
-        `,
+          jobs!job_applications_job_id_fkey (title, employer_id)`,
         )
         .eq("jobs.employer_id", user.id)
         .order("created_at", { ascending: false });
 
       if (jobId) {
         query = query.eq("job_id", jobId);
-
         const { data: job } = await supabase
           .from("jobs")
           .select("title")
           .eq("id", jobId)
           .single();
-
         if (job) setJobTitle(job.title);
       }
 
       const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
 
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      const transformedData = transformApplications(
+      const transformed = transformApplications(
         (data || []) as unknown as RawApplication[],
       );
-
-      setApplicants(transformedData);
-      applyFilter(transformedData, selectedFilter);
+      setApplicants(transformed);
+      applyFilter(transformed, selectedFilter);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("errors.loadFailed"));
+      setError(err instanceof Error ? err.message : t("errors.loadFailed", { defaultValue: "Failed to load applicants." }));
     } finally {
       setIsLoading(false);
     }
@@ -151,29 +124,18 @@ export default function ApplicantsScreen() {
     search: string = searchQuery,
   ) => {
     let filtered = data;
-
-    // Apply status filter
     if (filter !== "all") {
-      filtered = filtered.filter((app) => app.status === filter);
+      filtered = filtered.filter((a) => a.status === filter);
     }
-
-    // Apply search filter
     if (search.trim()) {
-      const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter((app) => {
-        const fullName =
-          `${app.jobseeker_profiles.first_name} ${app.jobseeker_profiles.last_name}`.toLowerCase();
-        const email = app.jobseeker_profiles.email.toLowerCase();
-        const phone = app.jobseeker_profiles.phone?.toLowerCase() || "";
-
-        return (
-          fullName.includes(searchLower) ||
-          email.includes(searchLower) ||
-          phone.includes(searchLower)
-        );
+      const q = search.toLowerCase().trim();
+      filtered = filtered.filter((a) => {
+        const name  = `${a.jobseeker_profiles.first_name} ${a.jobseeker_profiles.last_name}`.toLowerCase();
+        const email = a.jobseeker_profiles.email.toLowerCase();
+        const phone = a.jobseeker_profiles.phone?.toLowerCase() ?? "";
+        return name.includes(q) || email.includes(q) || phone.includes(q);
       });
     }
-
     setFilteredApplicants(filtered);
   };
 
@@ -193,57 +155,60 @@ export default function ApplicantsScreen() {
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    fetchApplicants();
-  }, [user, jobId]);
-
   const getCounts = () => ({
-    all: applicants.length,
-    pending: applicants.filter((a) => a.status === "pending").length,
+    all:         applicants.length,
+    pending:     applicants.filter((a) => a.status === "pending").length,
     shortlisted: applicants.filter((a) => a.status === "shortlisted").length,
-    hired: applicants.filter((a) => a.status === "hired").length,
-    rejected: applicants.filter((a) => a.status === "rejected").length,
+    hired:       applicants.filter((a) => a.status === "hired").length,
+    rejected:    applicants.filter((a) => a.status === "rejected").length,
   });
 
-  const counts = getCounts();
+  useEffect(() => { fetchApplicants(); }, [user, jobId]);
 
+  // ── Empty state ──────────────────────────────────────────────────────────
   const renderEmptyState = () => (
-    <View className="flex-1 items-center justify-center flex px-6 py-20">
-      <View className="w-20 h-20 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center flex mb-4">
-        <Ionicons name="people-outline" size={40} color="#9CA3AF" />
+    <View className="flex-1 items-center justify-center px-6 py-20">
+      <View className="w-20 h-20 rounded-full bg-gray-50 dark:bg-[#141414] items-center justify-center mb-4">
+        <Ionicons name="people-outline" size={36} color="#9CA3AF" />
       </View>
-      <Text className="font-quicksandBold text-lg text-gray-900 dark:text-gray-100 mb-2">
-        {selectedFilter !== "all" ? t(`status.${selectedFilter}`) : ""}{" "}
-        {t("empty.title")}
+      <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 mb-2 text-center">
+        {selectedFilter !== "all"
+          ? `${t(`status.${selectedFilter}`, { defaultValue: selectedFilter })} `
+          : ""}
+        {t("empty.title", { defaultValue: "No applicants" })}
       </Text>
-      <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 text-center">
+      <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 text-center">
         {selectedFilter === "all"
-          ? t("empty.allApplications")
+          ? t("empty.allApplications", { defaultValue: "No one has applied yet." })
           : t("empty.noStatusApplications", {
               status: t(`status.${selectedFilter}`),
+              defaultValue: "No applicants with this status.",
             })}
       </Text>
     </View>
   );
 
+  // ── Error state ──────────────────────────────────────────────────────────
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]">
         <View className="flex-1 items-center justify-center px-6">
-          <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
-          <Text className="font-quicksandBold text-xl text-gray-900 dark:text-gray-100 mt-4 mb-2">
-            {t("errors.title")}
+          <View className="w-20 h-20 rounded-full bg-red-50 dark:bg-red-900/20 items-center justify-center mb-4">
+            <Ionicons name="alert-circle-outline" size={36} color="#EF4444" />
+          </View>
+          <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 mb-2">
+            {t("errors.title", { defaultValue: "Something went wrong" })}
           </Text>
-          <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+          <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 text-center mb-6">
             {error}
           </Text>
           <TouchableOpacity
             onPress={fetchApplicants}
-            className="px-6 py-3 bg-cyan-700 dark:bg-cyan-800 rounded-xl"
-            activeOpacity={0.7}
+            activeOpacity={0.75}
+            className="px-6 py-3 bg-cyan-700 rounded-2xl"
           >
             <Text className="font-quicksandBold text-white">
-              {t("buttons.tryAgain")}
+              {t("buttons.tryAgain", { defaultValue: "Try again" })}
             </Text>
           </TouchableOpacity>
         </View>
@@ -251,54 +216,61 @@ export default function ApplicantsScreen() {
     );
   }
 
+  // ── Main render ──────────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
-      {/* Header with Job Title */}
-      <View className="bg-white dark:bg-[#080A08] px-4 pt-3 pb-3 border-b border-gray-100 dark:border-[#222]">
-        <View className="flex flex-row items-center justify-between">
-          <View className="flex flex-row items-center flex-1">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="mr-3 w-9 h-9 items-center justify-center flex rounded-full bg-gray-100 dark:bg-[#141414]"
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={20} color={isDark ? "#f3f4f6" : "#111827"} />
-            </TouchableOpacity>
-            <View className="flex-1">
-              <Text className="font-quicksandBold text-xl text-gray-900 dark:text-gray-100">
-                {t("header.title")}
-              </Text>
-              {jobTitle && (
-                <Text className="font-quicksandMedium text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {jobTitle}
-                </Text>
-              )}
-            </View>
-          </View>
 
-          <View className="bg-cyan-50 dark:bg-cyan-900/30 px-3 py-1.5 rounded-full border border-cyan-100 dark:border-cyan-800">
-            <Text className="font-quicksandBold text-sm text-cyan-700 dark:text-cyan-300">
-              {filteredApplicants.length}
+      {/* ── Header ── */}
+      <View className="bg-white dark:bg-[#080A08] px-6 pt-5 pb-5 flex-row items-start justify-between border-b border-gray-100 dark:border-[#222]">
+        <View className="flex-row items-center flex-1">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-[#141414] mr-3"
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={20}
+              color={isDark ? "#f3f4f6" : "#111827"}
+            />
+          </TouchableOpacity>
+
+          <View className="flex-1">
+            <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-100">
+              {t("header.title", { defaultValue: "Applicants" })}
             </Text>
+            {jobTitle ? (
+              <Text className="text-xs font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
+                {jobTitle}
+              </Text>
+            ) : null}
           </View>
+        </View>
+
+        {/* Neutral count — not a CTA */}
+        <View className="bg-gray-100 dark:bg-[#141414] px-3 py-1.5 rounded-full self-center">
+          <Text className="font-quicksandBold text-sm text-gray-600 dark:text-gray-300">
+            {filteredApplicants.length}
+          </Text>
         </View>
       </View>
 
-      {/* Filter Component */}
+      {/* ── Filters ── */}
       <ApplicantFilters
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
         selectedStatus={selectedFilter}
         onStatusChange={handleFilterChange}
-        counts={counts}
+        counts={getCounts()}
       />
 
-      {/* Applicants List */}
+      {/* ── List ── */}
       {isLoading && applicants.length === 0 ? (
-        <View className="flex-1 items-center justify-center flex">
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="font-quicksandMedium text-gray-500 dark:text-gray-400 mt-4">
-            {t("states.loading", {ns: "applicants"})}
+          <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 mt-3">
+            {t("states.loading", { ns: "applicants", defaultValue: "Loading applicants…" })}
           </Text>
         </View>
       ) : (
