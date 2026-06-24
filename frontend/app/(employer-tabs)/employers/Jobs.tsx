@@ -3,9 +3,7 @@ import EmployerJobFilters from "@/components/employer/EmployerJobFilters";
 import EmployerJobsHeader from "@/components/employer/EmployerJobsHeader";
 import EmployerJobsList from "@/components/employer/EmployerJobsList";
 import PostJobSheet from "@/components/employer/PostJobSheet";
-import {
-  EmployerJobsSkeleton,
-} from "@/components/skeletons/EmployerJobsSkeleton";
+import { EmployerJobsSkeleton } from "@/components/skeletons/EmployerJobsSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +23,11 @@ interface Category {
   name: string;
 }
 
-const categoryNames: { [key: string]: string } = {
+// Hoisted outside the component so it isn't rebuilt per render.
+// Mirrors the same map in job-details/[id].tsx — worth centralising
+// in a shared constants file once both employer and jobseeker screens
+// are stable.
+const CATEGORY_NAMES: Record<string, string> = {
   it: "IT & Software",
   design: "Design",
   business: "Business",
@@ -48,7 +50,6 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
-
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -65,17 +66,14 @@ export default function Jobs() {
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
       setError(null);
-
       const { data, error: fetchError } = await supabase
         .from("jobs")
         .select("*")
         .eq("employer_id", user.id)
         .order("created_at", { ascending: false });
-
       if (fetchError) throw fetchError;
       setJobs(data || []);
     } catch (err: any) {
@@ -91,28 +89,27 @@ export default function Jobs() {
     { id: "all", name: t("categories.all") },
     ...uniqueCategories.map((cat) => ({
       id: cat,
-      name: categoryNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
+      name:
+        CATEGORY_NAMES[cat] ||
+        cat.charAt(0).toUpperCase() + cat.slice(1),
     })),
   ];
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDirection =
-      currentScrollY > lastScrollY.current ? "down" : "up";
-
+    const scrollDirection = currentScrollY > lastScrollY.current ? "down" : "up";
     if (scrollDirection === "down" && currentScrollY > 50) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
       setIsVisible(true);
     }
-
     lastScrollY.current = currentScrollY;
   };
 
   // ─── Skeleton loading state ─────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]" edges={["top"]}>
+      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           scrollEnabled={false}
@@ -127,13 +124,13 @@ export default function Jobs() {
   // ─── Error state ────────────────────────────────────────────────────────
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
+      <SafeAreaView className="flex-1 bg-gray-50">
         <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-red-600 font-quicksandBold text-lg text-center">
             {error}
           </Text>
-          <Text className="mt-2 text-gray-500 dark:text-gray-400 font-quicksandMedium text-center">
+          <Text className="mt-2 text-gray-500 font-quicksandMedium text-center">
             {t("errors.tryAgainOrContact")}
           </Text>
         </View>
@@ -148,7 +145,7 @@ export default function Jobs() {
 
   // ─── Loaded state ───────────────────────────────────────────────────────
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
+    <SafeAreaView className="flex-1 bg-gray-50">
       <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
 
       <EmployerJobFilters
@@ -170,7 +167,6 @@ export default function Jobs() {
         onScroll={handleScroll}
       />
 
-      {/* Bottom sheet — rendered at root so it overlays the full screen */}
       <PostJobSheet
         visible={sheetVisible}
         onClose={() => setSheetVisible(false)}
