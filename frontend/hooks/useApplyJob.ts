@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { usePushNotification } from "@/hooks/usePushNotification";
 
 export interface JobseekerProfile {
   id: string;
@@ -37,6 +38,7 @@ export function useApplyJob() {
   const [checkingRequirements, setCheckingRequirements] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [profile, setProfile] = useState<JobseekerProfile | null>(null);
+  const { sendPushToUser } = usePushNotification();
 
   // Check if user meets requirements to apply
   const checkRequirements = useCallback(
@@ -180,6 +182,36 @@ export function useApplyJob() {
           }
           throw insertError;
         }
+
+        // ── Send push notification to the employer ──────────────────────────
+        // Fetch job details to get employer info for the notification
+        try {
+          const { data: jobData } = await supabase
+            .from("jobs")
+            .select("title, employer_id")
+            .eq("id", jobId)
+            .single();
+
+          if (jobData?.employer_id) {
+            const applicantName = profile
+              ? `${profile.first_name} ${profile.last_name}`.trim()
+              : "A candidate";
+
+            await sendPushToUser({
+              recipientUserId: jobData.employer_id,
+              title: "New Job Application 📋",
+              body: `${applicantName} has applied for your ${jobData.title} position.`,
+              data: {
+                type: "new_application",
+                job_id: jobId,
+              },
+            });
+          }
+        } catch (notifErr) {
+          // Non-fatal: notification failure should not block the application
+          console.warn("[useApplyJob] Push notification failed:", notifErr);
+        }
+        // ───────────────────────────────────────────────────────────────────
 
         // Success!
         toast.success("Application submitted successfully! 🎉");
