@@ -1,5 +1,5 @@
-// _layout.tsx (Updated)
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import {
   Quicksand_400Regular,
   Quicksand_500Medium,
@@ -235,13 +235,15 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <AuthProvider>
-            <RootLayoutNav />
-            <Toaster
-              position="top-center"
-              duration={2000}
-              richColors
-              visibleToasts={2}
-            />
+            <NotificationProvider>
+              <RootLayoutNav />
+              <Toaster
+                position="top-center"
+                duration={2000}
+                richColors
+                visibleToasts={2}
+              />
+            </NotificationProvider>
           </AuthProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
