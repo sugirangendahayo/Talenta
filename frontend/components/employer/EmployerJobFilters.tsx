@@ -1,7 +1,9 @@
+// components/employer/EmployerJobFilters.tsx
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Animated,
   ScrollView,
   Text,
   TextInput,
@@ -24,40 +26,25 @@ interface EmployerJobFiltersProps {
   onStatusChange: (status: string) => void;
 }
 
-// Status filter options
 const STATUS_FILTERS = [
-  { id: "all", label: "filters.allJobs", icon: "apps-outline" },
-  {
-    id: "active",
-    label: "status.active",
-    icon: "checkmark-circle-outline",
-    color: "#10B981",
-  },
-  {
-    id: "expired",
-    label: "status.expired",
-    icon: "time-outline",
-    color: "#EF4444",
-  },
-  {
-    id: "paused",
-    label: "status.paused",
-    icon: "pause-circle-outline",
-    color: "#F59E0B",
-  },
-  {
-    id: "closed",
-    label: "status.closed",
-    icon: "close-circle-outline",
-    color: "#6B7280",
-  },
-  {
-    id: "draft",
-    label: "status.draft",
-    icon: "create-outline",
-    color: "#3B82F6",
-  },
-];
+  { id: "all",     labelKey: "filters.allJobs"    },
+  { id: "active",  labelKey: "status.active"       },
+  { id: "paused",  labelKey: "status.paused"       },
+  { id: "expired", labelKey: "status.expired"      },
+  { id: "draft",   labelKey: "status.draft"        },
+  { id: "closed",  labelKey: "status.closed"       },
+] as const;
+
+// Accent edge color per status — same single-accent-edge pattern used on
+// ApplicationCard so a hiring manager can scan their list as quickly as
+// a jobseeker scans their applications.
+const STATUS_ACCENT: Record<string, string> = {
+  active:  "#059669",
+  paused:  "#D97706",
+  expired: "#DC2626",
+  draft:   "#2563EB",
+  closed:  "#6B7280",
+};
 
 export default function EmployerJobFilters({
   selectedCategory,
@@ -69,117 +56,153 @@ export default function EmployerJobFilters({
   onStatusChange,
 }: EmployerJobFiltersProps) {
   const { t } = useTranslation("jobs");
-  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  const handleSearchToggle = () => {
+    if (searchOpen) {
+      // Close: clear & collapse
+      onSearchChange("");
+      setSearchOpen(false);
+    } else {
+      setSearchOpen(true);
+      // Let the layout settle before focusing
+      setTimeout(() => inputRef.current?.focus(), 80);
+    }
+  };
+
+  const activeCategory = categories.find((c) => c.id === selectedCategory);
 
   return (
-    <View className="bg-white dark:bg-[#080A08] border-b border-gray-200 dark:border-[#2a2a2a] pb-3">
-      {/* Search Bar */}
-      <View className="px-4 pt-3 pb-2">
-        <View className="flex flex-row items-center bg-gray-100 dark:bg-[#141414] rounded-xl p-4">
-          <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-          <TextInput
-            placeholder={t("filters.searchPlaceholder")}
-            value={searchQuery}
-            onChangeText={onSearchChange}
-            className="flex-1 ml-2 text-gray-800 dark:text-gray-200 font-quicksandMedium"
-            placeholderTextColor="#9CA3AF"
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => onSearchChange("")}>
-              <Ionicons name="close-circle" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {/* Status Filters */}
-      <View className="px-4 pb-2">
+    <View className="bg-white border-b border-gray-100">
+      {/* ── Top bar: status filters + search icon ──────────────────────── */}
+      <View className="flex-row items-center">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
+          contentContainerStyle={{ paddingLeft: 16, paddingRight: 8, paddingVertical: 12, gap: 8 }}
+          className="flex-1"
         >
-          {STATUS_FILTERS.map((status) => {
-            const isSelected = selectedStatus === status.id;
+          {STATUS_FILTERS.map(({ id, labelKey }) => {
+            const isActive = selectedStatus === id;
             return (
               <TouchableOpacity
-                key={status.id}
-                onPress={() => onStatusChange(status.id)}
-                className={`flex flex-row items-center gap-2 px-4 py-2 rounded-full border ${
-                  isSelected
-                    ? "bg-cyan-700 dark:bg-cyan-800 border-cyan-700"
-                    : "bg-white dark:bg-[#080A08] border-gray-300"
+                key={id}
+                onPress={() => onStatusChange(id)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isActive }}
+                className={`px-4 py-2 rounded-full border ${
+                  isActive ? "bg-cyan-700 border-cyan-700" : "bg-white border-gray-200"
                 }`}
               >
-                <Ionicons
-                  name={status.icon as any}
-                  size={16}
-                  color={isSelected ? "#fff" : status.color || "#6B7280"}
-                />
                 <Text
-                  className={`text-sm font-quicksandBold ${
-                    isSelected ? "text-white" : "text-gray-700 dark:text-gray-300"
+                  className={`text-sm font-quicksandMedium ${
+                    isActive ? "text-white" : "text-gray-600"
                   }`}
                 >
-                  {t(status.label)}
+                  {t(labelKey)}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
-      </View>
 
-      {/* Category Filter Toggle */}
-      <View className="px-4">
+        {/* Search toggle — icon collapses into an expanding input */}
         <TouchableOpacity
-          onPress={() => setShowCategoryFilter(!showCategoryFilter)}
-          className="flex flex-row items-center justify-between py-2"
+          onPress={handleSearchToggle}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel={searchOpen ? t("filters.closeSearch", { defaultValue: "Close search" }) : t("filters.openSearch", { defaultValue: "Search jobs" })}
+          className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-4"
         >
-          <View className="flex flex-row items-center gap-2">
-            <Ionicons name="grid-outline" size={18} color="#0E7490" />
-            <Text className="text-sm font-quicksandBold text-gray-700 dark:text-gray-300">
-              {t("filters.category")}:{" "}
-              <Text className="text-cyan-700">
-                {categories.find((c) => c.id === selectedCategory)?.name ||
-                  t("filters.allCategories")}
-              </Text>
-            </Text>
-          </View>
           <Ionicons
-            name={showCategoryFilter ? "chevron-up" : "chevron-down"}
-            size={18}
-            color="#9CA3AF"
+            name={searchOpen ? "close" : "search"}
+            size={17}
+            color="#6B7280"
           />
         </TouchableOpacity>
+      </View>
 
-        {/* Category Chips */}
-        {showCategoryFilter && (
-          <View className="flex flex-row flex-wrap gap-2 mt-2">
-            {categories.map((category) => {
-              const isSelected = selectedCategory === category.id;
-              return (
-                <TouchableOpacity
-                  key={category.id}
-                  onPress={() => onCategoryChange(category.id)}
-                  className={`px-4 py-2 rounded-full border ${
-                    isSelected
-                      ? "bg-cyan-100 border-cyan-700"
-                      : "bg-white dark:bg-[#080A08] border-gray-300"
+      {/* Expanding search field */}
+      {searchOpen && (
+        <View className="px-4 pb-3">
+          <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 gap-3">
+            <Ionicons name="search" size={16} color="#9CA3AF" />
+            <TextInput
+              ref={inputRef}
+              value={searchQuery}
+              onChangeText={onSearchChange}
+              placeholder={t("filters.searchPlaceholder")}
+              placeholderTextColor="#9CA3AF"
+              returnKeyType="search"
+              className="flex-1 font-quicksandMedium text-gray-800 text-sm"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => onSearchChange("")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* ── Category accordion ─────────────────────────────────────────── */}
+      <TouchableOpacity
+        onPress={() => setShowCategories(!showCategories)}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        className="flex-row items-center justify-between px-4 pb-3"
+      >
+        <View className="flex-row items-center gap-1.5">
+          <Ionicons name="grid-outline" size={15} color="#0E7490" />
+          <Text className="text-sm font-quicksandMedium text-gray-600">
+            {t("filters.category", { defaultValue: "Category" })}
+            {"  "}
+            <Text className="text-cyan-700 font-quicksandBold">
+              {activeCategory?.name ?? t("filters.allCategories", { defaultValue: "All" })}
+            </Text>
+          </Text>
+        </View>
+        <Ionicons
+          name={showCategories ? "chevron-up" : "chevron-down"}
+          size={15}
+          color="#9CA3AF"
+        />
+      </TouchableOpacity>
+
+      {showCategories && (
+        <View className="flex-row flex-wrap gap-2 px-4 pb-3">
+          {categories.map((category) => {
+            const isSelected = selectedCategory === category.id;
+            return (
+              <TouchableOpacity
+                key={category.id}
+                onPress={() => onCategoryChange(category.id)}
+                activeOpacity={0.7}
+                className={`px-4 py-2 rounded-full border ${
+                  isSelected
+                    ? "bg-cyan-700 border-cyan-700"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <Text
+                  className={`text-xs font-quicksandMedium ${
+                    isSelected ? "text-white" : "text-gray-600"
                   }`}
                 >
-                  <Text
-                    className={`text-xs font-quicksandBold ${
-                      isSelected ? "text-cyan-700" : "text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-      </View>
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }
