@@ -54,7 +54,8 @@ export default function EmployerProfile() {
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDirection = currentScrollY > lastScrollY.current ? "down" : "up";
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
     if (scrollDirection === "down" && currentScrollY > 50) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
@@ -166,66 +167,100 @@ export default function EmployerProfile() {
         showsVerticalScrollIndicator={false}
       >
         {/* Company Profile Card */}
-        <View className="mx-6 my-6 bg-white dark:bg-[#080A08] rounded-3xl p-6 shadow-sm border border-gray-200 dark:border-[#2a2a2a]">
+        <View
+          className="mx-6 my-4 bg-white dark:bg-[#080A08] rounded-3xl p-4 border border-gray-100 dark:border-[#222]"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+          }}
+        >
+          {/* Top row: logo + info + QR */}
           <View className="flex-row items-center">
-            <View className="relative bg-gray-100 dark:bg-[#141414] rounded-full p-1">
-              <Image
-                source={{
-                  uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
-                }}
-                className="w-20 h-20"
-                resizeMode="contain"
-              />
-              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-2 border-2 border-white">
-                <Feather name="camera" size={14} color="white" />
+            {/* Company Logo */}
+            <View className="relative">
+              <View className="bg-gray-100 dark:bg-[#141414] rounded-2xl p-1">
+                <Image
+                  source={{
+                    uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
+                  }}
+                  className="w-14 h-14 rounded-2xl"
+                  resizeMode="contain"
+                />
+              </View>
+
+              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white">
+                <Feather name="camera" size={11} color="white" />
               </TouchableOpacity>
             </View>
-            <View className="ml-4 flex-1">
-              <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200">
+
+            {/* Company Info */}
+            <View className="ml-3 flex-1">
+              <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
                 {employerData?.company_name || "Company Name"}
               </Text>
-              <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
+
+              <Text
+                className="text-gray-400 font-quicksandMedium text-xs mt-0.5"
+                numberOfLines={1}
+              >
                 {employerData?.email || "email@company.com"}
               </Text>
-              <View className="flex-row items-center gap-2 mt-2 flex-wrap">
-                <View className="bg-cyan-100 px-3 py-1 rounded-full flex-row items-center gap-1">
-                  <MaterialIcons
-                    name={employerData?.is_verified ? "verified" : "pending"}
-                    size={14}
-                    color="#0E7490"
-                  />
-                  <Text className="text-cyan-700 text-xs font-quicksandBold">
-                    {employerData?.is_verified
-                      ? t("status.verified")
-                      : t("status.pending")}
-                  </Text>
-                </View>
+
+              {/* Status Chip */}
+              <View className="flex-row items-center gap-1 mt-1.5 self-start bg-cyan-50 border border-cyan-100 px-2.5 py-1 rounded-full">
+                <MaterialIcons
+                  name={employerData?.is_verified ? "verified" : "pending"}
+                  size={12}
+                  color="#0E7490"
+                />
+                <Text className="text-cyan-700 text-xs font-quicksandBold">
+                  {employerData?.is_verified
+                    ? t("status.verified")
+                    : t("status.pending")}
+                </Text>
               </View>
             </View>
-            <TouchableOpacity className="bg-gray-100 dark:bg-[#141414] p-3 rounded-2xl">
-              <Ionicons name="qr-code-outline" size={20} color="#6B7280" />
+
+            {/* QR */}
+            <TouchableOpacity className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center">
+              <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
             </TouchableOpacity>
           </View>
 
+          {/* Divider */}
+          <View className="h-px bg-gray-100 dark:bg-[#141414] mt-4 mb-3" />
+
           {/* Company Stats */}
-          <View className="flex-row mt-6 pt-6 border-t border-gray-100 dark:border-[#222]">
+          <View className="flex-row">
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200">0</Text>
-              <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs mt-1">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
+                0
+              </Text>
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.activeJobs")}
               </Text>
             </View>
-            <View className="w-px bg-gray-200 dark:bg-[#1e1e1e]" />
+
+            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
+
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200">0</Text>
-              <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs mt-1">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
+                0
+              </Text>
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.applicants")}
               </Text>
             </View>
-            <View className="w-px bg-gray-200 dark:bg-[#1e1e1e]" />
+
+            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
+
             <View className="flex-1 items-center">
-              <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200">0</Text>
-              <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs mt-1">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
+                0
+              </Text>
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.hired")}
               </Text>
             </View>
@@ -253,12 +288,18 @@ export default function EmployerProfile() {
                     ? "border-b border-gray-100 dark:border-[#222]"
                     : ""
                 }`}
-                onPress={item.type === "link" ? (item as any).onPress : undefined}
+                onPress={
+                  item.type === "link" ? (item as any).onPress : undefined
+                }
                 disabled={item.type !== "link"}
                 activeOpacity={0.7}
               >
                 <View className="flex-row items-center flex-1">
-                  <MaterialIcons name={item.icon as any} size={22} color="#6B7280" />
+                  <MaterialIcons
+                    name={item.icon as any}
+                    size={22}
+                    color="#6B7280"
+                  />
                   <View className="ml-4 flex-1">
                     <Text className="text-gray-800 dark:text-gray-200 font-quicksandMedium">
                       {item.label}
