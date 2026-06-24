@@ -1,3 +1,4 @@
+// components/employer/EmployerJobsList.tsx
 import { supabase } from "@/lib/supabase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -23,6 +24,20 @@ interface EmployerJobsListProps {
   onScroll?: (event: any) => void;
 }
 
+// Single source of truth for status presentation — same accent-edge pattern
+// used on ApplicationCard so both sides of the app feel like one product.
+const STATUS_META: Record<
+  string,
+  { accent: string; badgeBg: string; badgeText: string; label: string }
+> = {
+  active:  { accent: "#059669", badgeBg: "bg-emerald-50", badgeText: "text-emerald-700", label: "status.active"   },
+  paused:  { accent: "#D97706", badgeBg: "bg-amber-50",   badgeText: "text-amber-700",   label: "status.paused"   },
+  expired: { accent: "#DC2626", badgeBg: "bg-red-50",     badgeText: "text-red-700",     label: "status.expired"  },
+  draft:   { accent: "#2563EB", badgeBg: "bg-blue-50",    badgeText: "text-blue-700",    label: "status.draft"    },
+  closed:  { accent: "#6B7280", badgeBg: "bg-gray-100",   badgeText: "text-gray-600",    label: "status.closed"   },
+};
+const DEFAULT_META = STATUS_META.closed;
+
 const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   jobs,
   selectedCategory,
@@ -35,159 +50,60 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   const { t } = useTranslation("jobs");
   const [refreshing, setRefreshing] = useState(false);
 
-  // Handle refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     await onRefresh();
     setRefreshing(false);
   };
 
-  // DEBUG: Log all jobs and their statuses
-  console.log("=== DEBUG: All Jobs ===");
-  console.log("Total jobs received:", jobs.length);
-  jobs.forEach((job, index) => {
-    console.log(`Job ${index + 1}:`, {
-      id: job.id,
-      title: job.title,
-      status: job.status,
-    });
-  });
-  console.log("Selected status filter:", statusFilter);
-
-  // Filter jobs based on category, search query, and status
   const filteredJobs = useMemo(() => {
-    const filtered = jobs.filter((job) => {
-      // Category filter
+    return jobs.filter((job) => {
       const categoryMatch =
         selectedCategory === "all" || job.category === selectedCategory;
-
-      // Search filter
       const searchLower = searchQuery.toLowerCase().trim();
       const searchMatch =
         searchLower === "" ||
         job.title.toLowerCase().includes(searchLower) ||
         job.location.toLowerCase().includes(searchLower);
-
-      // Status filter
       const statusMatch = statusFilter === "all" || job.status === statusFilter;
-
-      // DEBUG
-      if (!statusMatch && statusFilter !== "all") {
-        console.log(
-          `Job "${job.title}" filtered out. Expected: ${statusFilter}, Got: ${job.status}`,
-        );
-      }
-
       return categoryMatch && searchMatch && statusMatch;
     });
-
-    console.log("=== DEBUG: Filtered Results ===");
-    // console.log("Filtered jobs count:", filtered.length);
-    filtered.forEach((job, index) => {
-      // console.log(`Filtered job ${index + 1}:`, {
-      //   title: job.title,
-      //   status: job.status,
-      // });
-    });
-
-    return filtered;
   }, [selectedCategory, searchQuery, statusFilter, jobs]);
 
-  // Get status badge configuration
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return {
-          text: t("status.active"),
-          bgColor: "bg-green-100",
-          textColor: "text-green-700",
-        };
-      case "expired":
-        return {
-          text: t("status.expired"),
-          bgColor: "bg-red-100",
-          textColor: "text-red-700",
-        };
-      case "closed":
-        return {
-          text: t("status.closed"),
-          bgColor: "bg-gray-200 dark:bg-[#1e1e1e]",
-          textColor: "text-gray-700 dark:text-gray-300",
-        };
-      case "paused":
-        return {
-          text: t("status.paused"),
-          bgColor: "bg-yellow-100",
-          textColor: "text-yellow-700",
-        };
-      case "draft":
-        return {
-          text: t("status.draft"),
-          bgColor: "bg-blue-100",
-          textColor: "text-blue-700",
-        };
-      default:
-        return {
-          text: status,
-          bgColor: "bg-gray-100 dark:bg-[#141414]",
-          textColor: "text-gray-700 dark:text-gray-300",
-        };
-    }
-  };
-
-  // Format salary
   const formatSalary = (min?: number, max?: number) => {
     if (!min && !max) return t("salary.notSpecified");
     if (min && max) {
-      return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
+      const fmt = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`);
+      return `${fmt(min)} - ${fmt(max)}`;
     }
-    return min
-      ? `From $${min.toLocaleString()}`
-      : `Up to $${max?.toLocaleString()}`;
+    return min ? `From $${min.toLocaleString()}` : `Up to $${max?.toLocaleString()}`;
   };
 
-  // Format date
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
+    const diffDays = Math.floor((Date.now() - new Date(dateString).getTime()) / 86400000);
     if (diffDays === 0) return t("time.today");
     if (diffDays === 1) return t("time.yesterday");
     if (diffDays < 7) return t("time.daysAgo", { days: diffDays });
-    if (diffDays < 30)
-      return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
-    if (diffDays < 365)
-      return t("time.monthsAgo", { months: Math.floor(diffDays / 30) });
-    return date.toLocaleDateString();
+    if (diffDays < 30) return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
+    if (diffDays < 365) return t("time.monthsAgo", { months: Math.floor(diffDays / 30) });
+    return new Date(dateString).toLocaleDateString();
   };
 
-  // Get days until expiry
   const getDaysUntilExpiry = (expiresAt?: string) => {
     if (!expiresAt) return null;
-    const expiry = new Date(expiresAt);
-    expiry.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    const ms = new Date(expiresAt).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0);
+    return Math.ceil(ms / 86400000);
   };
 
-  // Handle job actions
+  // ── Action handlers (logic untouched, debug logs removed) ──────────────
+
   const handlePauseJob = async (jobId: string) => {
     try {
-      console.log("Pausing job:", jobId);
       const { error } = await supabase.rpc("pause_job", { job_id: jobId });
-
       if (error) throw error;
-
       toast.success(t("messages.jobPaused"));
-      console.log("Job paused, refreshing list...");
       await onRefresh();
     } catch (error: any) {
-      console.error("Error pausing job:", error);
       toast.error(error.message || t("errors.pauseJobFailed"));
     }
   };
@@ -195,13 +111,10 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   const handleReactivateJob = async (jobId: string) => {
     try {
       const { error } = await supabase.rpc("reactivate_job", { job_id: jobId });
-
       if (error) throw error;
-
       toast.success(t("messages.jobReactivated"));
       await onRefresh();
     } catch (error: any) {
-      console.error("Error reactivating job:", error);
       toast.error(error.message || t("errors.reactivateJobFailed"));
     }
   };
@@ -214,16 +127,11 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
         style: "destructive",
         onPress: async () => {
           try {
-            const { error } = await supabase.rpc("close_job", {
-              job_id: jobId,
-            });
-
+            const { error } = await supabase.rpc("close_job", { job_id: jobId });
             if (error) throw error;
-
             toast.success(t("messages.jobClosed"));
             await onRefresh();
           } catch (error: any) {
-            console.error("Error closing job:", error);
             toast.error(error.message || t("errors.closeJobFailed"));
           }
         },
@@ -232,141 +140,131 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   };
 
   const handleRenewJob = async (jobId: string) => {
-    // Default renewal: 30 days from now
     const newExpiryDate = new Date();
     newExpiryDate.setDate(newExpiryDate.getDate() + 30);
     const expiryString = newExpiryDate.toISOString().split("T")[0];
-
     try {
       const { error } = await supabase.rpc("renew_job", {
         job_id: jobId,
         new_expiry_date: expiryString,
       });
-
       if (error) throw error;
-
       toast.success(t("messages.jobRenewed"));
       await onRefresh();
     } catch (error: any) {
-      console.error("Error renewing job:", error);
       toast.error(error.message || t("errors.renewJobFailed"));
     }
   };
 
-  // Render action buttons based on status
-  const renderActionButtons = (job: any) => {
-    const status = job.status;
+  // ── Action row ─────────────────────────────────────────────────────────
+  // Plain text links separated by a thin divider — no colored icon buttons,
+  // no rainbow. Each action is labeled so there's no ambiguity about what
+  // the icon means. The "View applicants" link stays as the primary CTA.
+  const renderActions = (job: any) => {
+    const { status } = job;
 
-    // ACTIVE: Can pause or close
+    const Divider = () => (
+      <View className="w-px h-3.5 bg-gray-200 mx-1" />
+    );
+
+    const ActionLink = ({
+      label,
+      onPress,
+      destructive,
+    }: {
+      label: string;
+      onPress: () => void;
+      destructive?: boolean;
+    }) => (
+      <TouchableOpacity
+        onPress={(e) => { e.stopPropagation(); onPress(); }}
+        hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+        activeOpacity={0.6}
+        accessibilityRole="button"
+      >
+        <Text
+          className={`text-xs font-quicksandBold ${
+            destructive ? "text-red-500" : "text-gray-500"
+          }`}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+
     if (status === "active") {
       return (
         <>
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handlePauseJob(job.id);
-            }}
-            className="bg-yellow-100 p-2 rounded-full"
-          >
-            <Ionicons name="pause" size={20} color="#F59E0B" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handleCloseJob(job.id);
-            }}
-            className="bg-gray-100 dark:bg-[#141414] p-2 rounded-full"
-          >
-            <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
-          </TouchableOpacity>
+          <ActionLink
+            label={t("actions.pause", { defaultValue: "Pause" })}
+            onPress={() => handlePauseJob(job.id)}
+          />
+          <Divider />
+          <ActionLink
+            label={t("actions.close", { defaultValue: "Close" })}
+            onPress={() => handleCloseJob(job.id)}
+            destructive
+          />
         </>
       );
     }
-
-    // PAUSED: Can reactivate or close
     if (status === "paused") {
       return (
         <>
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handleReactivateJob(job.id);
-            }}
-            className="bg-green-100 p-2 rounded-full"
-          >
-            <Ionicons name="play" size={20} color="#10B981" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handleCloseJob(job.id);
-            }}
-            className="bg-gray-100 dark:bg-[#141414] p-2 rounded-full"
-          >
-            <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
-          </TouchableOpacity>
+          <ActionLink
+            label={t("actions.reactivate", { defaultValue: "Reactivate" })}
+            onPress={() => handleReactivateJob(job.id)}
+          />
+          <Divider />
+          <ActionLink
+            label={t("actions.close", { defaultValue: "Close" })}
+            onPress={() => handleCloseJob(job.id)}
+            destructive
+          />
         </>
       );
     }
-
-    // EXPIRED: Can renew (extend expiry → becomes active) or close
     if (status === "expired") {
       return (
         <>
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handleRenewJob(job.id);
-            }}
-            className="bg-cyan-100 p-2 rounded-full"
-          >
-            <Ionicons name="refresh" size={20} color="#0E7490" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handleCloseJob(job.id);
-            }}
-            className="bg-gray-100 dark:bg-[#141414] p-2 rounded-full"
-          >
-            <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
-          </TouchableOpacity>
+          <ActionLink
+            label={t("actions.renew", { defaultValue: "Renew 30d" })}
+            onPress={() => handleRenewJob(job.id)}
+          />
+          <Divider />
+          <ActionLink
+            label={t("actions.close", { defaultValue: "Close" })}
+            onPress={() => handleCloseJob(job.id)}
+            destructive
+          />
         </>
       );
     }
-
-    // CLOSED: Usually no actions (hiring finished)
-    if (status === "closed") {
-      return (
-        <View className="bg-gray-100 dark:bg-[#141414] px-3 py-2 rounded-full">
-          <Text className="text-gray-500 dark:text-gray-400 text-xs font-quicksandBold">
-            {t("status.hiringComplete")}
-          </Text>
-        </View>
-      );
-    }
-
-    // DRAFT: Can edit
     if (status === "draft") {
       return (
-        <TouchableOpacity
-          onPress={(e) => {
-            e.stopPropagation();
-            // Navigate to edit
-          }}
-          className="bg-cyan-100 p-2 rounded-full"
-        >
-          <Ionicons name="create-outline" size={20} color="#0E7490" />
-        </TouchableOpacity>
+        <ActionLink
+          label={t("actions.edit", { defaultValue: "Edit draft" })}
+          onPress={() => {}}
+        />
       );
     }
-
+    if (status === "closed") {
+      return (
+        <Text className="text-xs font-quicksandMedium text-gray-400">
+          {t("status.hiringComplete")}
+        </Text>
+      );
+    }
     return null;
   };
 
   const renderJobItem = ({ item }: { item: any }) => {
-    const statusBadge = getStatusBadge(item.status);
+    const meta = STATUS_META[item.status] ?? DEFAULT_META;
     const daysLeft = getDaysUntilExpiry(item.expires_at);
+    const salary = formatSalary(item.salary_min, item.salary_max);
+    const jobTypes = item.job_type
+      ? item.job_type.split(",").map((t: string) => t.trim())
+      : [];
 
     return (
       <TouchableOpacity
@@ -376,110 +274,123 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
             params: { id: item.id },
           })
         }
-        className="bg-white dark:bg-[#080A08] mx-4 my-2 p-4 rounded-2xl shadow-sm border border-gray-200 dark:border-[#2a2a2a]"
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        className="flex-row bg-white mx-4 my-2 rounded-2xl border border-gray-100 overflow-hidden"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.04,
+          shadowRadius: 4,
+        }}
       >
-        <View className="flex-1">
-          {/* Header: Job Info + Status */}
-          <View className="flex flex-row items-start justify-between mb-3">
+        {/* Status accent edge — same pattern as ApplicationCard */}
+        <View style={{ width: 4, backgroundColor: meta.accent }} />
+
+        <View className="flex-1 p-4">
+          {/* Title + status badge */}
+          <View className="flex-row items-start justify-between mb-2">
             <View className="flex-1 mr-3">
-              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200 mb-1">
+              <Text
+                className="text-base font-quicksandBold text-gray-800"
+                numberOfLines={1}
+              >
                 {item.title}
               </Text>
-              <View className="flex flex-row items-center gap-1">
-                <Ionicons name="location-sharp" size={13} color="#0E7490" />
-                <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-sm">
+              <View className="flex-row items-center gap-1 mt-0.5">
+                <Ionicons name="location-sharp" size={11} color="#0E7490" />
+                <Text
+                  className="text-gray-500 font-quicksandMedium text-xs"
+                  numberOfLines={1}
+                >
                   {item.location}
                 </Text>
               </View>
             </View>
 
-            {/* Status Badge */}
-            <View className={`${statusBadge.bgColor} px-3 py-1 rounded-full`}>
-              <Text
-                className={`${statusBadge.textColor} text-xs font-quicksandBold`}
-              >
-                {statusBadge.text}
+            <View className={`flex-row items-center ${meta.badgeBg} px-2.5 py-1 rounded-full`}>
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: meta.accent,
+                  marginRight: 5,
+                }}
+              />
+              <Text className={`${meta.badgeText} text-xs font-quicksandBold`}>
+                {t(meta.label)}
               </Text>
             </View>
           </View>
 
-          {/* Type Badges */}
-          {item.job_type && (
-            <View className="flex flex-row flex-wrap gap-2 mb-3">
-              {item.job_type
-                .split(",")
-                .slice(0, 2)
-                .map((type: string, index: number) => (
-                  <View
-                    key={index}
-                    className="bg-gray-100 dark:bg-[#141414] px-3 py-2 rounded-full"
-                  >
-                    <Text className="text-gray-700 dark:text-gray-300 text-xs font-quicksandMedium">
-                      {type.trim()}
-                    </Text>
-                  </View>
-                ))}
+          {/* Job type chips */}
+          {jobTypes.length > 0 && (
+            <View className="flex-row flex-wrap gap-2 mb-3">
+              {jobTypes.slice(0, 2).map((type: string, i: number) => (
+                <View key={i} className="bg-gray-100 px-3 py-1 rounded-full">
+                  <Text className="text-gray-600 text-xs font-quicksandMedium">
+                    {type}
+                  </Text>
+                </View>
+              ))}
             </View>
           )}
 
-          {/* Stats Row */}
-          <View className="flex flex-row items-center gap-4 mb-3 flex-wrap">
-            <View className="flex flex-row items-center gap-1">
-              <Ionicons name="time-outline" size={16} color="#F59E0B" />
-              <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300">
-                {formatDate(item.created_at)}
-              </Text>
-            </View>
+          {/* Meta row: posted date + expiry warning */}
+          <View className="flex-row items-center gap-3 mb-3">
+            <Text className="text-gray-400 font-quicksandMedium text-xs">
+              {formatDate(item.created_at)}
+            </Text>
             {daysLeft !== null && (
-              <View className="flex flex-row items-center gap-1">
-                <Ionicons name="calendar-outline" size={16} color="#8B5CF6" />
+              <>
+                <Text className="text-gray-200">•</Text>
                 <Text
                   className={`text-xs font-quicksandBold ${
                     daysLeft < 7
-                      ? "text-red-600"
+                      ? "text-red-500"
                       : daysLeft < 30
-                        ? "text-yellow-600"
-                        : "text-gray-700 dark:text-gray-300"
+                      ? "text-amber-500"
+                      : "text-gray-400"
                   }`}
                 >
                   {daysLeft > 0
                     ? `${daysLeft} ${t("time.daysLeft")}`
                     : daysLeft === 0
-                      ? t("time.expiresToday")
-                      : t("time.expired")}
+                    ? t("time.expiresToday")
+                    : t("time.expired")}
                 </Text>
-              </View>
+              </>
             )}
           </View>
 
-          {/* Description */}
-          {item.description && (
-            <Text className="text-gray-500 dark:text-gray-400 text-sm font-quicksandMedium mb-3">
-              {item.description.substring(0, 100)}
-              {item.description.length > 100 ? "..." : ""}
-            </Text>
-          )}
-
-          {/* Footer: Salary + Actions */}
-          <View className="flex flex-row justify-between items-center gap-2">
-            <Text className="text-cyan-600 dark:text-cyan-400 text-sm font-quicksandMedium p-2 bg-gray-100 dark:bg-[#141414] rounded-full">
-              {formatSalary(item.salary_min, item.salary_max)}
-            </Text>
-            <View className="flex flex-row gap-2">
-              {renderActionButtons(item)}
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation();
-                  router.push({
-                    pathname: "/(employer-tabs)/employers/Applicants",
-                    params: { jobId: item.id },
-                  });
-                }}
-                className="bg-cyan-700 dark:bg-cyan-800 p-2 rounded-full"
-              >
-                <MaterialIcons name="arrow-outward" size={20} color="#fff" />
-              </TouchableOpacity>
+          {/* Footer: salary + actions + view applicants */}
+          <View className="flex-row items-center justify-between pt-3 border-t border-gray-50">
+            <View className="flex-row items-center gap-3 flex-1 flex-shrink">
+              <Text className="text-cyan-700 text-sm font-quicksandBold">
+                {salary}
+              </Text>
+              <Text className="text-gray-200">|</Text>
+              {renderActions(item)}
             </View>
+
+            {/* View applicants CTA */}
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                router.push({
+                  pathname: "/(employer-tabs)/employers/Applicants",
+                  params: { jobId: item.id },
+                });
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={t("actions.viewApplicants", { defaultValue: "View applicants" })}
+              className="w-9 h-9 rounded-full bg-cyan-700 items-center justify-center ml-3"
+            >
+              <MaterialIcons name="arrow-outward" size={17} color="#fff" />
+            </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
@@ -487,12 +398,14 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   };
 
   const renderEmptyState = () => (
-    <View className="flex-1 items-center justify-center flex py-20 px-8">
-      <Ionicons name="briefcase-outline" size={64} color="#D1D5DB" />
-      <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200 mt-4 text-center">
+    <View className="items-center justify-center py-20 px-8">
+      <View className="w-20 h-20 rounded-full bg-gray-50 items-center justify-center mb-5">
+        <Ionicons name="briefcase-outline" size={36} color="#9CA3AF" />
+      </View>
+      <Text className="text-xl font-quicksandBold text-gray-800 text-center">
         {t("empty.noJobsFound")}
       </Text>
-      <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm mt-2 text-center">
+      <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center leading-5">
         {jobs.length === 0
           ? t("empty.startByPosting")
           : t("empty.tryAdjustingFilters", { status: statusFilter })}
@@ -501,12 +414,12 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   );
 
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
+    <View className="flex-1 bg-gray-50">
       <FlatList
         data={filteredJobs}
         ListHeaderComponent={
-          <View className="px-4 py-2 flex flex-row justify-between items-center">
-            <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200">
+          <View className="px-5 py-3">
+            <Text className="text-gray-400 font-quicksandMedium text-xs">
               {t("list.yourJobPosts", { count: filteredJobs.length })}
             </Text>
           </View>
@@ -514,7 +427,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
         renderItem={renderJobItem}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 8 }}
+        contentContainerStyle={{ paddingVertical: 4, paddingBottom: 32 }}
         ListEmptyComponent={renderEmptyState}
         onScroll={onScroll}
         scrollEventThrottle={16}
