@@ -1,4 +1,4 @@
-// components/employer/ApplicantCard.tsx - IMPROVED VERSION
+// components/employer/ApplicantCard.tsx
 import { supabase } from "@/lib/supabase";
 import type { Applicant } from "@/types/job.types";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,354 +19,407 @@ interface ApplicantCardProps {
   onStatusUpdated: () => void;
 }
 
+// ── Status config ─────────────────────────────────────────────────────────────
+const STATUS_CONFIG: Record<
+  Applicant["status"],
+  {
+    label: string;
+    accentHex: string;
+    bgClass: string;
+    textClass: string;
+    dotClass: string;
+  }
+> = {
+  hired: {
+    label:     "status.hired",
+    accentHex: "#047857",
+    bgClass:   "bg-emerald-50 dark:bg-emerald-900/20",
+    textClass: "text-emerald-700 dark:text-emerald-400",
+    dotClass:  "bg-emerald-500",
+  },
+  shortlisted: {
+    label:     "status.shortlisted",
+    accentHex: "#1D4ED8",
+    bgClass:   "bg-blue-50 dark:bg-blue-900/20",
+    textClass: "text-blue-700 dark:text-blue-400",
+    dotClass:  "bg-blue-500",
+  },
+  pending: {
+    label:     "status.pending",
+    accentHex: "#B45309",
+    bgClass:   "bg-amber-50 dark:bg-amber-900/20",
+    textClass: "text-amber-700 dark:text-amber-400",
+    dotClass:  "bg-amber-500",
+  },
+  rejected: {
+    label:     "status.rejected",
+    accentHex: "#B91C1C",
+    bgClass:   "bg-red-50 dark:bg-red-900/20",
+    textClass: "text-red-600 dark:text-red-400",
+    dotClass:  "bg-red-500",
+  },
+};
+
+// ── Date formatter ─────────────────────────────────────────────────────────
+function useRelativeDate() {
+  const { t } = useTranslation("applicants");
+  return (dateString: string) => {
+    const diffDays = Math.floor(
+      (Date.now() - new Date(dateString).getTime()) / 86_400_000,
+    );
+    if (diffDays === 0) return t("time.today",     { defaultValue: "Today" });
+    if (diffDays === 1) return t("time.yesterday", { defaultValue: "Yesterday" });
+    if (diffDays < 7)  return t("time.daysAgo",   { days: diffDays,                  defaultValue: `${diffDays}d ago` });
+    if (diffDays < 30) return t("time.weeksAgo",  { weeks: Math.floor(diffDays / 7), defaultValue: `${Math.floor(diffDays / 7)}w ago` });
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short", day: "numeric", year: "numeric",
+    });
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function ApplicantCard({
   applicant,
   onStatusUpdated,
 }: ApplicantCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { t } = useTranslation("applicants");
+  const formatDate = useRelativeDate();
 
-  const candidateName = `${applicant.jobseeker_profiles.first_name} ${applicant.jobseeker_profiles.last_name}`;
-  const phone = applicant.jobseeker_profiles.phone;
-  const email = applicant.jobseeker_profiles.email;
+  const profile       = applicant.jobseeker_profiles;
+  const candidateName = `${profile.first_name} ${profile.last_name}`;
+  const phone         = profile.phone;
+  const email         = profile.email;
+  const cfg           = STATUS_CONFIG[applicant.status];
 
-  // Status badge configuration
-  const getStatusConfig = () => {
-    switch (applicant.status) {
-      case "hired":
-        return {
-          text: t("status.hired"),
-          bgColor: "bg-green-100",
-          textColor: "text-green-700",
-          icon: "checkmark-circle" as const,
-        };
-      case "shortlisted":
-        return {
-          text: t("status.shortlisted"),
-          bgColor: "bg-blue-100",
-          textColor: "text-blue-700",
-          icon: "star" as const,
-        };
-      case "rejected":
-        return {
-          text: t("status.rejected"),
-          bgColor: "bg-red-100",
-          textColor: "text-red-700",
-          icon: "close-circle" as const,
-        };
-      default:
-        return {
-          text: t("status.pending"),
-          bgColor: "bg-amber-100",
-          textColor: "text-amber-700",
-          icon: "time" as const,
-        };
-    }
-  };
-
-  const statusConfig = getStatusConfig();
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return t("time.today");
-    if (diffDays === 1) return t("time.yesterday");
-    if (diffDays < 7) return t("time.daysAgo", { days: diffDays });
-    if (diffDays < 30)
-      return t("time.weeksAgo", { weeks: Math.floor(diffDays / 7) });
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  // Update application status
+  // ── Status update ──────────────────────────────────────────────────────
   const updateStatus = async (newStatus: Applicant["status"]) => {
     try {
       setIsUpdating(true);
-
       const { error } = await supabase
         .from("job_applications")
         .update({ status: newStatus })
         .eq("id", applicant.id);
-
       if (error) throw error;
-
       onStatusUpdated();
     } catch {
-      Alert.alert(t("alerts.error.title"), t("alerts.error.updateStatus"));
+      Alert.alert(
+        t("alerts.error.title",        { defaultValue: "Error" }),
+        t("alerts.error.updateStatus", { defaultValue: "Could not update status." }),
+      );
     } finally {
       setIsUpdating(false);
     }
   };
 
-  // Contact handlers
+  // ── Contact handlers ───────────────────────────────────────────────────
   const handleCall = () => {
     if (!phone) {
-      Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
-      return;
+      return Alert.alert(
+        t("alerts.noPhone.title",   { defaultValue: "No phone" }),
+        t("alerts.noPhone.message", { defaultValue: "This applicant has no phone number." }),
+      );
     }
-    const phoneNumber = phone.replace(/[^0-9+]/g, "");
-    Linking.openURL(`tel:${phoneNumber}`);
+    Linking.openURL(`tel:${phone.replace(/[^0-9+]/g, "")}`);
   };
 
   const handleWhatsApp = () => {
     if (!phone) {
-      Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
-      return;
+      return Alert.alert(
+        t("alerts.noPhone.title",   { defaultValue: "No phone" }),
+        t("alerts.noPhone.message", { defaultValue: "This applicant has no phone number." }),
+      );
     }
-    const phoneNumber = phone.replace(/[^0-9+]/g, "");
-    const message = t("messages.whatsapp", {
+    const num = phone.replace(/[^0-9+]/g, "");
+    const msg = t("messages.whatsapp", {
       candidateName,
       jobTitle: applicant.jobs.title,
+      defaultValue: `Hi ${candidateName}, regarding your application for ${applicant.jobs.title}.`,
     });
-
-    const whatsappURL = Platform.select({
-      ios: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
-      android: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
-      default: `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`,
-    });
-
-    Linking.canOpenURL(whatsappURL!).then((supported) => {
-      if (supported) {
-        Linking.openURL(whatsappURL!);
-      } else {
-        Alert.alert(t("alerts.whatsapp.title"), t("alerts.whatsapp.message"));
-      }
-    });
+    const url = Platform.select({
+      default: `https://wa.me/${num}?text=${encodeURIComponent(msg)}`,
+    })!;
+    Linking.canOpenURL(url).then((ok) =>
+      ok
+        ? Linking.openURL(url)
+        : Alert.alert(
+            t("alerts.whatsapp.title",   { defaultValue: "WhatsApp not found" }),
+            t("alerts.whatsapp.message", { defaultValue: "Please install WhatsApp." }),
+          ),
+    );
   };
 
   const handleEmail = () => {
     const subject = t("messages.email.subject", {
       jobTitle: applicant.jobs.title,
+      defaultValue: `Re: ${applicant.jobs.title}`,
     });
     const body = t("messages.email.body", {
       candidateName,
       jobTitle: applicant.jobs.title,
+      defaultValue: `Hi ${candidateName},`,
     });
     Linking.openURL(
       `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
     );
   };
 
-  const handleViewCV = () => {
-    if (applicant.jobseeker_profiles.cv_document_url) {
-      Linking.openURL(applicant.jobseeker_profiles.cv_document_url);
-    } else {
-      Alert.alert(t("alerts.noCV.title"), t("alerts.noCV.message"));
-    }
-  };
+  const handleViewCV = () =>
+    profile.cv_document_url
+      ? Linking.openURL(profile.cv_document_url)
+      : Alert.alert(
+          t("alerts.noCV.title",   { defaultValue: "No CV" }),
+          t("alerts.noCV.message", { defaultValue: "This applicant has not uploaded a CV." }),
+        );
 
-  const handleViewDetails = () => {
+  const handleViewDetails = () =>
     router.push({
       pathname: "/(employer)/applicant-details",
       params: { applicationId: applicant.id },
     });
-  };
 
+  // ── Render ────────────────────────────────────────────────────────────
   return (
-    <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 mb-3 border border-gray-200 dark:border-[#2a2a2a]">
-      {/* Header Section */}
-      <TouchableOpacity onPress={handleViewDetails} activeOpacity={0.7}>
-        <View className="flex-row items-start justify-between mb-3">
-          <View className="flex-1">
-            <Text className="text-lg font-quicksandBold text-gray-900 dark:text-gray-100">
-              {candidateName}
-            </Text>
-            <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
-              {email}
-            </Text>
-            {phone && (
-              <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
-                {phone}
+    <View
+      className="bg-white dark:bg-[#0E0E0E] rounded-2xl mb-3 border border-gray-100 dark:border-[#2a2a2a]"
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 2,
+      }}
+    >
+      <View className="p-4">
+
+        {/* ── Top row: name block + status badge ──────────────────────── */}
+        <TouchableOpacity
+          onPress={handleViewDetails}
+          activeOpacity={0.75}
+          className="flex-row items-start justify-between mb-3"
+        >
+          {/* Avatar initial + name/email */}
+          <View className="flex-row items-center flex-1 mr-3">
+            <View className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 items-center justify-center mr-3">
+              <Text className="text-sm font-quicksandBold text-cyan-700 dark:text-cyan-400">
+                {profile.first_name.charAt(0).toUpperCase()}
               </Text>
-            )}
+            </View>
+            <View className="flex-1">
+              <Text
+                className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
+                numberOfLines={1}
+              >
+                {candidateName}
+              </Text>
+              <Text
+                className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
+                numberOfLines={1}
+              >
+                {email}
+              </Text>
+            </View>
           </View>
 
+          {/* Status badge: dot + label */}
           <View
-            className={`${statusConfig.bgColor} px-3 py-1.5 rounded-full flex-row items-center gap-1`}
+            className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full ${cfg.bgClass}`}
           >
-            <Ionicons
-              name={statusConfig.icon}
-              size={14}
-              color={statusConfig.textColor.replace("text-", "#")}
-            />
-            <Text
-              className={`${statusConfig.textColor} text-xs font-quicksandBold`}
-            >
-              {statusConfig.text}
+            <View className={`w-1.5 h-1.5 rounded-full ${cfg.dotClass}`} />
+            <Text className={`text-xs font-quicksandBold ${cfg.textClass}`}>
+              {t(cfg.label, { defaultValue: applicant.status })}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        {/* Info Row */}
-        <View className="flex-row items-center gap-4 mb-3">
-          {applicant.jobseeker_profiles.experience_level && (
+        {/* ── Meta: experience + applied date ─────────────────────────── */}
+        <View className="flex-row items-center gap-3 mb-3">
+          {profile.experience_level && (
             <View className="flex-row items-center gap-1">
-              <Ionicons name="briefcase-outline" size={14} color="#6B7280" />
-              <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
-                {applicant.jobseeker_profiles.experience_level}
+              <Ionicons name="briefcase-outline" size={12} color="#9CA3AF" />
+              <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+                {profile.experience_level}
               </Text>
             </View>
           )}
           <View className="flex-row items-center gap-1">
-            <Ionicons name="calendar-outline" size={14} color="#6B7280" />
-            <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
-              {t("applied")} {formatDate(applicant.created_at)}
+            <Ionicons name="time-outline" size={12} color="#9CA3AF" />
+            <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+              {formatDate(applicant.created_at)}
             </Text>
           </View>
-        </View>
-
-        {/* Skills */}
-        {applicant.jobseeker_profiles.skills &&
-          applicant.jobseeker_profiles.skills.length > 0 && (
-            <View className="flex-row flex-wrap gap-2 mb-3">
-              {applicant.jobseeker_profiles.skills
-                .slice(0, 3)
-                .map((skill, index) => (
-                  <View
-                    key={index}
-                    className="bg-cyan-50 px-2.5 py-1 rounded-full"
-                  >
-                    <Text className="text-xs font-quicksandMedium text-cyan-700">
-                      {skill}
-                    </Text>
-                  </View>
-                ))}
-              {applicant.jobseeker_profiles.skills.length > 3 && (
-                <View className="bg-gray-100 dark:bg-[#141414] px-2.5 py-1 rounded-full">
-                  <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
-                    +{applicant.jobseeker_profiles.skills.length - 3}{" "}
-                    {t("more")}
-                  </Text>
-                </View>
-              )}
+          {phone && (
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="call-outline" size={12} color="#9CA3AF" />
+              <Text
+                className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500"
+                numberOfLines={1}
+              >
+                {phone}
+              </Text>
             </View>
           )}
-      </TouchableOpacity>
+        </View>
 
-      {/* Action Buttons */}
-      <View className="border-t border-gray-100 dark:border-[#222] pt-3">
-        {/* Status Update Buttons - Only show if not hired */}
-        {applicant.status !== "hired" && (
-          <View className="flex-row gap-2 mb-3">
-            {applicant.status !== "shortlisted" && (
-              <TouchableOpacity
-                onPress={() => updateStatus("shortlisted")}
-                disabled={isUpdating}
-                className="flex-1 bg-blue-50 py-2.5 rounded-lg border border-blue-200"
-                activeOpacity={0.7}
+        {/* ── Skills ──────────────────────────────────────────────────── */}
+        {profile.skills && profile.skills.length > 0 && (
+          <View className="flex-row flex-wrap gap-1.5 mb-3">
+            {profile.skills.slice(0, 3).map((skill, i) => (
+              <View
+                key={i}
+                className="bg-gray-100 dark:bg-[#1a1a1a] px-2.5 py-1 rounded-full"
               >
-                <Text className="text-blue-700 text-xs font-quicksandBold text-center">
-                  {t("buttons.shortlist")}
+                <Text className="text-xs font-quicksandMedium text-gray-600 dark:text-gray-400">
+                  {skill}
                 </Text>
-              </TouchableOpacity>
+              </View>
+            ))}
+            {profile.skills.length > 3 && (
+              <View className="bg-gray-100 dark:bg-[#1a1a1a] px-2.5 py-1 rounded-full">
+                <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+                  +{profile.skills.length - 3}
+                </Text>
+              </View>
             )}
+          </View>
+        )}
+
+        {/* ── Divider ─────────────────────────────────────────────────── */}
+        <View className="h-px bg-gray-100 dark:bg-[#222] mb-3" />
+
+        {/* ── Status actions (not hired) ───────────────────────────────
+            Hierarchy: primary action (Shortlist / Hire) gets a filled or
+            bordered pill; Reject is a plain text link so it doesn't compete
+            visually with the affirmative action. */}
+        {applicant.status !== "hired" && (
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center gap-2">
+              {applicant.status !== "shortlisted" && (
+                <TouchableOpacity
+                  onPress={() => updateStatus("shortlisted")}
+                  disabled={isUpdating}
+                  activeOpacity={0.75}
+                  className="border border-gray-200 dark:border-[#2a2a2a] px-4 py-2 rounded-full"
+                >
+                  <Text className="text-xs font-quicksandBold text-gray-700 dark:text-gray-300">
+                    {t("buttons.shortlist", { defaultValue: "Shortlist" })}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {applicant.status === "shortlisted" && (
+                <TouchableOpacity
+                  onPress={() => updateStatus("hired")}
+                  disabled={isUpdating}
+                  activeOpacity={0.75}
+                  className="bg-cyan-700 px-4 py-2 rounded-full"
+                >
+                  <Text className="text-xs font-quicksandBold text-white">
+                    {t("buttons.hire", { defaultValue: "Mark as Hired" })}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Reject as a plain text link — present but not competing */}
             {applicant.status !== "rejected" && (
               <TouchableOpacity
                 onPress={() => updateStatus("rejected")}
                 disabled={isUpdating}
-                className="flex-1 bg-red-50 py-2.5 rounded-lg border border-red-200"
-                activeOpacity={0.7}
+                activeOpacity={0.6}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Text className="text-red-700 text-xs font-quicksandBold text-center">
-                  {t("buttons.reject")}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {applicant.status === "shortlisted" && (
-              <TouchableOpacity
-                onPress={() => updateStatus("hired")}
-                disabled={isUpdating}
-                className="flex-1 bg-green-50 py-2.5 rounded-lg border border-green-200"
-                activeOpacity={0.7}
-              >
-                <Text className="text-green-700 text-xs font-quicksandBold text-center">
-                  {t("buttons.hire")}
+                <Text className="text-xs font-quicksandBold text-red-400">
+                  {t("buttons.reject", { defaultValue: "Reject" })}
                 </Text>
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {/* Contact Quick Actions - Only for hired candidates */}
+        {/* ── Contact actions (hired state) ────────────────────────────
+            Icons on neutral buttons stay gray — cyan reserved for filled
+            cyan surfaces only. */}
         {applicant.status === "hired" && (
-          <View className="mb-3">
-            <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-400 mb-2">
-              {t("quickContact.title")}
-            </Text>
-            <View className="flex-row gap-2">
-              {phone && (
-                <>
-                  <TouchableOpacity
-                    className="flex-1 bg-cyan-600 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
-                    onPress={handleCall}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="call" size={16} color="#fff" />
-                    <Text className="text-xs font-quicksandBold text-white">
-                      {t("buttons.call")}
-                    </Text>
-                  </TouchableOpacity>
+          <View className="flex-row gap-2 mb-3">
+            {phone && (
+              <>
+                <TouchableOpacity
+                  onPress={handleCall}
+                  activeOpacity={0.75}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                  className="flex-1 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] py-2.5 rounded-full flex-row items-center justify-center gap-1.5"
+                >
+                  <Ionicons name="call-outline" size={14} color="#9CA3AF" />
+                  <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-300">
+                    {t("buttons.call", { defaultValue: "Call" })}
+                  </Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    className="flex-1 bg-green-600 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
-                    onPress={handleWhatsApp}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="logo-whatsapp" size={16} color="#fff" />
-                    <Text className="text-xs font-quicksandBold text-white">
-                      {t("buttons.whatsapp")}
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
+                <TouchableOpacity
+                  onPress={handleWhatsApp}
+                  activeOpacity={0.75}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                  className="flex-1 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] py-2.5 rounded-full flex-row items-center justify-center gap-1.5"
+                >
+                  <Ionicons name="logo-whatsapp" size={14} color="#9CA3AF" />
+                  <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-300">
+                    {t("buttons.whatsapp", { defaultValue: "WhatsApp" })}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
 
-              <TouchableOpacity
-                className={`${phone ? "flex-1" : "flex-1"} bg-purple-600 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5`}
-                onPress={handleEmail}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="mail" size={16} color="#fff" />
-                <Text className="text-xs font-quicksandBold text-white">
-                  {t("buttons.email")}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              onPress={handleEmail}
+              activeOpacity={0.75}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              className="flex-1 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] py-2.5 rounded-full flex-row items-center justify-center gap-1.5"
+            >
+              <Ionicons name="mail-outline" size={14} color="#9CA3AF" />
+              <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-300">
+                {t("buttons.email", { defaultValue: "Email" })}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
-        {/* Bottom Actions - View Details & CV */}
-        <View className="flex-row gap-2">
+        {/* ── Bottom row: View Profile (recedes) + View CV (primary) ── */}
+        <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={handleViewDetails}
-            className="flex-1 bg-gray-100 dark:bg-[#141414] py-2.5 rounded-lg flex-row items-center justify-center gap-1.5"
             activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            className="flex-row items-center gap-1.5"
           >
-            <Ionicons name="document-text-outline" size={16} color="#374151" />
-            <Text className="text-gray-700 dark:text-gray-300 text-xs font-quicksandBold">
-              {t("buttons.viewDetails")}
+            <Ionicons name="person-outline" size={13} color="#9CA3AF" />
+            <Text className="text-xs font-quicksandBold text-gray-400 dark:text-gray-500">
+              {t("buttons.viewDetails", { defaultValue: "View Profile" })}
             </Text>
           </TouchableOpacity>
 
-          {applicant.jobseeker_profiles.cv_document_url && (
+          {profile.cv_document_url ? (
             <TouchableOpacity
               onPress={handleViewCV}
-              className="flex-1 bg-cyan-50 py-2.5 rounded-lg flex-row items-center justify-center gap-1.5 border border-cyan-200"
-              activeOpacity={0.7}
+              activeOpacity={0.75}
+              className="bg-cyan-700 flex-row items-center gap-1.5 px-4 py-2 rounded-full"
             >
-              <Ionicons name="document-outline" size={16} color="#0E7490" />
-              <Text className="text-cyan-700 text-xs font-quicksandBold">
-                {t("buttons.viewCV")}
+              <Ionicons name="document-text-outline" size={13} color="#fff" />
+              <Text className="text-xs font-quicksandBold text-white">
+                {t("buttons.viewCV", { defaultValue: "View CV" })}
               </Text>
             </TouchableOpacity>
+          ) : (
+            <View className="flex-row items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 dark:bg-[#1a1a1a]">
+              <Ionicons name="document-outline" size={13} color="#9CA3AF" />
+              <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+                {t("buttons.noCV", { defaultValue: "No CV" })}
+              </Text>
+            </View>
           )}
         </View>
+
       </View>
     </View>
   );
