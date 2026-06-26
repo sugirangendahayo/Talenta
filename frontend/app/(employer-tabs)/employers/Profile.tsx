@@ -82,7 +82,7 @@ export default function EmployerProfile() {
           icon: "edit",
           label: t("sections.account.editProfile"),
           type: "link",
-          onPress: undefined,
+          onPress: () => router.push("/employer/complete-profile"),
         },
         {
           icon: "verified-user",
@@ -102,8 +102,8 @@ export default function EmployerProfile() {
       ],
     },
     {
-      title: t("sections.language.title"),
-      icon: "language",
+      title: t("sections.preferences.title", { defaultValue: "Preferences" }),
+      icon: "settings-outline",
       items: [
         {
           icon: "translate",
@@ -111,6 +111,24 @@ export default function EmployerProfile() {
           value: getCurrentLanguageName(),
           type: "link",
           onPress: () => setLanguageSelectorVisible(true),
+        },
+        {
+          icon: "brightness-6",
+          label: t("sections.preferences.theme", { defaultValue: "Theme" }),
+          type: "link",
+          onPress: () => router.push("/layout/ui/ThemeScreen"),
+        },
+      ],
+    },
+    {
+      title: t("sections.documents.title", { defaultValue: "Documents" }),
+      icon: "folder-outline",
+      items: [
+        {
+          icon: "description",
+          label: t("sections.documents.verification", { defaultValue: "Verification Documents" }),
+          type: "link",
+          onPress: () => router.push("/employer/upload-documents"),
         },
       ],
     },
@@ -317,28 +335,7 @@ export default function EmployerProfile() {
           </View>
         ))}
 
-        {/* Preferences — Theme only (MVP) */}
-        <View className="mx-6 mb-4 bg-white dark:bg-[#080A08] rounded-3xl shadow-sm border border-gray-200 dark:border-[#2a2a2a] overflow-hidden">
-          <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
-            <Ionicons name="color-palette-outline" size={20} color="#0E7490" />
-            <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
-              Preferences
-            </Text>
-          </View>
-          <TouchableOpacity
-            className="flex-row items-center justify-between px-6 py-4"
-            onPress={() => router.push("/layout/ui/ThemeScreen")}
-            activeOpacity={0.7}
-          >
-            <View className="flex-row items-center flex-1">
-              <MaterialIcons name="brightness-6" size={22} color="#6B7280" />
-              <Text className="ml-4 text-gray-800 dark:text-gray-200 font-quicksandMedium">
-                Theme
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-          </TouchableOpacity>
-        </View>
+
 
         <View className="h-2" />
 
