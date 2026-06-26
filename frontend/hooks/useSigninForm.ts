@@ -77,15 +77,9 @@ export default function useSigninForm() {
          toast.success(t("messages.signInSuccess"), {
                duration: 2000,
              });
-      
-        if (role === "jobseeker") {
-          router.replace("/(jobseeker-tabs)/jobseekers/Home");
-        } else if (role === "employer") {
-          router.replace("/(employer-tabs)/employers/Dashboard");
-        } else {
-          // Admin or unknown role - handle as needed
-          toast.error(t("messages.invalidUserRole"));
-        }
+             
+        // Navigation is handled globally by RootLayoutNav in app/_layout.tsx
+        // when AuthContext updates the user and role.
   
     } catch (error: any) {
       console.error("Signin error:", error);
