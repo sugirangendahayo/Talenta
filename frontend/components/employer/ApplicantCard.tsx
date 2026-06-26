@@ -1,9 +1,11 @@
 // components/employer/ApplicantCard.tsx
 import { supabase } from "@/lib/supabase";
 import type { Applicant } from "@/types/job.types";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
+import { useApplicationStatus } from "@/hooks/useApplicationStatus";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -83,9 +85,12 @@ export default function ApplicantCard({
   applicant,
   onStatusUpdated,
 }: ApplicantCardProps) {
-  const [isUpdating, setIsUpdating] = useState(false);
+  const { updateApplicationStatus, isUpdating } = useApplicationStatus();
   const { t } = useTranslation("applicants");
+  const { isDark } = useTheme();
   const formatDate = useRelativeDate();
+
+  const iconColor = isDark ? "#9CA3AF" : "#6B7280";
 
   const profile       = applicant.jobseeker_profiles;
   const candidateName = `${profile.first_name} ${profile.last_name}`;
@@ -95,21 +100,18 @@ export default function ApplicantCard({
 
   // ── Status update ──────────────────────────────────────────────────────
   const updateStatus = async (newStatus: Applicant["status"]) => {
-    try {
-      setIsUpdating(true);
-      const { error } = await supabase
-        .from("job_applications")
-        .update({ status: newStatus })
-        .eq("id", applicant.id);
-      if (error) throw error;
+    const result = await updateApplicationStatus({
+      applicationId: applicant.id,
+      newStatus,
+    });
+    
+    if (result.success) {
       onStatusUpdated();
-    } catch {
+    } else {
       Alert.alert(
         t("alerts.error.title",        { defaultValue: "Error" }),
         t("alerts.error.updateStatus", { defaultValue: "Could not update status." }),
       );
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -175,7 +177,7 @@ export default function ApplicantCard({
 
   const handleViewDetails = () =>
     router.push({
-      pathname: "/(employer)/applicant-details",
+      pathname: "/employer/applicant-details",
       params: { applicationId: applicant.id },
     });
 
@@ -237,21 +239,21 @@ export default function ApplicantCard({
         <View className="flex-row items-center gap-3 mb-3">
           {profile.experience_level && (
             <View className="flex-row items-center gap-1">
-              <Ionicons name="briefcase-outline" size={12} color="#9CA3AF" />
+              <Ionicons name="briefcase-outline" size={12} color={iconColor} />
               <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
                 {profile.experience_level}
               </Text>
             </View>
           )}
           <View className="flex-row items-center gap-1">
-            <Ionicons name="time-outline" size={12} color="#9CA3AF" />
+            <Ionicons name="time-outline" size={12} color={iconColor} />
             <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
               {formatDate(applicant.created_at)}
             </Text>
           </View>
           {phone && (
             <View className="flex-row items-center gap-1">
-              <Ionicons name="call-outline" size={12} color="#9CA3AF" />
+              <Ionicons name="call-outline" size={12} color={iconColor} />
               <Text
                 className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500"
                 numberOfLines={1}
@@ -351,7 +353,7 @@ export default function ApplicantCard({
                   hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                   className="flex-1 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] py-2.5 rounded-full flex-row items-center justify-center gap-1.5"
                 >
-                  <Ionicons name="call-outline" size={14} color="#9CA3AF" />
+                  <Ionicons name="call-outline" size={14} color={iconColor} />
                   <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-300">
                     {t("buttons.call", { defaultValue: "Call" })}
                   </Text>
@@ -363,7 +365,7 @@ export default function ApplicantCard({
                   hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                   className="flex-1 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] py-2.5 rounded-full flex-row items-center justify-center gap-1.5"
                 >
-                  <Ionicons name="logo-whatsapp" size={14} color="#9CA3AF" />
+                  <Ionicons name="logo-whatsapp" size={14} color={iconColor} />
                   <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-300">
                     {t("buttons.whatsapp", { defaultValue: "WhatsApp" })}
                   </Text>
@@ -377,7 +379,7 @@ export default function ApplicantCard({
               hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
               className="flex-1 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] py-2.5 rounded-full flex-row items-center justify-center gap-1.5"
             >
-              <Ionicons name="mail-outline" size={14} color="#9CA3AF" />
+              <Ionicons name="mail-outline" size={14} color={iconColor} />
               <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-300">
                 {t("buttons.email", { defaultValue: "Email" })}
               </Text>
@@ -393,7 +395,7 @@ export default function ApplicantCard({
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             className="flex-row items-center gap-1.5"
           >
-            <Ionicons name="person-outline" size={13} color="#9CA3AF" />
+            <Ionicons name="person-outline" size={13} color={iconColor} />
             <Text className="text-xs font-quicksandBold text-gray-400 dark:text-gray-500">
               {t("buttons.viewDetails", { defaultValue: "View Profile" })}
             </Text>
@@ -412,7 +414,7 @@ export default function ApplicantCard({
             </TouchableOpacity>
           ) : (
             <View className="flex-row items-center gap-1.5 px-4 py-2 rounded-full bg-gray-100 dark:bg-[#1a1a1a]">
-              <Ionicons name="document-outline" size={13} color="#9CA3AF" />
+              <Ionicons name="document-outline" size={13} color={iconColor} />
               <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
                 {t("buttons.noCV", { defaultValue: "No CV" })}
               </Text>
