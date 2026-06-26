@@ -1,4 +1,5 @@
 // components/employer/EmployerJobFilters.tsx
+import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,6 +57,8 @@ export default function EmployerJobFilters({
   onStatusChange,
 }: EmployerJobFiltersProps) {
   const { t } = useTranslation("jobs");
+  const { isDark } = useTheme();
+  const iconColor = isDark ? "#9CA3AF" : "#6B7280";
   const [searchOpen, setSearchOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -75,7 +78,7 @@ export default function EmployerJobFilters({
   const activeCategory = categories.find((c) => c.id === selectedCategory);
 
   return (
-    <View className="bg-white border-b border-gray-100">
+    <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
       {/* ── Top bar: status filters + search icon ──────────────────────── */}
       <View className="flex-row items-center">
         <ScrollView
@@ -94,12 +97,12 @@ export default function EmployerJobFilters({
                 accessibilityRole="button"
                 accessibilityState={{ selected: isActive }}
                 className={`px-4 py-2 rounded-full border ${
-                  isActive ? "bg-cyan-700 border-cyan-700" : "bg-white border-gray-200"
+                  isActive ? "bg-cyan-700 border-cyan-700" : "bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]"
                 }`}
               >
                 <Text
                   className={`text-sm font-quicksandMedium ${
-                    isActive ? "text-white" : "text-gray-600"
+                    isActive ? "text-white" : "text-gray-600 dark:text-gray-300"
                   }`}
                 >
                   {t(labelKey)}
@@ -116,12 +119,12 @@ export default function EmployerJobFilters({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
           accessibilityLabel={searchOpen ? t("filters.closeSearch", { defaultValue: "Close search" }) : t("filters.openSearch", { defaultValue: "Search jobs" })}
-          className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-4"
+          className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#1a1a1a] items-center justify-center mr-4"
         >
           <Ionicons
             name={searchOpen ? "close" : "search"}
             size={17}
-            color="#6B7280"
+            color={iconColor}
           />
         </TouchableOpacity>
       </View>
@@ -129,8 +132,8 @@ export default function EmployerJobFilters({
       {/* Expanding search field */}
       {searchOpen && (
         <View className="px-4 pb-3">
-          <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 gap-3">
-            <Ionicons name="search" size={16} color="#9CA3AF" />
+          <View className="flex-row items-center bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-3 gap-3">
+            <Ionicons name="search" size={16} color={iconColor} />
             <TextInput
               ref={inputRef}
               value={searchQuery}
@@ -138,14 +141,14 @@ export default function EmployerJobFilters({
               placeholder={t("filters.searchPlaceholder")}
               placeholderTextColor="#9CA3AF"
               returnKeyType="search"
-              className="flex-1 font-quicksandMedium text-gray-800 text-sm"
+              className="flex-1 font-quicksandMedium text-gray-800 dark:text-gray-200 text-sm"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity
                 onPress={() => onSearchChange("")}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                <Ionicons name="close-circle" size={18} color={iconColor} />
               </TouchableOpacity>
             )}
           </View>
@@ -161,7 +164,7 @@ export default function EmployerJobFilters({
       >
         <View className="flex-row items-center gap-1.5">
           <Ionicons name="grid-outline" size={15} color="#0E7490" />
-          <Text className="text-sm font-quicksandMedium text-gray-600">
+          <Text className="text-sm font-quicksandMedium text-gray-600 dark:text-gray-300">
             {t("filters.category", { defaultValue: "Category" })}
             {"  "}
             <Text className="text-cyan-700 font-quicksandBold">
@@ -172,7 +175,7 @@ export default function EmployerJobFilters({
         <Ionicons
           name={showCategories ? "chevron-up" : "chevron-down"}
           size={15}
-          color="#9CA3AF"
+          color={iconColor}
         />
       </TouchableOpacity>
 
@@ -188,12 +191,12 @@ export default function EmployerJobFilters({
                 className={`px-4 py-2 rounded-full border ${
                   isSelected
                     ? "bg-cyan-700 border-cyan-700"
-                    : "bg-white border-gray-200"
+                    : "bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]"
                 }`}
               >
                 <Text
                   className={`text-xs font-quicksandMedium ${
-                    isSelected ? "text-white" : "text-gray-600"
+                    isSelected ? "text-white" : "text-gray-600 dark:text-gray-300"
                   }`}
                 >
                   {category.name}
