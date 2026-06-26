@@ -1,6 +1,7 @@
 // components/employer/PostJobSheet.tsx
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
@@ -181,6 +182,7 @@ function SelectChip({
 }
 
 function Tag({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const { isDark } = useTheme();
   return (
     <View className="flex-row items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full pl-3 pr-2 py-1 mr-2 mb-2">
       <Text className="text-xs font-quicksandSemiBold text-gray-700 dark:text-gray-200 mr-1">
@@ -191,7 +193,7 @@ function Tag({ label, onRemove }: { label: string; onRemove: () => void }) {
         activeOpacity={0.7}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Ionicons name="close" size={12} color="#9CA3AF" />
+        <Ionicons name="close" size={12} color={isDark ? "#9CA3AF" : "#6B7280"} />
       </TouchableOpacity>
     </View>
   );
@@ -284,6 +286,8 @@ export default function PostJobSheet({
 }: PostJobSheetProps) {
   const { user } = useAuth();
   const { t } = useTranslation("jobs");
+  const { isDark } = useTheme();
+  const iconColor = isDark ? "#9CA3AF" : "#6B7280";
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(emptyForm());
@@ -722,7 +726,7 @@ export default function PostJobSheet({
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 items-center justify-center"
             >
-              <Ionicons name="close" size={17} color="#6B7280" />
+              <Ionicons name="close" size={17} color={iconColor} />
             </TouchableOpacity>
           </View>
 
@@ -765,7 +769,7 @@ export default function PostJobSheet({
                   activeOpacity={0.7}
                   className="w-14 h-12 rounded-xl border border-gray-200 dark:border-gray-700 items-center justify-center"
                 >
-                  <Ionicons name="arrow-back" size={18} color="#6B7280" />
+                  <Ionicons name="arrow-back" size={18} color={iconColor} />
                 </TouchableOpacity>
               )}
 
