@@ -151,8 +151,9 @@ export function useNotifications() {
     fetchNotifications();
 
     // Subscribe to real-time changes
+    const channelId = `notifications:${user.id}:${Date.now()}`;
     const channel: RealtimeChannel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(channelId)
       .on(
         "postgres_changes",
         {
