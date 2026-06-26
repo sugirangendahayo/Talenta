@@ -109,7 +109,7 @@ export default function Jobs() {
   // ─── Skeleton loading state ─────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]" edges={["top"]}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           scrollEnabled={false}
@@ -124,7 +124,7 @@ export default function Jobs() {
   // ─── Error state ────────────────────────────────────────────────────────
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
         <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-red-600 font-quicksandBold text-lg text-center">
@@ -145,7 +145,7 @@ export default function Jobs() {
 
   // ─── Loaded state ───────────────────────────────────────────────────────
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
 
       <EmployerJobFilters
