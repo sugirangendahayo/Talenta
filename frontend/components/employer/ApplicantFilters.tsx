@@ -1,4 +1,5 @@
 // components/employer/ApplicantFilters.tsx
+import { useTheme } from "@/contexts/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,6 +43,8 @@ export default function ApplicantFilters({
   counts,
 }: ApplicantFiltersProps) {
   const { t } = useTranslation("applicants");
+  const { isDark } = useTheme();
+  const iconColor = isDark ? "#9CA3AF" : "#6B7280";
   const [searchOpen, setSearchOpen] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
@@ -137,7 +140,7 @@ export default function ApplicantFilters({
           <Ionicons
             name={searchOpen ? "close" : "search"}
             size={17}
-            color="#6B7280"
+            color={iconColor}
           />
         </TouchableOpacity>
       </View>
