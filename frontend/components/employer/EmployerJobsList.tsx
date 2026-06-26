@@ -1,4 +1,5 @@
 // components/employer/EmployerJobsList.tsx
+import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -48,6 +49,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 }) => {
   const router = useRouter();
   const { t } = useTranslation("jobs");
+  const { isDark } = useTheme();
+  const iconColor = isDark ? "#9CA3AF" : "#6B7280";
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -164,7 +167,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
     const { status } = job;
 
     const Divider = () => (
-      <View className="w-px h-3.5 bg-gray-200 mx-1" />
+      <View className="w-px h-3.5 bg-gray-200 dark:bg-gray-700 mx-1" />
     );
 
     const ActionLink = ({
@@ -184,7 +187,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       >
         <Text
           className={`text-xs font-quicksandBold ${
-            destructive ? "text-red-500" : "text-gray-500"
+            destructive ? "text-red-500" : "text-gray-500 dark:text-gray-400"
           }`}
         >
           {label}
@@ -276,7 +279,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
         }
         activeOpacity={0.8}
         accessibilityRole="button"
-        className="flex-row bg-white mx-4 my-2 rounded-2xl border border-gray-100 overflow-hidden"
+        className="flex-row bg-white dark:bg-[#111111] mx-4 my-2 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] overflow-hidden"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 1 },
@@ -292,7 +295,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
           <View className="flex-row items-start justify-between mb-2">
             <View className="flex-1 mr-3">
               <Text
-                className="text-base font-quicksandBold text-gray-800"
+                className="text-base font-quicksandBold text-gray-800 dark:text-gray-200"
                 numberOfLines={1}
               >
                 {item.title}
@@ -300,7 +303,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
               <View className="flex-row items-center gap-1 mt-0.5">
                 <Ionicons name="location-sharp" size={11} color="#0E7490" />
                 <Text
-                  className="text-gray-500 font-quicksandMedium text-xs"
+                  className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs"
                   numberOfLines={1}
                 >
                   {item.location}
@@ -328,8 +331,8 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
           {jobTypes.length > 0 && (
             <View className="flex-row flex-wrap gap-2 mb-3">
               {jobTypes.slice(0, 2).map((type: string, i: number) => (
-                <View key={i} className="bg-gray-100 px-3 py-1 rounded-full">
-                  <Text className="text-gray-600 text-xs font-quicksandMedium">
+                <View key={i} className="bg-gray-100 dark:bg-[#222] px-3 py-1 rounded-full">
+                  <Text className="text-gray-600 dark:text-gray-300 text-xs font-quicksandMedium">
                     {type}
                   </Text>
                 </View>
@@ -344,7 +347,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
             </Text>
             {daysLeft !== null && (
               <>
-                <Text className="text-gray-200">•</Text>
+                <Text className="text-gray-200 dark:text-gray-700">•</Text>
                 <Text
                   className={`text-xs font-quicksandBold ${
                     daysLeft < 7
@@ -365,12 +368,12 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
           </View>
 
           {/* Footer: salary + actions + view applicants */}
-          <View className="flex-row items-center justify-between pt-3 border-t border-gray-50">
+          <View className="flex-row items-center justify-between pt-3 border-t border-gray-50 dark:border-[#2a2a2a]">
             <View className="flex-row items-center gap-3 flex-1 flex-shrink">
               <Text className="text-cyan-700 text-sm font-quicksandBold">
                 {salary}
               </Text>
-              <Text className="text-gray-200">|</Text>
+              <Text className="text-gray-200 dark:text-gray-700">|</Text>
               {renderActions(item)}
             </View>
 
@@ -399,10 +402,10 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
 
   const renderEmptyState = () => (
     <View className="items-center justify-center py-20 px-8">
-      <View className="w-20 h-20 rounded-full bg-gray-50 items-center justify-center mb-5">
-        <Ionicons name="briefcase-outline" size={36} color="#9CA3AF" />
+      <View className="w-20 h-20 rounded-full bg-gray-50 dark:bg-[#1a1a1a] items-center justify-center mb-5">
+        <Ionicons name="briefcase-outline" size={36} color={iconColor} />
       </View>
-      <Text className="text-xl font-quicksandBold text-gray-800 text-center">
+      <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200 text-center">
         {t("empty.noJobsFound")}
       </Text>
       <Text className="text-gray-500 font-quicksandMedium text-sm mt-2 text-center leading-5">
@@ -414,7 +417,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   );
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <FlatList
         data={filteredJobs}
         ListHeaderComponent={
