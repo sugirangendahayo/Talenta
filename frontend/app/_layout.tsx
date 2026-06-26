@@ -1,5 +1,7 @@
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { ThemeProvider, ThemeSync, useTheme } from "@/contexts/ThemeContext";
+import "@/i18n/config"; // Import i18n configuration
 import {
   Quicksand_400Regular,
   Quicksand_500Medium,
@@ -7,18 +9,12 @@ import {
   Quicksand_700Bold,
   useFonts,
 } from "@expo-google-fonts/quicksand";
-import "react-native-url-polyfill/auto";
-import "@/i18n/config"; // Import i18n configuration
-import { ThemeProvider, ThemeSync, useTheme } from "@/contexts/ThemeContext";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Text as RNText,
-  View,
-} from "react-native";
+import { Image, Text as RNText, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import "react-native-url-polyfill/auto";
 import { Toaster } from "sonner-native";
 import "../global.css";
 
@@ -64,13 +60,7 @@ function RootLayoutNav() {
     const inWelcomeGroup = segments[0] === "welcome";
     const inJobseekerTabs = segments[0] === "(jobseeker-tabs)";
     const inEmployerTabs = segments[0] === "(employer-tabs)";
-
-    // console.log("Navigation check:", {
-    //   hasSeenOnboarding,
-    //   user: !!user,
-    //   role,
-    //   segments,
-    // });
+    const inAdminTabs = segments[0] === "(admin-tabs)";
 
     // PRIORITY 1: Show onboarding if user hasn't seen it (regardless of auth status)
     if (hasSeenOnboarding === false && !inWelcomeGroup) {
@@ -93,24 +83,40 @@ function RootLayoutNav() {
 
     // PRIORITY 3: User is logged in
     if (user && role) {
-      // Redirect away from auth/welcome screens to dashboard
+      // Redirect away from auth/welcome screens to role dashboard
       if (inAuthGroup || inWelcomeGroup) {
         console.log("→ Redirecting to dashboard (logged in, on auth screen)");
         if (role === "jobseeker") {
           router.replace("/(jobseeker-tabs)/jobseekers/Home");
         } else if (role === "employer") {
           router.replace("/(employer-tabs)/employers/Dashboard");
+        } else if (role === "admin") {
+          router.replace("/(admin-tabs)/admin/Dashboard");
         }
         return;
       }
 
-      // Prevent cross-role access
+      // Block non-admin from admin tabs
+      if (role !== "admin" && inAdminTabs) {
+        console.log("→ Non-admin tried to access admin tabs");
+        if (role === "jobseeker") {
+          router.replace("/(jobseeker-tabs)/jobseekers/Home");
+        } else {
+          router.replace("/(employer-tabs)/employers/Dashboard");
+        }
+        return;
+      }
+
+      // Prevent cross-role access between jobseeker/employer tabs
       if (role === "jobseeker" && inEmployerTabs) {
         console.log("→ Jobseeker tried to access employer tabs");
         router.replace("/(jobseeker-tabs)/jobseekers/Home");
       } else if (role === "employer" && inJobseekerTabs) {
         console.log("→ Employer tried to access jobseeker tabs");
         router.replace("/(employer-tabs)/employers/Dashboard");
+      } else if (role === "admin" && (inJobseekerTabs || inEmployerTabs)) {
+        console.log("→ Admin redirected to admin tabs");
+        router.replace("/(admin-tabs)/admin/Dashboard");
       }
     }
   }, [user, role, authLoading, segments, hasSeenOnboarding, isReady]);
@@ -124,10 +130,30 @@ function RootLayoutNav() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#fff",
+          backgroundColor: APP_BACKGROUND,
         }}
       >
-        <ActivityIndicator size="large" color="#0E7490" />
+        {/* Centered Image */}
+        <Image
+          source={require("../assets/images/android-icon-foreground.png")}
+          style={{
+            width: 120,
+            height: 120,
+            resizeMode: "contain",
+          }}
+        />
+
+        {/* Bottom Text */}
+        <RNText
+          className="text-black dark:text-white font-quicksandBold text-lg"
+          style={{
+            position: "absolute",
+            bottom: 40,
+            alignSelf: "center",
+          }}
+        >
+          Talenta
+        </RNText>
       </View>
     );
   }
@@ -138,6 +164,9 @@ function RootLayoutNav() {
         contentStyle: { backgroundColor: APP_BACKGROUND },
       }}
     >
+      {/* Index redirect - no header */}
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+
       {/* Welcome screens */}
       <Stack.Screen name="welcome/Step1" options={{ headerShown: false }} />
       <Stack.Screen name="welcome/Step2" options={{ headerShown: false }} />
@@ -145,6 +174,7 @@ function RootLayoutNav() {
       {/* Tab layouts */}
       <Stack.Screen name="(jobseeker-tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(employer-tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(admin-tabs)" options={{ headerShown: false }} />
 
       {/* Job seeker screens */}
       <Stack.Screen
@@ -185,6 +215,17 @@ function RootLayoutNav() {
 
       {/* Employer screens */}
       <Stack.Screen name="employer/post-job" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="employer/complete-profile"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="employer/upload-documents"
+        options={{ headerShown: false }}
+      />
+
+      {/* Admin screens */}
+      <Stack.Screen name="admin/Users" options={{ headerShown: false }} />
     </Stack>
   );
 }
@@ -219,8 +260,18 @@ export default function RootLayout() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <Image
+          source={require("../assets/images/android-icon-foreground.png")}
+          style={{ width: 120, height: 120, resizeMode: "contain" }}
+        />
       </View>
     );
   }
