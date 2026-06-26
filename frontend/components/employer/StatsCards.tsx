@@ -21,7 +21,7 @@ const StatCard = ({
   onPress,
 }: StatCardProps) => (
   <TouchableOpacity
-    className="flex-1 bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-200 dark:border-[#2a2a2a] mx-1"
+    className="flex-1 bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-200 dark:border-[#2a2a2a] mx-1 min-h-[130px]"
     onPress={onPress}
     disabled={!onPress}
   >
