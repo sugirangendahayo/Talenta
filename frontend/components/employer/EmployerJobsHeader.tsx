@@ -11,12 +11,12 @@ export default function EmployerJobsHeader({ onPostJob }: EmployerJobsHeaderProp
   const { t } = useTranslation("jobs");
 
   return (
-    <View className="bg-white px-6 pt-16 pb-5 flex-row items-start justify-between">
+    <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-5 flex-row items-start justify-between">
       <View className="flex-1 pr-4">
-        <Text className="font-quicksandBold text-3xl text-gray-800">
+        <Text className="font-quicksandBold text-3xl text-gray-800 dark:text-gray-200">
           {t("header.title")}
         </Text>
-        <Text className="text-gray-500 font-quicksandMedium mt-1">
+        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
           {t("header.subtitle")}
         </Text>
       </View>
