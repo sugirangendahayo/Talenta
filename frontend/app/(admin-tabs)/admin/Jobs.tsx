@@ -2,194 +2,238 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { getAdminJobs, updateJobStatus } from "@/lib/adminService";
 import type { AdminJob, JobStatus } from "@/types/admin.types";
-import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useState } from "react";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
   RefreshControl,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<
   JobStatus,
-  { label: string; color: string; bg: string; icon: string }
+  { labelKey: string; colorHex: string; dotHex: string; twBadgeClass: string; twTextClass: string }
 > = {
-  active:  { label: "Active",  color: "#059669", bg: "#D1FAE5", icon: "checkmark-circle" },
-  paused:  { label: "Paused",  color: "#D97706", bg: "#FEF3C7", icon: "pause-circle" },
-  closed:  { label: "Closed",  color: "#DC2626", bg: "#FEE2E2", icon: "close-circle" },
-  expired: { label: "Expired", color: "#6B7280", bg: "#F3F4F6", icon: "time" },
-  draft:   { label: "Draft",   color: "#6366F1", bg: "#EEF2FF", icon: "create" },
+  active: {
+    labelKey: "status.active",
+    colorHex: "#059669", // Emerald
+    dotHex: "#059669",
+    twBadgeClass: "bg-emerald-50 dark:bg-emerald-900/20",
+    twTextClass: "text-emerald-700 dark:text-emerald-400",
+  },
+  paused: {
+    labelKey: "status.paused",
+    colorHex: "#D97706", // Amber
+    dotHex: "#D97706",
+    twBadgeClass: "bg-amber-50 dark:bg-amber-900/20",
+    twTextClass: "text-amber-700 dark:text-amber-400",
+  },
+  closed: {
+    labelKey: "status.closed",
+    colorHex: "#6B7280", // Gray
+    dotHex: "#6B7280",
+    twBadgeClass: "bg-gray-100 dark:bg-[#1e1e1e]",
+    twTextClass: "text-gray-600 dark:text-gray-400",
+  },
+  expired: {
+    labelKey: "status.expired",
+    colorHex: "#DC2626", // Red
+    dotHex: "#DC2626",
+    twBadgeClass: "bg-red-50 dark:bg-red-900/20",
+    twTextClass: "text-red-700 dark:text-red-400",
+  },
+  draft: {
+    labelKey: "status.draft",
+    colorHex: "#2563EB", // Blue
+    dotHex: "#2563EB",
+    twBadgeClass: "bg-blue-50 dark:bg-blue-900/20",
+    twTextClass: "text-blue-700 dark:text-blue-400",
+  },
 };
 
-// ─── Filter chips ─────────────────────────────────────────────────────────────
-
 const ALL_STATUSES: Array<JobStatus | "all"> = [
-  "all", "active", "paused", "closed", "expired", "draft",
+  "all",
+  "active",
+  "paused",
+  "closed",
+  "expired",
+  "draft",
 ];
 
-function FilterChip({
-  label,
-  active,
-  color,
-  onPress,
-  isDark,
-}: {
-  label: string;
-  active: boolean;
-  color?: string;
-  onPress: () => void;
-  isDark: boolean;
-}) {
-  const activeColor = color ?? "#10B981";
-  return (
-    <TouchableOpacity
-      style={[
-        styles.chip,
-        active
-          ? { backgroundColor: activeColor }
-          : { backgroundColor: isDark ? "#2D2D2D" : "#F3F4F6" },
-      ]}
-      onPress={onPress}
-      activeOpacity={0.75}
-    >
-      <Text
-        style={[
-          styles.chipText,
-          { color: active ? "#fff" : isDark ? "#9CA3AF" : "#6B7280" },
-        ]}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
-// ─── Status badge ─────────────────────────────────────────────────────────────
-
-function StatusBadge({ status }: { status: JobStatus }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.draft;
-  return (
-    <View style={[styles.badge, { backgroundColor: cfg.bg }]}>
-      <Ionicons name={cfg.icon as any} size={12} color={cfg.color} />
-      <Text style={[styles.badgeText, { color: cfg.color }]}>{cfg.label}</Text>
-    </View>
-  );
-}
-
-// ─── Job card ─────────────────────────────────────────────────────────────────
+// ─── Job Card ─────────────────────────────────────────────────────────────────
 
 function JobCard({
   job,
   onChangeStatus,
-  isDark,
 }: {
   job: AdminJob;
   onChangeStatus: (id: string, status: JobStatus) => void;
-  isDark: boolean;
 }) {
-  const cardBg = isDark ? "#1C1C1E" : "#FFFFFF";
-  const textPrimary = isDark ? "#F9FAFB" : "#111827";
-  const textSecondary = isDark ? "#9CA3AF" : "#6B7280";
-  const divider = isDark ? "#2D2D2D" : "#F3F4F6";
+  const { t } = useTranslation("admin");
+  const cfg = STATUS_CONFIG[job.status] ?? STATUS_CONFIG.draft;
 
   const canActivate = job.status !== "active";
-  const canPause    = job.status === "active";
-  const canClose    = job.status !== "closed";
+  const canPause = job.status === "active";
+  const canClose = job.status !== "closed";
 
   return (
-    <View style={[styles.card, { backgroundColor: cardBg }]}>
-      {/* Header */}
-      <View style={styles.cardHeader}>
-        <View style={[styles.iconBg, { backgroundColor: "#10B98120" }]}>
-          <Ionicons name="briefcase" size={18} color="#10B981" />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.cardTitle, { color: textPrimary }]} numberOfLines={1}>
-            {job.title}
-          </Text>
-          <Text
-            style={[styles.cardCompany, { color: textSecondary }]}
-            numberOfLines={1}
-          >
-            {job.employer_profiles?.company_name ?? "Unknown employer"}
-          </Text>
-        </View>
-        <StatusBadge status={job.status} />
-      </View>
+    <View
+      className="bg-white dark:bg-[#0E0E0E] rounded-2xl border border-gray-100 dark:border-[#2a2a2a] mb-3 flex-row overflow-hidden"
+      style={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 2,
+      }}
+    >
 
-      {/* Meta */}
-      <View style={[styles.divider, { backgroundColor: divider }]} />
-      <View style={styles.metaRow}>
-        {job.category && (
-          <View style={styles.metaItem}>
-            <Ionicons name="folder-outline" size={13} color={textSecondary} />
-            <Text style={[styles.metaText, { color: textSecondary }]}>
-              {job.category}
+
+      {/* Content */}
+      <View className="flex-1 p-4">
+        {/* Header row */}
+        <View className="flex-row items-start">
+          <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center mr-3 mt-0.5">
+            <Ionicons name="briefcase-outline" size={15} color="#0E7490" />
+          </View>
+          <View className="flex-1 mr-2">
+            <Text
+              className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
+              numberOfLines={1}
+            >
+              {job.title}
+            </Text>
+            <View className="flex-row items-center gap-1 mt-0.5">
+              <Text
+                className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500"
+                numberOfLines={1}
+              >
+                {job.employer_profiles?.company_name ??
+                  t("common:unknown", { defaultValue: "Unknown employer" })}
+              </Text>
+              {job.employer_profiles?.business_verification_status === "approved" &&
+                job.employer_profiles?.premium_plan &&
+                job.employer_profiles?.premium_plan !== "free" && (
+                  <MaterialIcons name="verified" size={13} color="#0E7490" />
+                )}
+            </View>
+          </View>
+          {/* Status badge */}
+          <View
+            className={`flex-row items-center px-2.5 py-1 rounded-full ${cfg.twBadgeClass}`}
+          >
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: cfg.dotHex,
+                marginRight: 4,
+              }}
+            />
+            <Text className={`text-xs font-quicksandBold ${cfg.twTextClass}`}>
+              {t(cfg.labelKey, {
+                defaultValue:
+                  job.status.charAt(0).toUpperCase() + job.status.slice(1),
+              })}
             </Text>
           </View>
-        )}
-        {job.location && (
-          <View style={styles.metaItem}>
-            <Ionicons name="location-outline" size={13} color={textSecondary} />
-            <Text style={[styles.metaText, { color: textSecondary }]}>
-              {job.location}
+        </View>
+
+        {/* Meta row */}
+        <View className="flex-row flex-wrap mt-3" style={{ gap: 12 }}>
+          {job.category && (
+            <View className="flex-row items-center" style={{ gap: 4 }}>
+              <Ionicons name="folder-outline" size={12} color="#9CA3AF" />
+              <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+                {job.category}
+              </Text>
+            </View>
+          )}
+          {job.location && (
+            <View className="flex-row items-center" style={{ gap: 4 }}>
+              <Ionicons name="location-outline" size={12} color="#9CA3AF" />
+              <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+                {job.location}
+              </Text>
+            </View>
+          )}
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            <Ionicons name="calendar-outline" size={12} color="#9CA3AF" />
+            <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500">
+              {new Date(job.created_at).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
             </Text>
           </View>
-        )}
-        <View style={styles.metaItem}>
-          <Ionicons name="calendar-outline" size={13} color={textSecondary} />
-          <Text style={[styles.metaText, { color: textSecondary }]}>
-            {new Date(job.created_at).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </Text>
         </View>
-      </View>
 
-      {/* Actions */}
-      <View style={[styles.divider, { backgroundColor: divider }]} />
-      <View style={styles.actionsRow}>
-        {canActivate && (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: "#D1FAE5" }]}
-            onPress={() => onChangeStatus(job.id, "active")}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="play-circle-outline" size={14} color="#059669" />
-            <Text style={[styles.actionText, { color: "#059669" }]}>Activate</Text>
-          </TouchableOpacity>
-        )}
-        {canPause && (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: "#FEF3C7" }]}
-            onPress={() => onChangeStatus(job.id, "paused")}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="pause-circle-outline" size={14} color="#D97706" />
-            <Text style={[styles.actionText, { color: "#D97706" }]}>Pause</Text>
-          </TouchableOpacity>
-        )}
-        {canClose && (
-          <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: "#FEE2E2" }]}
-            onPress={() => onChangeStatus(job.id, "closed")}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="close-circle-outline" size={14} color="#DC2626" />
-            <Text style={[styles.actionText, { color: "#DC2626" }]}>Close</Text>
-          </TouchableOpacity>
-        )}
+        {/* Divider */}
+        <View className="h-px bg-gray-100 dark:bg-[#222] my-3" />
+
+        {/* Actions */}
+        <View className="mt-1">
+          {canActivate ? (
+            <View>
+              <TouchableOpacity
+                className="bg-cyan-700 rounded-2xl py-3.5 items-center justify-center mb-3"
+                onPress={() => onChangeStatus(job.id, "active")}
+                activeOpacity={0.85}
+              >
+                <Text className="text-white font-quicksandBold text-sm">
+                  {t("jobs.activateAction", { defaultValue: "Activate Job" })}
+                </Text>
+              </TouchableOpacity>
+              {canClose && (
+                <View className="flex-row justify-end">
+                  <TouchableOpacity
+                    onPress={() => onChangeStatus(job.id, "closed")}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Text className="text-xs font-quicksandBold text-red-400">
+                      {t("jobs.closeAction", { defaultValue: "Close Job" })}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View className="flex-row flex-wrap gap-x-4">
+              {canPause && (
+                <TouchableOpacity
+                  onPress={() => onChangeStatus(job.id, "paused")}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Text className="text-xs font-quicksandBold text-gray-500 dark:text-gray-400">
+                    {t("jobs.pauseAction", { defaultValue: "Pause Job" })}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {canClose && (
+                <View className="flex-1 flex-row justify-end">
+                  <TouchableOpacity
+                    onPress={() => onChangeStatus(job.id, "closed")}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Text className="text-xs font-quicksandBold text-red-400">
+                      {t("jobs.closeAction", { defaultValue: "Close Job" })}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -199,21 +243,25 @@ function JobCard({
 
 export default function AdminJobs() {
   const { isDark } = useTheme();
+  const { t } = useTranslation(["admin", "common"]);
   const [jobs, setJobs] = useState<AdminJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
   const [search, setSearch] = useState("");
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  const bg = isDark ? "#080A08" : "#F3F4F6";
+  const searchRef = useRef<TextInput>(null);
 
   const load = useCallback(async () => {
     try {
       const data = await getAdminJobs();
       setJobs(data);
     } catch (e: any) {
-      Alert.alert("Error", e?.message ?? "Failed to load jobs");
+      Alert.alert(
+        t("common:error", { defaultValue: "Error" }),
+        e?.message ?? t("jobs.loadError", { defaultValue: "Failed to load jobs" })
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -229,17 +277,41 @@ export default function AdminJobs() {
     load();
   };
 
+  const toggleSearch = () => {
+    if (searchExpanded) {
+      setSearch("");
+      setSearchExpanded(false);
+    } else {
+      setSearchExpanded(true);
+      setTimeout(() => searchRef.current?.focus(), 50);
+    }
+  };
+
   const handleChangeStatus = (jobId: string, newStatus: JobStatus) => {
     const cfg = STATUS_CONFIG[newStatus];
     const currentJob = jobs.find((j) => j.id === jobId);
 
+    const labelStr = t(cfg.labelKey, {
+      defaultValue: newStatus.charAt(0).toUpperCase() + newStatus.slice(1),
+    });
+
     Alert.alert(
-      `${cfg.label} Job`,
-      `Change "${currentJob?.title}" status to ${cfg.label}?`,
+      t("jobs.changeStatusTitle", {
+        defaultValue: "{{status}} Job",
+        status: labelStr,
+      }),
+      t("jobs.changeStatusConfirm", {
+        defaultValue: 'Change "{{title}}" status to {{status}}?',
+        title: currentJob?.title,
+        status: labelStr,
+      }),
       [
-        { text: "Cancel", style: "cancel" },
         {
-          text: cfg.label,
+          text: t("common:cancel", { defaultValue: "Cancel" }),
+          style: "cancel",
+        },
+        {
+          text: labelStr,
           style: newStatus === "closed" ? "destructive" : "default",
           onPress: async () => {
             setActionLoading(jobId);
@@ -247,17 +319,21 @@ export default function AdminJobs() {
               await updateJobStatus(jobId, newStatus);
               setJobs((prev) =>
                 prev.map((j) =>
-                  j.id === jobId ? { ...j, status: newStatus } : j,
-                ),
+                  j.id === jobId ? { ...j, status: newStatus } : j
+                )
               );
             } catch (e: any) {
-              Alert.alert("Error", e?.message ?? "Failed to update job");
+              Alert.alert(
+                t("common:error", { defaultValue: "Error" }),
+                e?.message ??
+                  t("jobs.updateError", { defaultValue: "Failed to update job" })
+              );
             } finally {
               setActionLoading(null);
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -276,98 +352,134 @@ export default function AdminJobs() {
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={[styles.centered, { backgroundColor: bg }]}
-        edges={["top"]}
-      >
-        <ActivityIndicator size="large" color="#10B981" />
-      </SafeAreaView>
+      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] items-center justify-center">
+        <ActivityIndicator size="large" color="#0E7490" />
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: bg }]} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: isDark ? "#F9FAFB" : "#111827" }]}>
-          Jobs
-        </Text>
-        <Text style={[styles.subtitle, { color: isDark ? "#9CA3AF" : "#6B7280" }]}>
-          {jobs.length} total ·{" "}
-          {jobs.filter((j) => j.status === "active").length} active
-        </Text>
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
+      {/* ── Header ── */}
+      <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-5 flex-row items-start justify-between">
+        <View>
+          <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-100">
+            {t("jobs.title", { defaultValue: "Jobs" })}
+          </Text>
+          <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
+            {jobs.length} {t("filters.total", { defaultValue: "total" })} ·{" "}
+            {jobs.filter((j) => j.status === "active").length}{" "}
+            {t("status.active", { defaultValue: "active" }).toLowerCase()}
+          </Text>
+        </View>
+        <TouchableOpacity
+          className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
+          onPress={toggleSearch}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
+            name={searchExpanded ? "close" : "search-outline"}
+            size={18}
+            color={isDark ? "#9CA3AF" : "#6B7280"}
+          />
+        </TouchableOpacity>
       </View>
 
-      {/* Search */}
-      <View
-        style={[
-          styles.searchBar,
-          { backgroundColor: isDark ? "#1C1C1E" : "#FFFFFF" },
-        ]}
-      >
-        <Ionicons
-          name="search-outline"
-          size={16}
-          color={isDark ? "#6B7280" : "#9CA3AF"}
-        />
-        <TextInput
-          style={[styles.searchInput, { color: isDark ? "#F9FAFB" : "#111827" }]}
-          placeholder="Search job or company…"
-          placeholderTextColor={isDark ? "#4B5563" : "#9CA3AF"}
-          value={search}
-          onChangeText={setSearch}
-        />
-        {search.length > 0 && (
-          <TouchableOpacity onPress={() => setSearch("")}>
-            <Ionicons
-              name="close-circle"
-              size={16}
-              color={isDark ? "#6B7280" : "#9CA3AF"}
-            />
-          </TouchableOpacity>
+      {/* ── Filter / Search bar ── */}
+      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
+        {searchExpanded ? (
+          <View className="px-6 py-3">
+            <View className="flex-row items-center bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-2.5">
+              <Ionicons name="search-outline" size={16} color="#9CA3AF" />
+              <TextInput
+                ref={searchRef}
+                className="flex-1 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100 ml-2"
+                placeholder={t("jobs.searchPlaceholder", {
+                  defaultValue: "Search job or company…",
+                })}
+                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+                value={search}
+                onChangeText={setSearch}
+              />
+              {search.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearch("")}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close-circle" size={16} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              gap: 8,
+            }}
+          >
+            {ALL_STATUSES.map((s) => (
+              <TouchableOpacity
+                key={s}
+                className={`px-4 py-2 rounded-full border ${
+                  statusFilter === s
+                    ? "bg-cyan-700 border-cyan-700"
+                    : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+                }`}
+                onPress={() => setStatusFilter(s)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  className={`text-xs font-quicksandBold ${
+                    statusFilter === s
+                      ? "text-white"
+                      : "text-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {s === "all"
+                    ? t("filters.all", { defaultValue: "All" })
+                    : t(STATUS_CONFIG[s as JobStatus].labelKey, {
+                        defaultValue:
+                          s.charAt(0).toUpperCase() + s.slice(1),
+                      })}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         )}
       </View>
 
-      {/* Filter chips */}
+      {/* ── List ── */}
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}
-      >
-        {ALL_STATUSES.map((s) => (
-          <FilterChip
-            key={s}
-            label={s === "all" ? "All" : STATUS_CONFIG[s as JobStatus].label}
-            active={statusFilter === s}
-            color={s === "all" ? "#10B981" : STATUS_CONFIG[s as JobStatus].color}
-            onPress={() => setStatusFilter(s)}
-            isDark={isDark}
-          />
-        ))}
-      </ScrollView>
-
-      <ScrollView
-        contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#10B981"
+            tintColor="#0E7490"
           />
         }
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 140,
+        }}
       >
         {filtered.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons
-              name="briefcase-outline"
-              size={48}
-              color={isDark ? "#374151" : "#D1D5DB"}
-            />
-            <Text
-              style={[styles.emptyTitle, { color: isDark ? "#6B7280" : "#9CA3AF" }]}
-            >
-              No jobs found
+          <View className="items-center pt-16">
+            <View className="w-20 h-20 rounded-full bg-gray-50 dark:bg-[#141414] items-center justify-center mb-4">
+              <Ionicons name="briefcase-outline" size={36} color="#9CA3AF" />
+            </View>
+            <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 mb-2">
+              {t("jobs.emptyTitle", { defaultValue: "No jobs found" })}
+            </Text>
+            <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 text-center leading-5 px-8">
+              {t("jobs.emptySubtitle", {
+                defaultValue: "Try adjusting your filters or search.",
+              })}
             </Text>
           </View>
         ) : (
@@ -376,105 +488,11 @@ export default function AdminJobs() {
               key={job.id}
               style={{ opacity: actionLoading === job.id ? 0.5 : 1 }}
             >
-              <JobCard
-                job={job}
-                onChangeStatus={handleChangeStatus}
-                isDark={isDark}
-              />
+              <JobCard job={job} onChangeStatus={handleChangeStatus} />
             </View>
           ))
         )}
-        <View style={{ height: 120 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-  header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  title: { fontSize: 26, fontFamily: "Quicksand_700Bold" },
-  subtitle: { fontSize: 13, fontFamily: "Quicksand_500Medium", marginTop: 2 },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  searchInput: { flex: 1, fontSize: 14, fontFamily: "Quicksand_400Regular" },
-  chips: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    gap: 8,
-    flexDirection: "row",
-  },
-  chip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
-  chipText: { fontSize: 13, fontFamily: "Quicksand_600SemiBold" },
-  list: { paddingHorizontal: 16, paddingTop: 4 },
-  card: {
-    borderRadius: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-    overflow: "hidden",
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    gap: 12,
-  },
-  iconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardTitle: { fontSize: 14, fontFamily: "Quicksand_700Bold" },
-  cardCompany: { fontSize: 12, fontFamily: "Quicksand_400Regular", marginTop: 1 },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  badgeText: { fontSize: 11, fontFamily: "Quicksand_600SemiBold" },
-  divider: { height: 1, marginHorizontal: 14 },
-  metaRow: { flexDirection: "row", flexWrap: "wrap", padding: 12, gap: 10 },
-  metaItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  metaText: { fontSize: 12, fontFamily: "Quicksand_400Regular" },
-  actionsRow: {
-    flexDirection: "row",
-    padding: 12,
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  actionText: { fontSize: 12, fontFamily: "Quicksand_700Bold" },
-  emptyState: { alignItems: "center", paddingTop: 60, gap: 12 },
-  emptyTitle: { fontSize: 16, fontFamily: "Quicksand_600SemiBold" },
-});
