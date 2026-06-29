@@ -206,6 +206,19 @@ export function useApplyJob() {
                 job_id: jobId,
               },
             });
+
+            // Insert database notification for the employer
+            await supabase.from("notifications").insert({
+              user_id: jobData.employer_id,
+              type: "new_application",
+              title: "New Job Application 📋",
+              message: `${applicantName} has applied for your ${jobData.title} position.`,
+              job_id: jobId,
+              data: {
+                job_title: jobData.title,
+                applicant_name: applicantName,
+              },
+            });
           }
         } catch (notifErr) {
           // Non-fatal: notification failure should not block the application
