@@ -1,20 +1,19 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { EmployerProfile } from "@/lib/supabase";
+import TalentaVerifiedBadge from "./TalentaVerifiedBadge";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useNotifications } from "@/hooks/useNotifications";
 
-interface DashboardHeaderProps {
-  unreadCount?: number;
-}
+interface DashboardHeaderProps {}
 
-export default function DashboardHeader({
-  unreadCount = 0,
-}: DashboardHeaderProps) {
+export default function DashboardHeader() {
   const { profile, role } = useAuth();
   const router = useRouter();
   const { t } = useTranslation("dashboard");
+  const { unreadCount } = useNotifications();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -45,28 +44,37 @@ export default function DashboardHeader({
             <Text className="text-xs font-quicksandMedium text-gray-400">
               {getGreeting()}
             </Text>
-            <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100">
-              {companyName}
-            </Text>
+            <View className="flex-row items-center gap-1.5">
+              <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100">
+                {companyName}
+              </Text>
+              {role === "employer" && profile && (
+                <TalentaVerifiedBadge
+                  businessStatus={(profile as EmployerProfile).business_verification_status}
+                  premiumPlan={(profile as EmployerProfile).premium_plan}
+                  className="scale-90 origin-left"
+                />
+              )}
+            </View>
           </View>
         </View>
 
         {/* Right: action icons */}
         <View className="flex-row items-center gap-2">
           <TouchableOpacity
-            className="w-9 h-9 bg-gray-100 dark:bg-[#141414] rounded-full items-center justify-center"
-            onPress={() => router.push("/(employer-tabs)/employers/Profile")}
+            className="w-9 h-9 bg-gray-100 dark:bg-[#141414] rounded-full items-center justify-center relative"
+            onPress={() => router.push("/(employer-tabs)/employers/notifications")}
           >
-            <View className="relative">
+            <View>
               <Ionicons
                 name="notifications-outline"
                 size={18}
                 color="#374151"
               />
               {unreadCount > 0 && (
-                <View className="absolute -top-1.5 -right-1.5 bg-red-500 rounded-full min-w-[14px] h-[14px] items-center justify-center px-0.5">
-                  <Text className="text-[9px] font-quicksandBold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 items-center justify-center border border-white dark:border-[#080A08]">
+                  <Text className="text-[9px] font-bold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </Text>
                 </View>
               )}
