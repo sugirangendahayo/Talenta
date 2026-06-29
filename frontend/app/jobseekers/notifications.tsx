@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
+import { TextInput } from "react-native";
 
 export default function NotificationsScreen() {
   const {
@@ -28,6 +29,7 @@ export default function NotificationsScreen() {
   const { t } = useTranslation(["common", "jobs"]);
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -80,6 +82,18 @@ export default function NotificationsScreen() {
     }
   };
 
+  const filteredNotifications = React.useMemo(() => {
+    if (!searchQuery) return notifications;
+    const lowerQuery = searchQuery.toLowerCase();
+    return notifications.filter(
+      (n) =>
+        n.title.toLowerCase().includes(lowerQuery) ||
+        n.message.toLowerCase().includes(lowerQuery) ||
+        n.data?.company_name?.toLowerCase().includes(lowerQuery) ||
+        n.data?.job_title?.toLowerCase().includes(lowerQuery)
+    );
+  }, [notifications, searchQuery]);
+
   const renderNotification = ({ item }: { item: Notification }) => {
     const icon = getNotificationIcon(item.type);
 
@@ -124,12 +138,30 @@ export default function NotificationsScreen() {
 
             {/* Job info */}
             {item.data?.job_title && (
-              <View className="flex-row items-center mb-2">
+              <View className="flex-row items-center mb-2 flex-wrap">
                 <Ionicons name="briefcase-outline" size={14} color="#6B7280" />
                 <Text className="ml-1 font-quicksandMedium text-xs text-gray-500 dark:text-gray-400">
                   {item.data.job_title}
-                  {item.data.company_name && ` • ${item.data.company_name}`}
                 </Text>
+                {item.data.company_name && (
+                  <>
+                    <Text className="mx-1 font-quicksandMedium text-xs text-gray-500 dark:text-gray-400">
+                      •
+                    </Text>
+                    <Text className="font-quicksandMedium text-xs text-gray-500 dark:text-gray-400">
+                      {item.data.company_name}
+                    </Text>
+                    {item.data.is_verified && (
+                      <View className="ml-1 items-center justify-center">
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={12}
+                          color="#0E7490"
+                        />
+                      </View>
+                    )}
+                  </>
+                )}
               </View>
             )}
 
@@ -228,6 +260,23 @@ export default function NotificationsScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Search Bar */}
+        <View className="mt-4 flex-row items-center bg-gray-100 dark:bg-[#1a1a1a] rounded-xl px-3 py-2 border border-gray-200 dark:border-[#2a2a2a]">
+          <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+          <TextInput
+            className="flex-1 ml-2 font-quicksandMedium text-sm text-gray-900 dark:text-gray-100"
+            placeholder={t("common:search", { defaultValue: "Search notifications..." })}
+            placeholderTextColor="#9CA3AF"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Notifications List */}
@@ -240,7 +289,7 @@ export default function NotificationsScreen() {
         </View>
       ) : (
         <FlatList
-          data={notifications}
+          data={filteredNotifications}
           renderItem={renderNotification}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
