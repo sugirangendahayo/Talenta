@@ -1,11 +1,11 @@
 // types/admin.types.ts
+import { BusinessVerificationStatus, PremiumPlan } from "./verification.types";
 
 export interface AdminStats {
   totalEmployers: number;
   totalJobseekers: number;
   totalJobs: number;
   totalApplications: number;
-  totalInterviews: number;
 }
 
 export interface AdminEmployer {
@@ -18,6 +18,13 @@ export interface AdminEmployer {
   business_license_url?: string;
   verification_document_url?: string;
   is_verified: boolean;
+  business_verification_status?: BusinessVerificationStatus;
+  business_rejection_reason?: string | null;
+  business_docs_urls?: string[];
+  business_docs_submitted_at?: string | null;
+  premium_plan?: PremiumPlan;
+  premium_activated_at?: string | null;
+  premium_expires_at?: string | null;
   profile_completed: boolean;
   created_at: string;
 }
@@ -58,6 +65,8 @@ export interface AdminJob {
   employer_profiles?: {
     company_name: string;
     email: string;
+    business_verification_status?: BusinessVerificationStatus;
+    premium_plan?: PremiumPlan;
   };
 }
 
@@ -77,7 +86,6 @@ export interface AdminAnalytics {
   unverifiedEmployers: number;
   jobsByStatus: Record<JobStatus, number>;
   totalApplications: number;
-  totalInterviews: number;
   jobseekerWithDocs: number;
   jobseekerWithoutDocs: number;
 }
