@@ -1,5 +1,5 @@
 // app/(admin-tabs)/_layout.tsx
-import { Tabs } from "expo-router";
+import { Tabs, useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { useEffect } from "react";
@@ -8,8 +8,14 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
+  type SharedValue,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
+import {
+  TabBarVisibilityProvider,
+  useTabBarVisibility,
+} from "@/contexts/TabBarVisibilityContext";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 
 // ─── Spring configs ───────────────────────────────────────────────────────────
@@ -38,10 +44,71 @@ const DARK_MID = "rgba(20,20,20,0.98)";
 const DARK_BOT = "rgba(14,14,14,0.99)";
 const DARK_SHEEN = "rgba(255,255,255,0.06)";
 
-// ─── Admin active pill — indigo/violet ───────────────────────────────────────
-const ACTIVE_TOP = "rgba(99,102,241,0.95)";
-const ACTIVE_MID = "rgba(79,70,229,1)";
-const ACTIVE_BOT = "rgba(67,56,202,1)";
+// ─── Active pill: cyan-700 (matches employer + jobseeker) ────────────────────
+const ACTIVE_TOP = "rgba(14,116,144,0.95)";
+const ACTIVE_MID = "rgba(12,98,122,1)";
+const ACTIVE_BOT = "rgba(8,75,96,1)";
+
+// ─── Profile FAB ──────────────────────────────────────────────────────────────
+function ProfileFAB({ slideY }: { slideY: SharedValue<number> }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isDark } = useTheme();
+
+  const isActive = pathname.includes("admin/Profile");
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: withSpring(slideY.value, HIDE_SPRING) }],
+    opacity: withTiming(slideY.value === 0 ? 1 : 0, { duration: 200 }),
+  }));
+
+  return (
+    <Animated.View style={[styles.fabWrapper, animStyle]}>
+      <TouchableOpacity
+        onPress={() => router.push("/(admin-tabs)/admin/Profile" as any)}
+        activeOpacity={0.8}
+        style={[
+          styles.fabOuter,
+          isDark
+            ? {
+                borderColor: isActive ? "#0E7490" : "rgba(255,255,255,0.08)",
+                borderWidth: isActive ? 2 : 1,
+              }
+            : {
+                borderColor: isActive ? "#0E7490" : "rgba(255,255,255,0.9)",
+                borderWidth: isActive ? 2 : 1,
+              },
+        ]}
+      >
+        {/* Surface gradient */}
+        <LinearGradient
+          colors={
+            isActive
+              ? [ACTIVE_TOP, ACTIVE_MID, ACTIVE_BOT]
+              : isDark
+              ? [DARK_TOP, DARK_MID, DARK_BOT]
+              : [GLASS_TOP, GLASS_MID, GLASS_BOT]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        {/* Top-edge sheen */}
+        <LinearGradient
+          colors={[isDark ? DARK_SHEEN : GLASS_SHEEN, "rgba(255,255,255,0)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.45 }}
+          style={styles.fabSheen}
+        />
+        <Ionicons
+          name={isActive ? "person" : "person-outline"}
+          size={22}
+          color={isActive ? "#fff" : isDark ? "#9CA3AF" : "#111827"}
+        />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 // ─── Single animated tab button ───────────────────────────────────────────────
 function TabButton({
@@ -83,8 +150,8 @@ function TabButton({
 
   const labelStyle = useAnimatedStyle(() => ({
     opacity: labelOpacity.value,
-    maxWidth: withSpring(labelWidth.value === 1 ? 70 : 0, TAB_SPRING),
-    marginLeft: withSpring(labelWidth.value === 1 ? 4 : 0, TAB_SPRING),
+    maxWidth: withSpring(labelWidth.value === 1 ? 80 : 0, TAB_SPRING),
+    marginLeft: withSpring(labelWidth.value === 1 ? 5 : 0, TAB_SPRING),
     overflow: "hidden",
   }));
 
@@ -144,8 +211,23 @@ function TabButton({
 
 // ─── Custom tab bar ───────────────────────────────────────────────────────────
 function AdminTabBar({ state, descriptors, navigation }: any) {
+  const { isVisible } = useTabBarVisibility();
   const { isDark } = useTheme();
   const slideY = useSharedValue(0);
+
+  const VISIBLE_TABS = [
+    "admin/Dashboard",
+    "admin/Employers",
+    "admin/Jobseekers",
+    "admin/Jobs",
+  ];
+  const visibleRoutes = state.routes.filter((r: any) =>
+    VISIBLE_TABS.includes(r.name)
+  );
+
+  useEffect(() => {
+    slideY.value = isVisible ? 0 : 150;
+  }, [isVisible]);
 
   const barStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: withSpring(slideY.value, HIDE_SPRING) }],
@@ -158,69 +240,85 @@ function AdminTabBar({ state, descriptors, navigation }: any) {
   const glassSheen = isDark ? DARK_SHEEN : GLASS_SHEEN;
 
   return (
-    <Animated.View
-      style={[
-        styles.barWrapper,
-        isDark
-          ? {
-              borderColor: "rgba(255,255,255,0.07)",
-              shadowColor: "#000",
-              shadowOpacity: 0.5,
-            }
-          : {
-              borderColor: "rgba(255,255,255,0.9)",
-              shadowColor: "#94A3B8",
-            },
-        barStyle,
-      ]}
-    >
-      <LinearGradient
-        colors={[glassTop, glassMid, glassBot]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
-      <LinearGradient
-        colors={[glassSheen, "rgba(255,255,255,0)"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.4 }}
-        style={[StyleSheet.absoluteFillObject, styles.barSheen]}
-      />
+    <>
+      <Animated.View
+        style={[
+          styles.barWrapper,
+          isDark
+            ? {
+                borderColor: "rgba(255,255,255,0.07)",
+                shadowColor: "#000",
+                shadowOpacity: 0.5,
+              }
+            : {
+                borderColor: "rgba(255,255,255,0.9)",
+                shadowColor: "#94A3B8",
+              },
+          barStyle,
+        ]}
+      >
+        <LinearGradient
+          colors={[glassTop, glassMid, glassBot]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <LinearGradient
+          colors={[glassSheen, "rgba(255,255,255,0)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 0.4 }}
+          style={[StyleSheet.absoluteFillObject, styles.barSheen]}
+        />
+        {!isDark && (
+          <LinearGradient
+            colors={[
+              "rgba(200,220,255,0.10)",
+              "rgba(255,255,255,0)",
+              "rgba(200,230,220,0.08)",
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
 
-      <View style={styles.tabsRow}>
-        {state.routes.map((route: any, index: number) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
+        <View style={styles.tabsRow}>
+          {visibleRoutes.map((route: any) => {
+            const { options } = descriptors[route.key];
+            const isFocused = state.routes[state.index]?.name === route.name;
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+            const onPress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          const onLongPress = () => {
-            navigation.emit({ type: "tabLongPress", target: route.key });
-          };
+            const onLongPress = () => {
+              navigation.emit({ type: "tabLongPress", target: route.key });
+            };
 
-          return (
-            <TabButton
-              key={route.key}
-              route={route}
-              isFocused={isFocused}
-              options={options}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              isDark={isDark}
-            />
-          );
-        })}
-      </View>
-    </Animated.View>
+            return (
+              <TabButton
+                key={route.key}
+                route={route}
+                isFocused={isFocused}
+                options={options}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                isDark={isDark}
+              />
+            );
+          })}
+        </View>
+      </Animated.View>
+
+      <ProfileFAB slideY={slideY} />
+    </>
   );
 }
 
@@ -230,8 +328,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     position: "absolute",
     bottom: 50,
-    left: 20,
-    right: 20,
+    left: 40,
+    right: 88, // Space for the floating button
     borderRadius: 50,
     overflow: "hidden",
     shadowOffset: { width: 0, height: 4 },
@@ -274,15 +372,40 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   tabLabel: {
+    marginLeft: 5,
     fontSize: 11,
     color: "#fff",
     includeFontPadding: false,
     fontFamily: "Quicksand_700Bold",
   },
+  // FAB
+  fabWrapper: {
+    position: "absolute",
+    bottom: 50,
+    right: 24,
+  },
+  fabOuter: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  fabSheen: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 26,
+  },
 });
 
-// ─── Root ─────────────────────────────────────────────────────────────────────
-export default function AdminTabLayout() {
+// ─── Tabs content ─────────────────────────────────────────────────────────────
+function TabsContent() {
+  const { t } = useTranslation("common");
+
   return (
     <Tabs
       tabBar={(props) => <AdminTabBar {...props} />}
@@ -291,7 +414,7 @@ export default function AdminTabLayout() {
       <Tabs.Screen
         name="admin/Dashboard"
         options={{
-          title: "Dashboard",
+          title: t("navigation.home", { defaultValue: "Home" }),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="grid-outline" size={size} color={color} />
           ),
@@ -300,7 +423,7 @@ export default function AdminTabLayout() {
       <Tabs.Screen
         name="admin/Employers"
         options={{
-          title: "Employers",
+          title: t("navigation.employers", { defaultValue: "Employers" }),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="business-outline" size={size} color={color} />
           ),
@@ -309,7 +432,7 @@ export default function AdminTabLayout() {
       <Tabs.Screen
         name="admin/Jobseekers"
         options={{
-          title: "Seekers",
+          title: t("navigation.seekers", { defaultValue: "Seekers" }),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="people-outline" size={size} color={color} />
           ),
@@ -318,21 +441,27 @@ export default function AdminTabLayout() {
       <Tabs.Screen
         name="admin/Jobs"
         options={{
-          title: "Jobs",
+          title: t("navigation.jobs", { defaultValue: "Jobs" }),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
           ),
         }}
       />
+      
+      {/* ── Hidden from the main tab bar ── */}
       <Tabs.Screen
-        name="admin/Analytics"
-        options={{
-          title: "Analytics",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" size={size} color={color} />
-          ),
-        }}
+        name="admin/Profile"
+        options={{ href: null }}
       />
     </Tabs>
+  );
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+export default function AdminTabLayout() {
+  return (
+    <TabBarVisibilityProvider>
+      <TabsContent />
+    </TabBarVisibilityProvider>
   );
 }
