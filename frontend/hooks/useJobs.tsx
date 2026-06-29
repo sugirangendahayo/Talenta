@@ -20,6 +20,8 @@ export interface Job {
   employer_profiles?: {
     company_name: string;
     email: string;
+    business_verification_status?: string;
+    premium_plan?: string;
   };
 }
 
@@ -128,7 +130,9 @@ export function useJobs(options: UseJobsOptions = {}) {
             *,
             employer_profiles!inner(
               company_name,
-              email
+              email,
+              business_verification_status,
+              premium_plan
             )
           `,
             { count: "exact" },
