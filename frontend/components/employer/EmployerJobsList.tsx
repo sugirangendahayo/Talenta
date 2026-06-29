@@ -279,7 +279,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
         }
         activeOpacity={0.8}
         accessibilityRole="button"
-        className="flex-row bg-white dark:bg-[#111111] mx-4 my-2 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] overflow-hidden"
+        className="bg-white dark:bg-[#111111] mx-4 my-2 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] overflow-hidden"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 1 },
@@ -287,8 +287,6 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
           shadowRadius: 4,
         }}
       >
-        {/* Status accent edge — same pattern as ApplicationCard */}
-        <View style={{ width: 4, backgroundColor: meta.accent }} />
 
         <View className="flex-1 p-4">
           {/* Title + status badge */}
