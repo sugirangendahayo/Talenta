@@ -24,6 +24,8 @@ export interface BookmarkedJob {
     employer_profiles?: {
       company_name: string;
       email: string;
+      business_verification_status?: string;
+      premium_plan?: string;
     };
   };
 }
@@ -238,7 +240,9 @@ export function useBookmarksList() {
             created_at,
             employer_profiles (
               company_name,
-              email
+              email,
+              business_verification_status,
+              premium_plan
             )
           )
         `
