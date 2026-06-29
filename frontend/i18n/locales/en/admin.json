@@ -1,0 +1,97 @@
+{
+  "navigation": {
+    "home": "Home",
+    "employers": "Employers",
+    "seekers": "Jobseekers",
+    "jobs": "Jobs",
+    "analytics": "Analytics",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Platform overview",
+    "platformOverview": "Platform Overview",
+    "quickAccess": "Quick Access",
+    "newEmployers": "New Employers",
+    "newJobseekers": "New Jobseekers",
+    "newJobs": "New Job Listings",
+    "loadError": "Failed to load dashboard"
+  },
+  "stats": {
+    "employers": "Employers",
+    "jobseekers": "Jobseekers",
+    "jobs": "Jobs",
+    "applications": "Applications",
+    "interviews": "Interviews"
+  },
+  "actions": {
+    "employerVerification": "Employer Verification",
+    "employerVerificationDesc": "Review & verify employer accounts",
+    "jobseekerDocs": "Jobseeker Documents",
+    "jobseekerDocsDesc": "Review submitted CV & ID documents",
+    "jobModeration": "Job Moderation",
+    "jobModerationDesc": "Pause, activate or close job listings",
+    "usersOverview": "Users Overview",
+    "usersOverviewDesc": "All users by role"
+  },
+  "employers": {
+    "title": "Employers",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "businessLicense": "Business License",
+    "businessLicenseMissing": "Business License: not uploaded",
+    "verificationDoc": "Verification Doc",
+    "verificationDocMissing": "Verification Doc: not uploaded",
+    "verifyAction": "Verify",
+    "unverifyAction": "Remove",
+    "verifyTitle": "Verify Employer",
+    "verifyConfirm": "Are you sure you want to verify this employer? They will be marked as trusted.",
+    "unverifyTitle": "Remove Verification",
+    "unverifyConfirm": "Are you sure you want to unverify this employer?",
+    "searchPlaceholder": "Search company or email…",
+    "emptyTitle": "No employers found",
+    "emptySubtitle": "Try adjusting your filters or search."
+  },
+  "jobseekers": {
+    "title": "Jobseekers",
+    "hasDocs": "Has Docs",
+    "noDocs": "No Docs",
+    "withDocs": "with documents",
+    "idDocument": "ID Document",
+    "idDocumentMissing": "ID Document: not uploaded",
+    "cvDocument": "CV / Resume",
+    "cvDocumentMissing": "CV / Resume: not uploaded",
+    "searchPlaceholder": "Search name or email…",
+    "emptyTitle": "No jobseekers found",
+    "emptySubtitle": "Try adjusting your filters or search."
+  },
+  "jobs": {
+    "title": "Jobs",
+    "activateAction": "Activate Job",
+    "closeAction": "Close Job",
+    "pauseAction": "Pause Job",
+    "searchPlaceholder": "Search job or company…",
+    "changeStatusTitle": "{{status}} Job",
+    "changeStatusConfirm": "Change \"{{title}}\" status to {{status}}?",
+    "emptyTitle": "No jobs found",
+    "emptySubtitle": "Try adjusting your filters or search."
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Platform statistics",
+    "employerVerification": "Employer Verification",
+    "jobseekerDocs": "Jobseeker Documents",
+    "jobsByStatus": "Jobs By Status"
+  },
+  "status": {
+    "active": "Active",
+    "paused": "Paused",
+    "closed": "Closed",
+    "expired": "Expired",
+    "draft": "Draft"
+  },
+  "filters": {
+    "all": "All",
+    "total": "total"
+  }
+}
