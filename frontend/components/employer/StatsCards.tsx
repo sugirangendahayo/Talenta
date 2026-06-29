@@ -52,7 +52,6 @@ interface StatsCardsProps {
     activeJobs: number;
     totalApplicants: number;
     shortlistedApplicants: number;
-    unreadMessages: number;
   };
 }
 
@@ -82,23 +81,12 @@ export default function StatCards({ stats }: StatsCardsProps) {
       label: t("stats.shortlisted"),
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
-    {
-      icon: "mail" as keyof typeof Ionicons.glyphMap,
-      iconColor: "#8B5CF6",
-      value: stats.unreadMessages,
-      label: t("stats.messages"),
-      badge:
-        stats.unreadMessages > 0
-          ? `${stats.unreadMessages} ${t("stats.new")}`
-          : undefined,
-      onPress: () => router.push("/(employer-tabs)/employers/Profile"),
-    },
   ];
 
   return (
     <View className="flex flex-row flex-wrap px-3 py-4">
       {statCards.map((stat, index) => (
-        <View className="w-1/2 mb-3" key={index}>
+        <View className={`${index === 2 ? "w-full" : "w-1/2"} mb-3`} key={index}>
           <StatCard {...stat} />
         </View>
       ))}
