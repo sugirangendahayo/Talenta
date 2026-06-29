@@ -226,6 +226,9 @@ function RootLayoutNav() {
 
       {/* Admin screens */}
       <Stack.Screen name="admin/Users" options={{ headerShown: false }} />
+
+      {/* Shared screens (accessible by all roles) */}
+      <Stack.Screen name="shared/privacy-security" options={{ headerShown: false }} />
     </Stack>
   );
 }
