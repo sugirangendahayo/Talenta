@@ -140,7 +140,12 @@ export default function JobseekerProfile() {
           icon: "lock",
           label: t("sections.account.privacy", { defaultValue: "Privacy & Security" }),
           type: "link",
-          onPress: undefined,
+        },
+        {
+          icon: "star",
+          label: t("sections.account.premium", { defaultValue: "Talenta Premium" }),
+          type: "link",
+          onPress: () => router.push("/jobseekers/premium-upgrade"),
         },
       ],
     },
@@ -253,11 +258,16 @@ export default function JobseekerProfile() {
 
             {/* Name / email / status */}
             <View className="ml-3 flex-1">
-              <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
-                {jobseekerData?.first_name && jobseekerData?.last_name
-                  ? `${jobseekerData.first_name} ${jobseekerData.last_name}`
-                  : "Your Name"}
-              </Text>
+              <View className="flex-row items-center gap-1.5">
+                <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
+                  {jobseekerData?.first_name && jobseekerData?.last_name
+                    ? `${jobseekerData.first_name} ${jobseekerData.last_name}`
+                    : "Your Name"}
+                </Text>
+                {jobseekerData?.premium_plan === "professional" && (
+                  <MaterialIcons name="verified" size={14} color="#0E7490" />
+                )}
+              </View>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5" numberOfLines={1}>
                 {jobseekerData?.email || "email@example.com"}
               </Text>
