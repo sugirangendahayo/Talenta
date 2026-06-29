@@ -34,6 +34,10 @@ function ApplicationCard({
   const statusLabel = t(`applications.status.${application.status}`, {
     defaultValue: application.status,
   });
+  const isEmployerVerified =
+    application.jobs.employer_profiles.business_verification_status === "approved" &&
+    application.jobs.employer_profiles.premium_plan !== "free" &&
+    !!application.jobs.employer_profiles.premium_plan;
 
   return (
     <TouchableOpacity
@@ -43,7 +47,7 @@ function ApplicationCard({
       accessibilityLabel={t("applications.card.openLabel", {
         defaultValue: `${application.jobs.title} at ${companyName}, ${statusLabel}`,
       })}
-      className="flex-row bg-white dark:bg-[#080A08] rounded-3xl mb-4 border border-gray-100 dark:border-[#222] overflow-hidden"
+      className="bg-white dark:bg-[#080A08] rounded-3xl mb-4 border border-gray-100 dark:border-[#222] overflow-hidden"
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -51,8 +55,7 @@ function ApplicationCard({
         shadowRadius: 4,
       }}
     >
-      {/* Status accent edge — lets the eye scan a whole list and read status from color alone */}
-      <View style={{ width: 4, backgroundColor: status.accent }} />
+      {/* (accent edge removed) */}
 
       <View className="flex-1 p-4">
         {/* Company mark + role/company + status badge */}
@@ -77,12 +80,14 @@ function ApplicationCard({
               >
                 {companyName}
               </Text>
-              <MaterialIcons
-                name="verified"
-                size={13}
-                color="#0E7490"
-                style={{ marginLeft: 4 }}
-              />
+              {isEmployerVerified && (
+                <MaterialIcons
+                  name="verified"
+                  size={13}
+                  color="#0E7490"
+                  style={{ marginLeft: 4 }}
+                />
+              )}
             </View>
           </View>
 
