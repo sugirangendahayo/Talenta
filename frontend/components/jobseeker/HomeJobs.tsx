@@ -185,6 +185,10 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
               : [];
             const isBookmarked = bookmarkedIds.has(item.id);
             const isApplied = appliedIds.has(item.id);
+            const isEmployerVerified =
+              item.employer_profiles?.business_verification_status === "approved" &&
+              item.employer_profiles?.premium_plan !== "free" &&
+              !!item.employer_profiles?.premium_plan;
 
             return (
               <TouchableOpacity
@@ -206,7 +210,9 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                         <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs">
                           {companyName}
                         </Text>
-                        <MaterialIcons name="verified" size={12} color="#0E7490" />
+                        {isEmployerVerified && (
+                          <MaterialIcons name="verified" size={12} color="#0E7490" />
+                        )}
                       </View>
                       <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 mt-0.5">
                         {item.title}
