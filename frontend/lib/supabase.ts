@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import "react-native-url-polyfill/auto";
+import { BusinessVerificationStatus, PremiumPlan } from "@/types/verification.types";
 
 
 console.log('SUPABASE URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);
@@ -192,6 +193,9 @@ export interface JobseekerProfile {
   id_document_url?: string;
   cv_document_url?: string;
   profile_completed: boolean;
+  premium_plan?: string;
+  premium_activated_at?: string | null;
+  premium_expires_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -208,6 +212,13 @@ export interface EmployerProfile {
   business_license_url?: string;
   verification_document_url?: string;
   is_verified: boolean;
+  business_verification_status?: BusinessVerificationStatus;
+  business_rejection_reason?: string | null;
+  business_docs_urls?: string[];
+  business_docs_submitted_at?: string | null;
+  premium_plan?: PremiumPlan;
+  premium_activated_at?: string | null;
+  premium_expires_at?: string | null;
   profile_completed: boolean;
   created_at: string;
   updated_at: string;
