@@ -12,11 +12,12 @@ import type {
   JobStatus,
   RecentActivity,
 } from "@/types/admin.types";
+import { approveBusinessVerification, rejectBusinessVerification } from "./verificationService";
 
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────
 
 export async function getAdminStats(): Promise<AdminStats> {
-  const [employers, jobseekers, jobs, applications, interviews] =
+  const [employers, jobseekers, jobs, applications] =
     await Promise.all([
       supabase
         .from("employer_profiles")
@@ -28,9 +29,6 @@ export async function getAdminStats(): Promise<AdminStats> {
       supabase
         .from("job_applications")
         .select("id", { count: "exact", head: true }),
-      supabase
-        .from("interviews")
-        .select("id", { count: "exact", head: true }),
     ]);
 
   return {
@@ -38,7 +36,6 @@ export async function getAdminStats(): Promise<AdminStats> {
     totalJobseekers: jobseekers.count ?? 0,
     totalJobs: jobs.count ?? 0,
     totalApplications: applications.count ?? 0,
-    totalInterviews: interviews.count ?? 0,
   };
 }
 
@@ -58,7 +55,7 @@ export async function getRecentActivity(): Promise<RecentActivity> {
       .limit(5),
     supabase
       .from("jobs")
-      .select("*, employer_profiles(company_name, email)")
+      .select("*, employer_profiles(company_name, email, business_verification_status, premium_plan)")
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
@@ -83,21 +80,15 @@ export async function getEmployers(): Promise<AdminEmployer[]> {
 }
 
 export async function verifyEmployer(id: string): Promise<void> {
-  const { error } = await supabase
-    .from("employer_profiles")
-    .update({ is_verified: true, updated_at: new Date().toISOString() })
-    .eq("id", id);
-
-  if (error) throw error;
+  await approveBusinessVerification(id);
 }
 
 export async function unverifyEmployer(id: string): Promise<void> {
-  const { error } = await supabase
-    .from("employer_profiles")
-    .update({ is_verified: false, updated_at: new Date().toISOString() })
-    .eq("id", id);
+  await rejectBusinessVerification(id, "Manually unverified by admin");
+}
 
-  if (error) throw error;
+export async function rejectEmployerWithReason(id: string, reason: string): Promise<void> {
+  await rejectBusinessVerification(id, reason);
 }
 
 // ─── Jobseekers ──────────────────────────────────────────────────────────────
@@ -117,7 +108,7 @@ export async function getJobseekers(): Promise<AdminJobseeker[]> {
 export async function getAdminJobs(): Promise<AdminJob[]> {
   const { data, error } = await supabase
     .from("jobs")
-    .select("*, employer_profiles(company_name, email)")
+    .select("*, employer_profiles(company_name, email, business_verification_status, premium_plan)")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -151,15 +142,12 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
 // ─── Analytics ───────────────────────────────────────────────────────────────
 
 export async function getAnalytics(): Promise<AdminAnalytics> {
-  const [employers, jobs, applications, interviews, jobseekers] =
+  const [employers, jobs, applications, jobseekers] =
     await Promise.all([
       supabase.from("employer_profiles").select("is_verified"),
       supabase.from("jobs").select("status"),
       supabase
         .from("job_applications")
-        .select("id", { count: "exact", head: true }),
-      supabase
-        .from("interviews")
         .select("id", { count: "exact", head: true }),
       supabase
         .from("jobseeker_profiles")
@@ -195,7 +183,6 @@ export async function getAnalytics(): Promise<AdminAnalytics> {
     unverifiedEmployers,
     jobsByStatus,
     totalApplications: applications.count ?? 0,
-    totalInterviews: interviews.count ?? 0,
     jobseekerWithDocs,
     jobseekerWithoutDocs,
   };
