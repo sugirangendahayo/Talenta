@@ -23,6 +23,8 @@ export interface Application {
     employer_profiles: {
       company_name: string;
       email: string;
+      business_verification_status?: string;
+      premium_plan?: string;
     };
   };
 }
@@ -79,7 +81,9 @@ export function useApplications(options: UseApplicationsOptions = {}) {
               category,
               employer_profiles!inner(
                 company_name,
-                email
+                email,
+                business_verification_status,
+                premium_plan
               )
             )
           `,
