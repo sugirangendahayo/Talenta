@@ -102,7 +102,7 @@ export default function Dashboard() {
           />
         }
       >
-        <DashboardHeader unreadCount={stats.unreadMessages} />
+        <DashboardHeader />
 
         <StatCards stats={stats} />
 
