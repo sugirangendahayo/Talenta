@@ -1,0 +1,97 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "employers": "Employeurs",
+    "seekers": "Candidats",
+    "jobs": "Emplois",
+    "analytics": "Analytique",
+    "profile": "Profil"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Aperçu de la plateforme",
+    "platformOverview": "Aperçu de la plateforme",
+    "quickAccess": "Accès rapide",
+    "newEmployers": "Nouveaux employeurs",
+    "newJobseekers": "Nouveaux candidats",
+    "newJobs": "Nouvelles offres d'emploi",
+    "loadError": "Échec du chargement du tableau de bord"
+  },
+  "stats": {
+    "employers": "Employeurs",
+    "jobseekers": "Candidats",
+    "jobs": "Emplois",
+    "applications": "Candidatures",
+    "interviews": "Entretiens"
+  },
+  "actions": {
+    "employerVerification": "Vérification des employeurs",
+    "employerVerificationDesc": "Examiner et vérifier les comptes",
+    "jobseekerDocs": "Documents des candidats",
+    "jobseekerDocsDesc": "Examiner les CV et pièces d'identité",
+    "jobModeration": "Modération des emplois",
+    "jobModerationDesc": "Suspendre, activer ou fermer des offres",
+    "usersOverview": "Aperçu des utilisateurs",
+    "usersOverviewDesc": "Tous les utilisateurs par rôle"
+  },
+  "employers": {
+    "title": "Employeurs",
+    "verified": "Vérifié",
+    "unverified": "Non vérifié",
+    "businessLicense": "Licence commerciale",
+    "businessLicenseMissing": "Licence commerciale : non téléchargée",
+    "verificationDoc": "Document de vérification",
+    "verificationDocMissing": "Document de vérification : non téléchargé",
+    "verifyAction": "Vérifier",
+    "unverifyAction": "Retirer",
+    "verifyTitle": "Vérifier l'employeur",
+    "verifyConfirm": "Êtes-vous sûr de vouloir vérifier cet employeur ? Il sera marqué comme de confiance.",
+    "unverifyTitle": "Retirer la vérification",
+    "unverifyConfirm": "Êtes-vous sûr de vouloir annuler la vérification de cet employeur ?",
+    "searchPlaceholder": "Rechercher une entreprise ou e-mail…",
+    "emptyTitle": "Aucun employeur trouvé",
+    "emptySubtitle": "Essayez d'ajuster vos filtres ou votre recherche."
+  },
+  "jobseekers": {
+    "title": "Candidats",
+    "hasDocs": "Avec documents",
+    "noDocs": "Sans documents",
+    "withDocs": "avec documents",
+    "idDocument": "Pièce d'identité",
+    "idDocumentMissing": "Pièce d'identité : non téléchargée",
+    "cvDocument": "CV / Résumé",
+    "cvDocumentMissing": "CV / Résumé : non téléchargé",
+    "searchPlaceholder": "Rechercher un nom ou e-mail…",
+    "emptyTitle": "Aucun candidat trouvé",
+    "emptySubtitle": "Essayez d'ajuster vos filtres ou votre recherche."
+  },
+  "jobs": {
+    "title": "Emplois",
+    "activateAction": "Activer l'emploi",
+    "closeAction": "Fermer l'emploi",
+    "pauseAction": "Suspendre l'emploi",
+    "searchPlaceholder": "Rechercher un emploi ou entreprise…",
+    "changeStatusTitle": "Emploi {{status}}",
+    "changeStatusConfirm": "Changer le statut de \"{{title}}\" à {{status}} ?",
+    "emptyTitle": "Aucun emploi trouvé",
+    "emptySubtitle": "Essayez d'ajuster vos filtres ou votre recherche."
+  },
+  "analytics": {
+    "title": "Analytique",
+    "subtitle": "Statistiques de la plateforme",
+    "employerVerification": "Vérification des employeurs",
+    "jobseekerDocs": "Documents des candidats",
+    "jobsByStatus": "Emplois par statut"
+  },
+  "status": {
+    "active": "Actif",
+    "paused": "Suspendu",
+    "closed": "Fermé",
+    "expired": "Expiré",
+    "draft": "Brouillon"
+  },
+  "filters": {
+    "all": "Tout",
+    "total": "total"
+  }
+}
