@@ -6,7 +6,6 @@ export interface DashboardStats {
   activeJobs: number;
   totalApplicants: number;
   shortlistedApplicants: number;
-  unreadMessages: number;
 }
 
 export interface HighPriorityApplicant {
@@ -56,7 +55,6 @@ export function useDashboard() {
     activeJobs: 0,
     totalApplicants: 0,
     shortlistedApplicants: 0,
-    unreadMessages: 0,
   });
   const [highPriorityApplicants, setHighPriorityApplicants] = useState<HighPriorityApplicant[]>([]);
   const [activeJobs, setActiveJobs] = useState<ActiveJob[]>([]);
@@ -116,18 +114,10 @@ export function useDashboard() {
         .eq("jobs.employer_id", user.id)
         .eq("status", "shortlisted");
 
-      // Unread notifications count (messages)
-      const { count: unreadMessagesCount } = await supabase
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("is_read", false);
-
       setStats({
         activeJobs: activeJobsCount || 0,
         totalApplicants: totalApplicantsCount || 0,
         shortlistedApplicants: shortlistedApplicantsCount || 0,
-        unreadMessages: unreadMessagesCount || 0,
       });
     } catch (err: any) {
       console.error("Error fetching dashboard stats:", err);
