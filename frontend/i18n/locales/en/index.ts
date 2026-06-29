@@ -1,4 +1,5 @@
 // i18n/locales/en/index.ts
+import admin from './admin.json';
 import auth from './auth.json';
 import categories from './categories.json';
 import applicants from './applicants.json'
@@ -12,6 +13,7 @@ import welcome from './welcome.json';
 
 export default {
   translation: {  // ← Add this wrapper
+    admin,
     auth,
     categories,
     applicants,
