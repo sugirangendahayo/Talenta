@@ -1,3 +1,4 @@
+// app/(employer-tabs)/employers/Profile.tsx
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
@@ -17,6 +18,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
+import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
 
 export default function EmployerProfile() {
   const { profile, role, user, signOut, loading } = useAuth();
@@ -74,6 +77,8 @@ export default function EmployerProfile() {
   };
 
   const settingsSections = [
+    // ── Account ──────────────────────────────────────────────────────────────
+    // Edit profile and privacy only — no verification items here.
     {
       title: t("sections.account.title"),
       icon: "business-outline",
@@ -85,22 +90,44 @@ export default function EmployerProfile() {
           onPress: () => router.push("/employer/complete-profile"),
         },
         {
-          icon: "verified-user",
-          label: t("sections.account.verification"),
-          value: employerData?.is_verified
-            ? t("status.verified")
-            : t("status.pending"),
-          type: "link",
-          onPress: undefined,
-        },
-        {
           icon: "lock",
           label: t("sections.account.privacy"),
           type: "link",
-          onPress: undefined,
+          onPress: () => router.push("/shared/privacy-security"),
         },
       ],
     },
+
+    // ── Verification ─────────────────────────────────────────────────────────
+    // All three items are one workflow: submit docs → get business verified
+    // → unlock premium. They belong together so the employer can follow the
+    // steps in order without hunting across multiple sections.
+    {
+      title: t("sections.verification.title", { defaultValue: "Verification & Premium" }),
+      icon: "shield-checkmark-outline",
+      items: [
+
+        {
+          icon: "verified-user",
+          label: t("sections.verification.businessVerification", {
+            defaultValue: "Business Verification",
+          }),
+          type: "link",
+          onPress: () => router.push("/employer/business-verification"),
+        },
+        {
+          icon: "star",
+          label: t("sections.verification.premium", {
+            defaultValue: "Talenta Premium",
+          }),
+          type: "link",
+          onPress: () => router.push("/employer/premium-verification"),
+       
+        },
+      ],
+    },
+
+    // ── Preferences ───────────────────────────────────────────────────────────
     {
       title: t("sections.preferences.title", { defaultValue: "Preferences" }),
       icon: "settings-outline",
@@ -120,18 +147,8 @@ export default function EmployerProfile() {
         },
       ],
     },
-    {
-      title: t("sections.documents.title", { defaultValue: "Documents" }),
-      icon: "folder-outline",
-      items: [
-        {
-          icon: "description",
-          label: t("sections.documents.verification", { defaultValue: "Verification Documents" }),
-          type: "link",
-          onPress: () => router.push("/employer/upload-documents"),
-        },
-      ],
-    },
+
+    // ── Support ───────────────────────────────────────────────────────────────
     {
       title: t("sections.support.title"),
       icon: "help-outline",
@@ -168,7 +185,7 @@ export default function EmployerProfile() {
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-6">
         <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-200">
           {t("title")}
@@ -184,19 +201,19 @@ export default function EmployerProfile() {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
-        {/* Company Profile Card */}
+        {/* ── Company profile card ────────────────────────────────────── */}
         <View
-          className="mx-6 my-4 bg-white dark:bg-[#080A08] rounded-3xl p-4 border border-gray-100 dark:border-[#222]"
+          className="mx-6 my-4 bg-white dark:bg-[#0E0E0E] rounded-3xl p-4 border border-gray-100 dark:border-[#222]"
           style={{
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.05,
             shadowRadius: 3,
+            elevation: 2,
           }}
         >
           {/* Top row: logo + info + QR */}
           <View className="flex-row items-center">
-            {/* Company Logo */}
             <View className="relative">
               <View className="bg-gray-100 dark:bg-[#141414] rounded-2xl p-1">
                 <Image
@@ -207,50 +224,44 @@ export default function EmployerProfile() {
                   resizeMode="contain"
                 />
               </View>
-
-              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white">
+              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white dark:border-[#0E0E0E]">
                 <Feather name="camera" size={11} color="white" />
               </TouchableOpacity>
             </View>
 
-            {/* Company Info */}
             <View className="ml-3 flex-1">
               <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
                 {employerData?.company_name || "Company Name"}
               </Text>
-
               <Text
                 className="text-gray-400 font-quicksandMedium text-xs mt-0.5"
                 numberOfLines={1}
               >
                 {employerData?.email || "email@company.com"}
               </Text>
-
-              {/* Status Chip */}
-              <View className="flex-row items-center gap-1 mt-1.5 self-start bg-cyan-50 border border-cyan-100 px-2.5 py-1 rounded-full">
-                <MaterialIcons
-                  name={employerData?.is_verified ? "verified" : "pending"}
-                  size={12}
-                  color="#0E7490"
+              <View className="flex-col mt-2" style={{ gap: 6 }}>
+                <BusinessVerificationBadge
+                  status={employerData?.business_verification_status}
                 />
-                <Text className="text-cyan-700 text-xs font-quicksandBold">
-                  {employerData?.is_verified
-                    ? t("status.verified")
-                    : t("status.pending")}
-                </Text>
+                <TalentaVerifiedBadge
+                  businessStatus={employerData?.business_verification_status}
+                  premiumPlan={employerData?.premium_plan}
+                />
               </View>
             </View>
 
-            {/* QR */}
-            <TouchableOpacity className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center">
+            <TouchableOpacity
+              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
             </TouchableOpacity>
           </View>
 
           {/* Divider */}
-          <View className="h-px bg-gray-100 dark:bg-[#141414] mt-4 mb-3" />
+          <View className="h-px bg-gray-100 dark:bg-[#222] mt-4 mb-3" />
 
-          {/* Company Stats */}
+          {/* Stats row */}
           <View className="flex-row">
             <View className="flex-1 items-center">
               <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
@@ -260,9 +271,7 @@ export default function EmployerProfile() {
                 {t("stats.activeJobs")}
               </Text>
             </View>
-
-            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
-
+            <View className="w-px bg-gray-100 dark:bg-[#222]" />
             <View className="flex-1 items-center">
               <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                 0
@@ -271,9 +280,7 @@ export default function EmployerProfile() {
                 {t("stats.applicants")}
               </Text>
             </View>
-
-            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
-
+            <View className="w-px bg-gray-100 dark:bg-[#222]" />
             <View className="flex-1 items-center">
               <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
                 0
@@ -285,19 +292,32 @@ export default function EmployerProfile() {
           </View>
         </View>
 
-        {/* Settings Sections */}
+        {/* ── Settings sections ───────────────────────────────────────── */}
         {settingsSections.map((section, sectionIndex) => (
           <View
             key={sectionIndex}
-            className="mx-6 mb-4 bg-white dark:bg-[#080A08] rounded-3xl shadow-sm border border-gray-200 dark:border-[#2a2a2a] overflow-hidden"
+            className="mx-6 mb-4 bg-white dark:bg-[#0E0E0E] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] overflow-hidden"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
           >
+            {/* Section header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
-              <Ionicons name={section.icon as any} size={20} color="#0E7490" />
+              <Ionicons
+                name={section.icon as any}
+                size={20}
+                color="#0E7490"
+              />
               <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
                 {section.title}
               </Text>
             </View>
 
+            {/* Section rows */}
             {section.items.map((item, itemIndex) => (
               <TouchableOpacity
                 key={itemIndex}
@@ -335,37 +355,36 @@ export default function EmployerProfile() {
           </View>
         ))}
 
-
-
         <View className="h-2" />
 
-        {/* Logout Button */}
+        {/* ── Logout ─────────────────────────────────────────────────── */}
         <TouchableOpacity
-          className="mx-6 mb-8 bg-red-50 rounded-2xl p-4 flex-row items-center justify-center border border-red-200"
+          className="mx-6 mb-8 bg-red-50 dark:bg-red-900/10 rounded-2xl p-4 flex-row items-center justify-center border border-red-200 dark:border-red-900/30"
           onPress={handleLogout}
           disabled={isLoggingOut}
+          activeOpacity={0.85}
         >
           {isLoggingOut ? (
             <ActivityIndicator size="small" color="#DC2626" />
           ) : (
             <>
               <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-              <Text className="text-red-600 font-quicksandBold text-lg ml-2">
+              <Text className="text-red-600 dark:text-red-400 font-quicksandBold text-lg ml-2">
                 {t("logout.button")}
               </Text>
             </>
           )}
         </TouchableOpacity>
 
-        {/* App Version */}
+        {/* ── App version ─────────────────────────────────────────────── */}
         <View className="items-center pb-8">
-          <Text className="text-gray-400 font-quicksandMedium text-sm">
+          <Text className="text-gray-400 dark:text-gray-600 font-quicksandMedium text-sm">
             {t("version")}
           </Text>
         </View>
       </ScrollView>
 
-      {/* Language Selector Modal */}
+      {/* Language selector modal */}
       <LanguageSelector
         visible={languageSelectorVisible}
         onClose={() => setLanguageSelectorVisible(false)}
