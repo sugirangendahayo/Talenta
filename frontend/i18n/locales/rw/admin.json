@@ -1,0 +1,97 @@
+{
+  "navigation": {
+    "home": "Ahabanza",
+    "employers": "Abakoresha",
+    "seekers": "Abashaka akazi",
+    "jobs": "Imirimo",
+    "analytics": "Isesengura",
+    "profile": "Umwirondoro"
+  },
+  "dashboard": {
+    "title": "Ikibaho",
+    "subtitle": "Incamake y'urubuga",
+    "platformOverview": "Incamake y'urubuga",
+    "quickAccess": "Kugera vuba",
+    "newEmployers": "Abakoresha bashya",
+    "newJobseekers": "Abashaka akazi bashya",
+    "newJobs": "Imirimo mishya",
+    "loadError": "Ntibyakunze gufungura ikibaho"
+  },
+  "stats": {
+    "employers": "Abakoresha",
+    "jobseekers": "Abashaka akazi",
+    "jobs": "Imirimo",
+    "applications": "Ubusabe",
+    "interviews": "Ibibazo"
+  },
+  "actions": {
+    "employerVerification": "Kugenzura abakoresha",
+    "employerVerificationDesc": "Reba kandi wemeze abakoresha",
+    "jobseekerDocs": "Inyandiko z'abashaka akazi",
+    "jobseekerDocsDesc": "Reba CV n'indangamuntu",
+    "jobModeration": "Kugenzura imirimo",
+    "jobModerationDesc": "Hagarika, fungura cyangwa funga imirimo",
+    "usersOverview": "Incamake y'abakoresha",
+    "usersOverviewDesc": "Abakoresha bose hakurikijwe uruhare"
+  },
+  "employers": {
+    "title": "Abakoresha",
+    "verified": "Yemejwe",
+    "unverified": "Ntiyemejwe",
+    "businessLicense": "Icyangombwa cy'ubucuruzi",
+    "businessLicenseMissing": "Icyangombwa cy'ubucuruzi: nticyashyizweho",
+    "verificationDoc": "Inyandiko yemeza",
+    "verificationDocMissing": "Inyandiko yemeza: ntiyashyizweho",
+    "verifyAction": "Emeza",
+    "unverifyAction": "Kuraho",
+    "verifyTitle": "Emeza umukoresha",
+    "verifyConfirm": "Urifuza kwemeza uyu mukoresha? Azagaragara nk'uwizewe.",
+    "unverifyTitle": "Kuraho kwemezwa",
+    "unverifyConfirm": "Urifuza gukuraho kwemezwa k'uyu mukoresha?",
+    "searchPlaceholder": "Shakisha ikigo cyangwa imeri…",
+    "emptyTitle": "Nta bakoresha babonetse",
+    "emptySubtitle": "Gerageza guhindura akayunguruzo cyangwa ishakisha."
+  },
+  "jobseekers": {
+    "title": "Abashaka akazi",
+    "hasDocs": "Afite inyandiko",
+    "noDocs": "Nta nyandiko",
+    "withDocs": "bafite inyandiko",
+    "idDocument": "Indangamuntu",
+    "idDocumentMissing": "Indangamuntu: ntiyashyizweho",
+    "cvDocument": "CV",
+    "cvDocumentMissing": "CV: ntiyashyizweho",
+    "searchPlaceholder": "Shakisha izina cyangwa imeri…",
+    "emptyTitle": "Nta bashaka akazi babonetse",
+    "emptySubtitle": "Gerageza guhindura akayunguruzo cyangwa ishakisha."
+  },
+  "jobs": {
+    "title": "Imirimo",
+    "activateAction": "Fungura akazi",
+    "closeAction": "Funga akazi",
+    "pauseAction": "Hagarika akazi",
+    "searchPlaceholder": "Shakisha akazi cyangwa ikigo…",
+    "changeStatusTitle": "Akazi {{status}}",
+    "changeStatusConfirm": "Guhindura imiterere ya \"{{title}}\" bibe {{status}}?",
+    "emptyTitle": "Nta mirimo yabonetse",
+    "emptySubtitle": "Gerageza guhindura akayunguruzo cyangwa ishakisha."
+  },
+  "analytics": {
+    "title": "Isesengura",
+    "subtitle": "Imibare y'urubuga",
+    "employerVerification": "Kugenzura abakoresha",
+    "jobseekerDocs": "Inyandiko z'abashaka akazi",
+    "jobsByStatus": "Imirimo ku miterere"
+  },
+  "status": {
+    "active": "Ikora",
+    "paused": "Yahagaritswe",
+    "closed": "Ifunze",
+    "expired": "Yarangiye",
+    "draft": "Inyandiko"
+  },
+  "filters": {
+    "all": "Byose",
+    "total": "byose"
+  }
+}
