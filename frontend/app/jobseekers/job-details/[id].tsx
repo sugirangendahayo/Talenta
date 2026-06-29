@@ -232,6 +232,10 @@ export default function JobDetailsScreen() {
     ? job.job_type.split(",").map((t) => t.trim())
     : [];
   const categoryDisplay = getCategoryDisplay(job.category);
+  const isEmployerVerified =
+    job.employer_profiles?.business_verification_status === "approved" &&
+    job.employer_profiles?.premium_plan !== "free" &&
+    !!job.employer_profiles?.premium_plan;
 
   return (
     <View className="flex-1 bg-gray-100 dark:bg-[#141414]">
@@ -304,7 +308,9 @@ export default function JobDetailsScreen() {
                   <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base">
                     {companyName}
                   </Text>
-                  <MaterialIcons name="verified" size={16} color="#0E7490" />
+                  {isEmployerVerified && (
+                    <MaterialIcons name="verified" size={16} color="#0E7490" />
+                  )}
                 </View>
                 <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-200 mb-1">
                   {job.title}
