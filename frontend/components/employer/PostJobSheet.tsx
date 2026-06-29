@@ -145,7 +145,7 @@ function StyledInput({
       multiline={multiline}
       numberOfLines={numberOfLines}
       textAlignVertical={multiline ? "top" : "center"}
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100"
+      className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-xl px-4 py-3 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100"
       style={style}
     />
   );
@@ -167,7 +167,7 @@ function SelectChip({
       className={`px-4 py-2 rounded-full border mr-2 mb-2 ${
         selected
           ? "bg-cyan-700 border-cyan-700"
-          : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
       }`}
     >
       <Text
@@ -687,18 +687,17 @@ export default function PostJobSheet({
         <Animated.View
           style={{
             transform: [{ translateY }],
-            backgroundColor: "#fff",
+            backgroundColor: isDark ? "#080A08" : "#ffffff",
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             height: "93%",
             flexDirection: "column",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: -3 },
-            shadowOpacity: 0.08,
+            shadowOpacity: isDark ? 0.4 : 0.08,
             shadowRadius: 20,
             elevation: 20,
           }}
-          className="bg-white dark:bg-gray-900"
         >
           {/* Drag handle + step bar */}
           <View
@@ -749,14 +748,14 @@ export default function PostJobSheet({
             </ScrollView>
 
             {/* Footer */}
-            <View className="flex-row gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+            <View className="flex-row gap-3 px-6 py-4 border-t border-gray-100 dark:border-[#2a2a2a] bg-white dark:bg-[#0D0F0D]">
               {/* Left action: Draft (step 0) or Back */}
               {step === 0 ? (
                 <TouchableOpacity
                   onPress={() => handleSubmit(true)}
                   disabled={submitting}
                   activeOpacity={0.7}
-                  className="flex-1 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 items-center justify-center"
+                  className="flex-1 py-3.5 rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
                 >
                   <Text className="text-sm font-quicksandBold text-gray-500 dark:text-gray-400">
                     {t("postJob.saveDraft", { defaultValue: "Save draft" })}
@@ -767,7 +766,7 @@ export default function PostJobSheet({
                   onPress={handleBack}
                   disabled={submitting}
                   activeOpacity={0.7}
-                  className="w-14 h-12 rounded-xl border border-gray-200 dark:border-gray-700 items-center justify-center"
+                  className="w-14 h-12 rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
                 >
                   <Ionicons name="arrow-back" size={18} color={iconColor} />
                 </TouchableOpacity>
