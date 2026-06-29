@@ -255,6 +255,10 @@ export default function SavedJobsScreen() {
             const catColor = getCategoryColor(job.category);
             const isExpiredOrClosed =
               job.status === "expired" || job.status === "closed";
+            const isEmployerVerified =
+              job.employer_profiles?.business_verification_status === "approved" &&
+              job.employer_profiles?.premium_plan !== "free" &&
+              !!job.employer_profiles?.premium_plan;
 
             return (
               <TouchableOpacity
@@ -305,11 +309,13 @@ export default function SavedJobsScreen() {
                           >
                             {companyName}
                           </Text>
-                          <MaterialIcons
-                            name="verified"
-                            size={11}
-                            color="#0E7490"
-                          />
+                          {isEmployerVerified && (
+                            <MaterialIcons
+                              name="verified"
+                              size={11}
+                              color="#0E7490"
+                            />
+                          )}
                         </View>
                         <Text
                           className="text-[15px] font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight"
