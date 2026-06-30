@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Modal,
   ScrollView,
   Text,
@@ -15,6 +16,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfileImage } from "@/hooks/useProfileImage";
+import UserAvatar from "@/components/common/UserAvatar";
+import { EmployerProfile } from "@/lib/supabase";
 
 // Reuse COUNTRIES list
 const COUNTRIES = [
@@ -242,7 +247,8 @@ function InputField({
 
 export default function EmployerCompleteProfileScreen() {
   const router = useRouter();
-  const { t } = useTranslation("profile"); // Assumes we have profile translations, fallback strings provided
+  const { t } = useTranslation("profile");
+  const { user, profile, refreshProfile } = useAuth();
   const {
     loading,
     saving,
@@ -251,6 +257,20 @@ export default function EmployerCompleteProfileScreen() {
     updateField,
     saveProfile,
   } = useEmployerProfileCompletion();
+
+  const employerProfile = profile as EmployerProfile | null;
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(
+    employerProfile?.profile_image_url ?? null
+  );
+
+  const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
+    user?.id ?? "",
+    "employer_profiles",
+    async (url) => {
+      setLocalImageUrl(url);
+      await refreshProfile();
+    }
+  );
 
   const handleSave = async () => {
     const success = await saveProfile();
@@ -315,6 +335,32 @@ export default function EmployerCompleteProfileScreen() {
               Missing fields: {completionStatus.missingFields.join(", ")}
             </Text>
           )}
+        </View>
+
+        {/* ── Profile Photo ── */}
+        <View className="items-center pt-6 pb-2">
+          <View className="relative">
+            <UserAvatar
+              imageUrl={localImageUrl ?? employerProfile?.profile_image_url}
+              name={formData.company_name || "C"}
+              size={96}
+            />
+            <TouchableOpacity
+              onPress={pickAndUpload}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-cyan-700 rounded-full items-center justify-center border-2 border-white"
+              activeOpacity={0.85}
+            >
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="camera" size={15} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+          <Text className="mt-2 font-quicksandMedium text-xs text-gray-400">
+            Tap camera to update photo
+          </Text>
         </View>
 
         {/* ── Company Information ── */}
