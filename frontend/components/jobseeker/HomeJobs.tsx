@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
+import UserAvatar from "@/components/common/UserAvatar";
 
 interface HomeJobsProps {
   selectedCategory: string;
@@ -200,11 +201,11 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                 <View className="flex-row items-start justify-between mb-3">
                   <View className="flex-row items-center flex-1 mr-3">
                     {/* Company avatar */}
-                    <View className="w-12 h-12 rounded-2xl border border-gray-100 dark:border-[#222] bg-cyan-50 items-center justify-center">
-                      <Text className="text-lg font-quicksandBold text-cyan-600 dark:text-cyan-400">
-                        {companyName.charAt(0).toUpperCase()}
-                      </Text>
-                    </View>
+                    <UserAvatar 
+                      imageUrl={item.employer_profiles?.profile_image_url} 
+                      name={companyName} 
+                      size={48} 
+                    />
                     <View className="flex-1 ml-3">
                       <View className="flex-row items-center gap-1">
                         <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs">
