@@ -12,7 +12,6 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -20,6 +19,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import UserAvatar from "@/components/common/UserAvatar";
+import { useProfileImage } from "@/hooks/useProfileImage";
 
 export default function JobseekerProfile() {
   const { profile, role, user, signOut, loading } = useAuth();
@@ -35,6 +36,17 @@ export default function JobseekerProfile() {
 
   const jobseekerData =
     role === "jobseeker" && profile ? (profile as JobseekerProfileType) : null;
+
+  const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
+    user?.id ?? "",
+    "jobseeker_profiles",
+    async () => {
+      // Refresh context profile when done
+      if ((useAuth as any)().refreshProfile) {
+        await (useAuth as any)().refreshProfile();
+      }
+    }
+  );
 
   useEffect(() => {
     if (jobseekerData) {
@@ -246,13 +258,21 @@ export default function JobseekerProfile() {
           <View className="flex-row items-center">
             {/* Avatar */}
             <View className="relative">
-              <Image
-                source={require("@/assets/images/user_.png")}
-                className="w-14 h-14 rounded-2xl"
-                resizeMode="cover"
+              <UserAvatar
+                imageUrl={jobseekerData?.profile_image_url}
+                name={`${jobseekerData?.first_name || ""} ${jobseekerData?.last_name || ""}`.trim() || "JS"}
+                size={56}
               />
-              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white">
-                <Feather name="camera" size={11} color="white" />
+              <TouchableOpacity
+                onPress={pickAndUpload}
+                disabled={uploadingPhoto}
+                className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white items-center justify-center"
+              >
+                {uploadingPhoto ? (
+                  <ActivityIndicator size="small" color="white" style={{ transform: [{ scale: 0.5 }] }} />
+                ) : (
+                  <Feather name="camera" size={11} color="white" />
+                )}
               </TouchableOpacity>
             </View>
 
