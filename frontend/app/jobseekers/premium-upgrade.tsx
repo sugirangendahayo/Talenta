@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Reuse the same success modal we have for employers, but we can just mock the UI locally if we want, or create a specific one. Let's create a simple inline success view or modal logic here.
 import PremiumSuccessModal from "@/components/employer/PremiumSuccessModal";
@@ -51,6 +52,9 @@ export default function JobseekerPremiumUpgradeScreen() {
     activatePlan,
   } = useJobseekerPremiumStatus();
   
+  const { profile } = useAuth();
+  const isProfileComplete = profile?.profile_completed ?? false;
+
   const [showSuccess, setShowSuccess] = useState(false);
 
   if (premiumLoading) {
@@ -98,6 +102,28 @@ export default function JobseekerPremiumUpgradeScreen() {
             Get noticed by top employers and increase your chances of getting hired.
           </Text>
         </View>
+
+        {!isProfileComplete && (
+          <View className="mb-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 flex-row items-start">
+            <Ionicons name="information-circle" size={20} color="#D97706" style={{ marginTop: 2 }} />
+            <View className="ml-3 flex-1">
+              <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-sm mb-1">
+                Profile Incomplete
+              </Text>
+              <Text className="text-amber-700 dark:text-amber-600 font-quicksandMedium text-xs leading-4 mb-3">
+                You must complete your jobseeker profile before you can upgrade to Premium and receive the Verified badge.
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/jobseekers/complete-profile")}
+                className="bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-xl self-start"
+              >
+                <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-xs">
+                  Complete Profile
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {PLANS.map((plan) => {
           const isCurrent = currentPlan === plan.id;
@@ -164,30 +190,31 @@ export default function JobseekerPremiumUpgradeScreen() {
 
               {!isCurrent && (
                 <TouchableOpacity
-                  onPress={() => handleSubscribe(plan.id)}
-                  disabled={activating}
-                  className={`py-4 rounded-2xl items-center justify-center ${
-                    plan.isPopular
-                      ? "bg-cyan-700 dark:bg-cyan-600"
-                      : "bg-gray-100 dark:bg-[#222]"
-                  }`}
-                >
-                  {activating ? (
-                    <ActivityIndicator
-                      color={plan.isPopular ? "white" : "#0E7490"}
-                    />
-                  ) : (
-                    <Text
-                      className={`font-quicksandBold text-base ${
-                        plan.isPopular
-                          ? "text-white"
-                          : "text-gray-700 dark:text-gray-300"
-                      }`}
-                    >
-                      {plan.price === "Free" ? "Downgrade to Free" : "Subscribe Now"}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                onPress={() => handleSubscribe(plan.id)}
+                disabled={isCurrent || activating || (!isProfileComplete && plan.id !== "free")}
+                className={`w-full py-4 rounded-xl items-center justify-center ${
+                  isCurrent
+                    ? "bg-gray-100 dark:bg-[#2a2a2a]"
+                    : (!isProfileComplete && plan.id !== "free")
+                    ? "bg-gray-200 dark:bg-[#1a1a1a]"
+                    : "bg-cyan-700 dark:bg-cyan-600"
+                }`}
+                activeOpacity={0.85}
+              >
+                {activating && plan.id !== "free" ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text
+                    className={`font-quicksandBold text-base ${
+                      isCurrent || (!isProfileComplete && plan.id !== "free")
+                        ? "text-gray-400 dark:text-gray-500"
+                        : "text-white"
+                    }`}
+                  >
+                    {isCurrent ? "Current Plan" : "Upgrade to " + plan.name}
+                  </Text>
+                )}
+              </TouchableOpacity>
               )}
             </View>
           );
