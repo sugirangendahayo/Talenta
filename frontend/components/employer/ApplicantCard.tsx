@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import UserAvatar from "@/components/common/UserAvatar";
 
 interface ApplicantCardProps {
   applicant: Applicant;
@@ -203,12 +204,12 @@ export default function ApplicantCard({
         >
           {/* Avatar initial + name/email */}
           <View className="flex-row items-center flex-1 mr-3">
-            <View className="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 items-center justify-center mr-3">
-              <Text className="text-sm font-quicksandBold text-cyan-700 dark:text-cyan-400">
-                {profile.first_name.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <View className="flex-1">
+            <UserAvatar 
+              imageUrl={profile.profile_image_url} 
+              name={candidateName} 
+              size={40} 
+            />
+            <View className="flex-1 ml-3">
               <Text
                 className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
                 numberOfLines={1}
