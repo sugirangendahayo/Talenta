@@ -18,6 +18,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfileImage } from "@/hooks/useProfileImage";
+import UserAvatar from "@/components/common/UserAvatar";
+import { JobseekerProfile } from "@/lib/supabase";
 
 const COUNTRIES = [
   { code: "RW", name: "Rwanda", dialCode: "+250", flag: "🇷🇼" },
@@ -282,6 +286,7 @@ function InputField({
 export default function CompleteProfileScreen() {
   const router = useRouter();
   const { t } = useTranslation("profile");
+  const { user, profile, refreshProfile } = useAuth();
   const {
     loading,
     saving,
@@ -292,6 +297,20 @@ export default function CompleteProfileScreen() {
     removeSkill,
     saveProfile,
   } = useProfileCompletion();
+
+  const jobseekerProfile = profile as JobseekerProfile | null;
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(
+    jobseekerProfile?.profile_image_url ?? null
+  );
+
+  const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
+    user?.id ?? "",
+    "jobseeker_profiles",
+    async (url) => {
+      setLocalImageUrl(url);
+      await refreshProfile();
+    }
+  );
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newSkill, setNewSkill] = useState("");
@@ -384,6 +403,32 @@ export default function CompleteProfileScreen() {
               {t("completeProfile.progress.remaining", { count: completionStatus.missingFields.length })}
             </Text>
           )}
+        </View>
+
+        {/* ── Profile Photo ── */}
+        <View className="items-center pt-6 pb-2">
+          <View className="relative">
+            <UserAvatar
+              imageUrl={localImageUrl ?? jobseekerProfile?.profile_image_url}
+              name={`${formData.first_name} ${formData.last_name}`.trim() || "JS"}
+              size={96}
+            />
+            <TouchableOpacity
+              onPress={pickAndUpload}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-cyan-700 rounded-full items-center justify-center border-2 border-white"
+              activeOpacity={0.85}
+            >
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="camera" size={15} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+          <Text className="mt-2 font-quicksandMedium text-xs text-gray-400">
+            Tap camera to update photo
+          </Text>
         </View>
 
         {/* ── Personal Information ── */}
