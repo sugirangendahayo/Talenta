@@ -20,9 +20,11 @@ import {
 } from "react-native";
 import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
 import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
+import UserAvatar from "@/components/common/UserAvatar";
+import { useProfileImage } from "@/hooks/useProfileImage";
 
 export default function EmployerProfile() {
-  const { profile, role, user, signOut, loading } = useAuth();
+  const { profile, role, user, signOut, loading, refreshProfile } = useAuth();
   const { setIsVisible } = useTabBarVisibility();
   const { t, i18n } = useTranslation(["profile", "common"]);
   const router = useRouter();
@@ -32,6 +34,17 @@ export default function EmployerProfile() {
 
   const employerData =
     role === "employer" && profile ? (profile as EmployerProfileType) : null;
+
+  const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
+    user?.id ?? "",
+    "employer_profiles",
+    async () => {
+      // Refresh context profile when done
+      if (refreshProfile) {
+        await refreshProfile();
+      }
+    }
+  );
 
   const handleLogout = () => {
     Alert.alert(t("logout.button"), t("logout.confirm"), [
@@ -215,17 +228,21 @@ export default function EmployerProfile() {
           {/* Top row: logo + info + QR */}
           <View className="flex-row items-center">
             <View className="relative">
-              <View className="bg-gray-100 dark:bg-[#141414] rounded-2xl p-1">
-                <Image
-                  source={{
-                    uri: "https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png",
-                  }}
-                  className="w-14 h-14 rounded-2xl"
-                  resizeMode="contain"
-                />
-              </View>
-              <TouchableOpacity className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white dark:border-[#0E0E0E]">
-                <Feather name="camera" size={11} color="white" />
+              <UserAvatar
+                imageUrl={employerData?.profile_image_url}
+                name={employerData?.company_name || "Company"}
+                size={56}
+              />
+              <TouchableOpacity
+                onPress={pickAndUpload}
+                disabled={uploadingPhoto}
+                className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white dark:border-[#0E0E0E] items-center justify-center"
+              >
+                {uploadingPhoto ? (
+                  <ActivityIndicator size="small" color="white" style={{ transform: [{ scale: 0.5 }] }} />
+                ) : (
+                  <Feather name="camera" size={11} color="white" />
+                )}
               </TouchableOpacity>
             </View>
 
