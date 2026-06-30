@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { useBusinessVerification } from "@/hooks/useBusinessVerification";
 import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
 import * as Linking from "expo-linking";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BusinessVerificationScreen() {
   const {
@@ -19,6 +20,9 @@ export default function BusinessVerificationScreen() {
     handleRemoveDoc,
     handleSubmit,
   } = useBusinessVerification();
+  
+  const { profile } = useAuth();
+  const isProfileComplete = profile?.profile_completed ?? false;
 
   if (loading) {
     return (
@@ -137,8 +141,30 @@ export default function BusinessVerificationScreen() {
           Please upload your official business registration certificate, tax clearance, or operating license (max 3 files). We support PDF, JPG, and PNG formats up to 5MB.
         </Text>
 
+        {!isProfileComplete && (
+          <View className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 mb-6 flex-row items-start">
+            <Ionicons name="information-circle" size={20} color="#D97706" style={{ marginTop: 2 }} />
+            <View className="ml-3 flex-1">
+              <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-sm mb-1">
+                Profile Incomplete
+              </Text>
+              <Text className="text-amber-700 dark:text-amber-600 font-quicksandMedium text-xs leading-4 mb-3">
+                You must complete your company profile before submitting business registration documents.
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/employer/complete-profile")}
+                className="bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-xl self-start"
+              >
+                <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-xs">
+                  Complete Profile
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {/* Upload Button */}
-        {docs.length < 3 && (
+        {docs.length < 3 && isProfileComplete && (
           <TouchableOpacity
             className="border-2 border-dashed border-gray-300 dark:border-[#333] rounded-2xl p-6 items-center justify-center mb-6 bg-white dark:bg-[#141414]"
             onPress={handleUploadDoc}
