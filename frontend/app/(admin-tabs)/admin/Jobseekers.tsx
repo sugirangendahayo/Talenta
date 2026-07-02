@@ -2,6 +2,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { getJobseekers } from "@/lib/adminService";
 import type { AdminJobseeker } from "@/types/admin.types";
+import UserAvatar from "@/components/common/UserAvatar";
 import { Ionicons } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -45,9 +46,12 @@ function JobseekerCard({ jobseeker }: { jobseeker: AdminJobseeker }) {
       <View className="flex-1 p-4">
         {/* Header row */}
         <View className="flex-row items-start">
-          <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center mr-3 mt-0.5">
-            <Ionicons name="person-outline" size={15} color="#0E7490" />
-          </View>
+          <UserAvatar
+            imageUrl={jobseeker.profile_image_url}
+            name={`${jobseeker.first_name} ${jobseeker.last_name}`}
+            size={40}
+            style={{ marginRight: 10, marginTop: 2 }}
+          />
           <View className="flex-1 mr-2">
             <Text
               className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
