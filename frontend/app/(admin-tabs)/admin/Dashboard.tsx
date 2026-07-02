@@ -1,6 +1,7 @@
 // app/(admin-tabs)/admin/Dashboard.tsx
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import { getAdminStats, getRecentActivity } from "@/lib/adminService";
 import type {
   AdminEmployer,
@@ -9,10 +10,10 @@ import type {
   AdminStats,
   RecentActivity,
 } from "@/types/admin.types";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { useNotifications } from "@/hooks/useNotifications";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -118,7 +119,9 @@ export default function AdminDashboard() {
     } catch (e: any) {
       setError(
         e?.message ??
-          t("dashboard.loadError", { defaultValue: "Failed to load dashboard" })
+          t("dashboard.loadError", {
+            defaultValue: "Failed to load dashboard",
+          }),
       );
     } finally {
       setLoading(false);
@@ -151,7 +154,7 @@ export default function AdminDashboard() {
     {
       label: t("stats.employers", { defaultValue: "Employers" }),
       value: stats?.totalEmployers ?? 0,
-      icon: "business-outline",
+      icon: <FontAwesome name="handshake-o" size={24} color="#10B981" />,
     },
     {
       label: t("stats.jobseekers", { defaultValue: "Jobseekers" }),
@@ -183,11 +186,13 @@ export default function AdminDashboard() {
       subtitle: t("actions.employerVerificationDesc", {
         defaultValue: "Review & verify employer accounts",
       }),
-      icon: "business-outline",
+      icon: <MaterialIcons name="verified-user" size={24} color="#10B981" />,
       onPress: () => router.push("/(admin-tabs)/admin/Employers"),
     },
     {
-      title: t("actions.jobseekerDocs", { defaultValue: "Jobseeker Documents" }),
+      title: t("actions.jobseekerDocs", {
+        defaultValue: "Jobseeker Documents",
+      }),
       subtitle: t("actions.jobseekerDocsDesc", {
         defaultValue: "Review submitted CV & ID documents",
       }),
@@ -230,14 +235,22 @@ export default function AdminDashboard() {
             onPress={() => router.push("/admin/Analytics")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="bar-chart-outline" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
+            <Ionicons
+              name="bar-chart-outline"
+              size={18}
+              color={isDark ? "#9CA3AF" : "#6B7280"}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center relative"
             onPress={() => router.push("/(admin-tabs)/admin/notifications")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="notifications-outline" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
+            <Ionicons
+              name="notifications-outline"
+              size={18}
+              color={isDark ? "#9CA3AF" : "#6B7280"}
+            />
             {unreadCount > 0 && (
               <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 items-center justify-center border border-white dark:border-[#080A08]">
                 <Text className="text-[9px] font-bold text-white">
@@ -290,8 +303,8 @@ export default function AdminDashboard() {
                   elevation: 2,
                 }}
               >
-                <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center mb-3">
-                  <Ionicons name={item.icon} size={15} color="#0E7490" />
+                <View className="w-9 h-9 bg-gray-100 dark:bg-[#141414] rounded-full items-center justify-center relative">
+                  <Ionicons name={item.icon} size={15}  color="#374151"/>
                 </View>
                 <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-100">
                   {item.value.toLocaleString()}
@@ -342,8 +355,10 @@ export default function AdminDashboard() {
         {/* ── Recent employers ── */}
         {(activity?.recentEmployers?.length ?? 0) > 0 && (
           <RecentCard
-            title={t("dashboard.newEmployers", { defaultValue: "New Employers" })}
-            icon="business-outline"
+            title={t("dashboard.newEmployers", {
+              defaultValue: "New Employers",
+            })}
+            icon={<FontAwesome name="handshake-o" size={24} color="#10B981" />}
             rows={activity!.recentEmployers.map((e: AdminEmployer) => ({
               primary: e.company_name,
               secondary: e.email,
