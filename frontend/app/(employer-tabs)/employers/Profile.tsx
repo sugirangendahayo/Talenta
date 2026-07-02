@@ -1,16 +1,19 @@
 // app/(employer-tabs)/employers/Profile.tsx
+import UserAvatar from "@/components/common/UserAvatar";
+import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
+import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useProfileImage } from "@/hooks/useProfileImage";
 import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
-import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Feather, FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -18,10 +21,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
-import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
-import UserAvatar from "@/components/common/UserAvatar";
-import { useProfileImage } from "@/hooks/useProfileImage";
 
 export default function EmployerProfile() {
   const { profile, role, user, signOut, loading, refreshProfile } = useAuth();
@@ -43,7 +42,7 @@ export default function EmployerProfile() {
       if (refreshProfile) {
         await refreshProfile();
       }
-    }
+    },
   );
 
   const handleLogout = () => {
@@ -94,7 +93,7 @@ export default function EmployerProfile() {
     // Edit profile and privacy only — no verification items here.
     {
       title: t("sections.account.title"),
-      icon: "business-outline",
+      icon: <FontAwesome name="handshake-o" size={20} color="#0E7490" />,
       items: [
         {
           icon: "edit",
@@ -116,10 +115,11 @@ export default function EmployerProfile() {
     // → unlock premium. They belong together so the employer can follow the
     // steps in order without hunting across multiple sections.
     {
-      title: t("sections.verification.title", { defaultValue: "Verification & Premium" }),
+      title: t("sections.verification.title", {
+        defaultValue: "Verification & Premium",
+      }),
       icon: "shield-checkmark-outline",
       items: [
-
         {
           icon: "verified-user",
           label: t("sections.verification.businessVerification", {
@@ -135,7 +135,6 @@ export default function EmployerProfile() {
           }),
           type: "link",
           onPress: () => router.push("/employer/premium-verification"),
-       
         },
       ],
     },
@@ -239,7 +238,11 @@ export default function EmployerProfile() {
                 className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white dark:border-[#0E0E0E] items-center justify-center"
               >
                 {uploadingPhoto ? (
-                  <ActivityIndicator size="small" color="white" style={{ transform: [{ scale: 0.5 }] }} />
+                  <ActivityIndicator
+                    size="small"
+                    color="white"
+                    style={{ transform: [{ scale: 0.5 }] }}
+                  />
                 ) : (
                   <Feather name="camera" size={11} color="white" />
                 )}
@@ -324,11 +327,7 @@ export default function EmployerProfile() {
           >
             {/* Section header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
-              <Ionicons
-                name={section.icon as any}
-                size={20}
-                color="#0E7490"
-              />
+              <Ionicons name={section.icon as any} size={20} color="#0E7490" />
               <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
                 {section.title}
               </Text>
