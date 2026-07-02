@@ -1,8 +1,16 @@
 // app/(admin-tabs)/_layout.tsx
-import { Tabs, useRouter, usePathname } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  TabBarVisibilityProvider,
+  useTabBarVisibility,
+} from "@/contexts/TabBarVisibilityContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { LinearGradient } from "expo-linear-gradient";
+import { Tabs, usePathname, useRouter } from "expo-router";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,13 +18,6 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
-import { LinearGradient } from "expo-linear-gradient";
-import {
-  TabBarVisibilityProvider,
-  useTabBarVisibility,
-} from "@/contexts/TabBarVisibilityContext";
-import { useTranslation } from "react-i18next";
-import { useTheme } from "@/contexts/ThemeContext";
 
 // ─── Spring configs ───────────────────────────────────────────────────────────
 const TAB_SPRING = {
@@ -86,8 +87,8 @@ function ProfileFAB({ slideY }: { slideY: SharedValue<number> }) {
             isActive
               ? [ACTIVE_TOP, ACTIVE_MID, ACTIVE_BOT]
               : isDark
-              ? [DARK_TOP, DARK_MID, DARK_BOT]
-              : [GLASS_TOP, GLASS_MID, GLASS_BOT]
+                ? [DARK_TOP, DARK_MID, DARK_BOT]
+                : [GLASS_TOP, GLASS_MID, GLASS_BOT]
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
@@ -222,7 +223,7 @@ function AdminTabBar({ state, descriptors, navigation }: any) {
     "admin/Jobs",
   ];
   const visibleRoutes = state.routes.filter((r: any) =>
-    VISIBLE_TABS.includes(r.name)
+    VISIBLE_TABS.includes(r.name),
   );
 
   useEffect(() => {
@@ -425,7 +426,7 @@ function TabsContent() {
         options={{
           title: t("navigation.employers", { defaultValue: "Employers" }),
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="business-outline" size={size} color={color} />
+            <FontAwesome name="handshake-o" size={size} color={color} />
           ),
         }}
       />
@@ -447,12 +448,9 @@ function TabsContent() {
           ),
         }}
       />
-      
+
       {/* ── Hidden from the main tab bar ── */}
-      <Tabs.Screen
-        name="admin/Profile"
-        options={{ href: null }}
-      />
+      <Tabs.Screen name="admin/Profile" options={{ href: null }} />
     </Tabs>
   );
 }
