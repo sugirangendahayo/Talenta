@@ -1,13 +1,16 @@
-import { useEmployerProfileCompletion } from "@/hooks/useEmployerProfileCompletion";
+import UserAvatar from "@/components/common/UserAvatar";
 import { ProfileFormSkeleton } from "@/components/skeletons/ProfileFormSkeleton";
-import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEmployerProfileCompletion } from "@/hooks/useEmployerProfileCompletion";
+import { useProfileImage } from "@/hooks/useProfileImage";
+import { EmployerProfile } from "@/lib/supabase";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Modal,
   ScrollView,
   Text,
@@ -16,10 +19,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "@/contexts/AuthContext";
-import { useProfileImage } from "@/hooks/useProfileImage";
-import UserAvatar from "@/components/common/UserAvatar";
-import { EmployerProfile } from "@/lib/supabase";
 
 // Reuse COUNTRIES list
 const COUNTRIES = [
@@ -160,7 +159,9 @@ function PhoneInputField({
                   className="flex-row items-center px-5 py-3 gap-3"
                   style={{
                     backgroundColor:
-                      selectedCountry.code === item.code ? "#ECFEFF" : "transparent",
+                      selectedCountry.code === item.code
+                        ? "#ECFEFF"
+                        : "transparent",
                   }}
                   activeOpacity={0.7}
                 >
@@ -184,7 +185,13 @@ function PhoneInputField({
   );
 }
 
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+function FieldLabel({
+  label,
+  required,
+}: {
+  label: string;
+  required?: boolean;
+}) {
   return (
     <Text className="text-gray-600 dark:text-gray-400 font-quicksandSemibold text-sm mb-2">
       {label}
@@ -214,7 +221,9 @@ function SectionCard({
     >
       <View className="flex-row items-center mb-5 gap-2.5">
         {icon}
-        <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">{title}</Text>
+        <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
+          {title}
+        </Text>
       </View>
       {children}
     </View>
@@ -260,7 +269,7 @@ export default function EmployerCompleteProfileScreen() {
 
   const employerProfile = profile as EmployerProfile | null;
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(
-    employerProfile?.profile_image_url ?? null
+    employerProfile?.profile_image_url ?? null,
   );
 
   const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
@@ -269,7 +278,7 @@ export default function EmployerCompleteProfileScreen() {
     async (url) => {
       setLocalImageUrl(url);
       await refreshProfile();
-    }
+    },
   );
 
   const handleSave = async () => {
@@ -280,7 +289,10 @@ export default function EmployerCompleteProfileScreen() {
   // ─── Skeleton loading state ───────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]" edges={["top"]}>
+      <SafeAreaView
+        className="flex-1 bg-white dark:bg-[#080A08]"
+        edges={["top"]}
+      >
         <ProfileFormSkeleton />
       </SafeAreaView>
     );
@@ -303,7 +315,9 @@ export default function EmployerCompleteProfileScreen() {
           Complete Company Profile
         </Text>
         <View className="bg-gray-100 dark:bg-[#141414] rounded-full px-3 py-1 border border-gray-200 dark:border-[#2a2a2a]">
-          <Text className="font-quicksandBold text-xs text-gray-700 dark:text-gray-300">{pct}%</Text>
+          <Text className="font-quicksandBold text-xs text-gray-700 dark:text-gray-300">
+            {pct}%
+          </Text>
         </View>
       </View>
 
@@ -322,7 +336,9 @@ export default function EmployerCompleteProfileScreen() {
             <Text className="font-quicksandSemibold text-sm text-gray-600 dark:text-gray-400">
               Profile Completion
             </Text>
-            <Text className="font-quicksandBold text-sm text-cyan-700">{pct}%</Text>
+            <Text className="font-quicksandBold text-sm text-cyan-700">
+              {pct}%
+            </Text>
           </View>
           <View className="h-2 bg-gray-200 dark:bg-[#1e1e1e] rounded-full overflow-hidden">
             <View
@@ -365,7 +381,7 @@ export default function EmployerCompleteProfileScreen() {
 
         {/* ── Company Information ── */}
         <SectionCard
-          icon={<Ionicons name="business-outline" size={18} color="#0E7490" />}
+          icon={<FontAwesome name="handshake-o" size={18} color="#0E7490" />}
           title="Company Information"
         >
           <View className="mb-4">
@@ -448,7 +464,8 @@ export default function EmployerCompleteProfileScreen() {
               Verification Required
             </Text>
             <Text className="font-quicksandMedium text-xs text-gray-400 leading-relaxed">
-              To post jobs and interact with jobseekers, you'll need to submit your business registration later for verification.
+              To post jobs and interact with jobseekers, you'll need to submit
+              your business registration later for verification.
             </Text>
           </View>
         </View>
@@ -483,8 +500,14 @@ export default function EmployerCompleteProfileScreen() {
               <ActivityIndicator color="white" />
             ) : (
               <>
-                <Text className="text-white font-quicksandBold text-sm">Save Profile</Text>
-                <Ionicons name="checkmark-circle-outline" size={18} color="white" />
+                <Text className="text-white font-quicksandBold text-sm">
+                  Save Profile
+                </Text>
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={18}
+                  color="white"
+                />
               </>
             )}
           </TouchableOpacity>
