@@ -8,6 +8,7 @@ import Octicons from "@expo/vector-icons/Octicons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import UserAvatar from "@/components/common/UserAvatar";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -37,6 +38,7 @@ interface Job {
   employer_profiles?: {
     company_name: string;
     email: string;
+    profile_image_url?: string | null;
   };
 }
 
@@ -99,7 +101,7 @@ export default function JobDetailsScreen() {
       setError(null);
       const { data, error: fetchError } = await supabase
         .from("jobs")
-        .select(`*, employer_profiles(company_name, email)`)
+        .select(`*, employer_profiles(company_name, email, profile_image_url)`)
         .eq("id", id)
         .eq("status", "active")
         .single();
@@ -298,12 +300,13 @@ export default function JobDetailsScreen() {
         <View className="px-4 pt-6">
           <View className="flex flex-row items-start justify-between mb-4">
             <View className="flex flex-row items-center flex-1 mr-3">
-              <View className="w-20 h-20 rounded-full border border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#080A08] items-center justify-center flex">
-                <Text className="text-3xl font-quicksandBold text-cyan-600 dark:text-cyan-400">
-                  {companyName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <View className="flex-1 ml-4">
+              <UserAvatar
+                imageUrl={job.employer_profiles?.profile_image_url}
+                name={companyName}
+                size={70}
+                style={{ marginRight: 16 }}
+              />
+              <View className="flex-1">
                 <View className="flex flex-row items-center gap-2 mb-1">
                   <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-base">
                     {companyName}
