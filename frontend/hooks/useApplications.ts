@@ -25,6 +25,7 @@ export interface Application {
       email: string;
       business_verification_status?: string;
       premium_plan?: string;
+      profile_image_url?: string | null;
     };
   };
 }
@@ -83,7 +84,8 @@ export function useApplications(options: UseApplicationsOptions = {}) {
                 company_name,
                 email,
                 business_verification_status,
-                premium_plan
+                premium_plan,
+                profile_image_url
               )
             )
           `,
