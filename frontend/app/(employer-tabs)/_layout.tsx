@@ -436,6 +436,12 @@ function TabsContent() {
           ),
         }}
       />
+
+      {/* ── Hidden from tab bar: accessible as a stack screen only ── */}
+      <Tabs.Screen
+        name="employers/notifications"
+        options={{ href: null }}
+      />
     </Tabs>
   );
 }
