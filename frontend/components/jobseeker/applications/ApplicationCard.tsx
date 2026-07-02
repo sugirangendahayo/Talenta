@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import { formatSalaryRange, getRelativeTimeLabel } from "../../../app/utils/formatters";
 import type { JobApplication } from "@/types/appication";
+import UserAvatar from "@/components/common/UserAvatar";
 
 interface ApplicationCardProps {
   application: JobApplication;
@@ -60,11 +61,11 @@ function ApplicationCard({
       <View className="flex-1 p-4">
         {/* Company mark + role/company + status badge */}
         <View className="flex-row items-start">
-          <View className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-[#080A08] border border-gray-100 dark:border-[#222] items-center justify-center">
-            <Text className="text-lg font-quicksandBold text-cyan-700">
-              {companyName.charAt(0).toUpperCase()}
-            </Text>
-          </View>
+          <UserAvatar 
+            imageUrl={application.jobs.employer_profiles?.profile_image_url} 
+            name={companyName} 
+            size={48} 
+          />
 
           <View className="flex-1 ml-3">
             <Text

@@ -1,9 +1,9 @@
 // components/jobseeker/HomeStats.tsx
+import { supabase } from "@/lib/supabase";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, View } from "react-native";
-import { supabase } from "@/lib/supabase";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function HomeStats() {
   const { t } = useTranslation("home");
@@ -46,7 +46,7 @@ export default function HomeStats() {
       label: t("stats.activeJobs", { defaultValue: "Active Jobs" }),
     },
     {
-      icon: "business-outline" as const,
+      icon: <FontAwesome name="handshake-o" size={17} color="#0E7490" />,
       value: formatCount(companyCount),
       label: t("stats.companies", { defaultValue: "Companies" }),
     },

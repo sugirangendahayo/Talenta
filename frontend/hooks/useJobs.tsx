@@ -22,6 +22,7 @@ export interface Job {
     email: string;
     business_verification_status?: string;
     premium_plan?: string;
+    profile_image_url?: string | null;
   };
 }
 
@@ -132,7 +133,8 @@ export function useJobs(options: UseJobsOptions = {}) {
               company_name,
               email,
               business_verification_status,
-              premium_plan
+              premium_plan,
+              profile_image_url
             )
           `,
             { count: "exact" },

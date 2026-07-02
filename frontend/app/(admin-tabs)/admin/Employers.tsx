@@ -1,13 +1,14 @@
 // app/(admin-tabs)/admin/Employers.tsx
+import UserAvatar from "@/components/common/UserAvatar";
+import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
   getEmployers,
-  verifyEmployer,
   rejectEmployerWithReason,
+  verifyEmployer,
 } from "@/lib/adminService";
 import type { AdminEmployer } from "@/types/admin.types";
-import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -52,15 +53,16 @@ function EmployerCard({
         elevation: 2,
       }}
     >
-
-
       {/* Content */}
       <View className="flex-1 p-4">
         {/* Header row */}
         <View className="flex-row items-start">
-          <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center mr-3 mt-0.5">
-            <Ionicons name="business-outline" size={15} color="#0E7490" />
-          </View>
+          <UserAvatar
+            imageUrl={employer.profile_image_url}
+            name={employer.company_name}
+            size={40}
+            style={{ marginRight: 10, marginTop: 2 }}
+          />
           <View className="flex-1 mr-2">
             <View className="flex-row items-center gap-1">
               <Text
@@ -83,7 +85,9 @@ function EmployerCard({
             </Text>
           </View>
           {/* Status badge */}
-          <BusinessVerificationBadge status={employer.business_verification_status} />
+          <BusinessVerificationBadge
+            status={employer.business_verification_status}
+          />
         </View>
 
         {/* Meta row */}
@@ -112,7 +116,8 @@ function EmployerCard({
         <View className="h-px bg-gray-100 dark:bg-[#222] my-3" />
 
         {/* Documents */}
-        {employer.business_docs_urls && employer.business_docs_urls.length > 0 ? (
+        {employer.business_docs_urls &&
+        employer.business_docs_urls.length > 0 ? (
           <View style={{ gap: 8 }}>
             {employer.business_docs_urls.map((url, i) => (
               <TouchableOpacity
@@ -123,7 +128,11 @@ function EmployerCard({
                 activeOpacity={0.7}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Ionicons name="document-text-outline" size={14} color="#0E7490" />
+                <Ionicons
+                  name="document-text-outline"
+                  size={14}
+                  color="#0E7490"
+                />
                 <Text
                   className="text-xs font-quicksandBold text-cyan-700 flex-1"
                   numberOfLines={1}
@@ -171,7 +180,7 @@ function EmployerCard({
                           if (reason) onReject(employer.id, reason);
                         },
                       },
-                    ]
+                    ],
                   );
                 }}
                 activeOpacity={0.85}
@@ -210,7 +219,9 @@ export default function AdminEmployers() {
       Alert.alert(
         t("common:error", { defaultValue: "Error" }),
         e?.message ??
-          t("employers.loadError", { defaultValue: "Failed to load employers" })
+          t("employers.loadError", {
+            defaultValue: "Failed to load employers",
+          }),
       );
     } finally {
       setLoading(false);
@@ -257,8 +268,14 @@ export default function AdminEmployers() {
               await verifyEmployer(id);
               setEmployers((prev) =>
                 prev.map((e) =>
-                  e.id === id ? { ...e, is_verified: true, business_verification_status: "approved" } : e
-                )
+                  e.id === id
+                    ? {
+                        ...e,
+                        is_verified: true,
+                        business_verification_status: "approved",
+                      }
+                    : e,
+                ),
               );
             } catch (e: any) {
               Alert.alert(
@@ -266,14 +283,14 @@ export default function AdminEmployers() {
                 e?.message ??
                   t("employers.verifyError", {
                     defaultValue: "Failed to verify employer",
-                  })
+                  }),
               );
             } finally {
               setActionLoading(null);
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -283,13 +300,20 @@ export default function AdminEmployers() {
       await rejectEmployerWithReason(id, reason);
       setEmployers((prev) =>
         prev.map((e) =>
-          e.id === id ? { ...e, is_verified: false, business_verification_status: "rejected", business_rejection_reason: reason } : e
-        )
+          e.id === id
+            ? {
+                ...e,
+                is_verified: false,
+                business_verification_status: "rejected",
+                business_rejection_reason: reason,
+              }
+            : e,
+        ),
       );
     } catch (e: any) {
       Alert.alert(
         t("common:error", { defaultValue: "Error" }),
-        e?.message ?? "Failed to reject verification"
+        e?.message ?? "Failed to reject verification",
       );
     } finally {
       setActionLoading(null);
@@ -298,9 +322,7 @@ export default function AdminEmployers() {
 
   const filtered = employers.filter((e) => {
     const matchesFilter =
-      filter === "all"
-        ? true
-        : e.business_verification_status === filter;
+      filter === "all" ? true : e.business_verification_status === filter;
     const matchesSearch =
       search.trim() === ""
         ? true
@@ -342,9 +364,12 @@ export default function AdminEmployers() {
             {t("employers.title", { defaultValue: "Employers" })}
           </Text>
           <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
-            {employers.length}{" "}
-            {t("filters.total", { defaultValue: "total" })} ·{" "}
-            {employers.filter((e) => e.business_verification_status === "approved").length}{" "}
+            {employers.length} {t("filters.total", { defaultValue: "total" })} ·{" "}
+            {
+              employers.filter(
+                (e) => e.business_verification_status === "approved",
+              ).length
+            }{" "}
             {t("employers.verified", { defaultValue: "verified" })}
           </Text>
         </View>
@@ -442,10 +467,12 @@ export default function AdminEmployers() {
         {filtered.length === 0 ? (
           <View className="items-center pt-16">
             <View className="w-20 h-20 rounded-full bg-gray-50 dark:bg-[#141414] items-center justify-center mb-4">
-              <Ionicons name="business-outline" size={36} color="#9CA3AF" />
+              <FontAwesome name="handshake-o" size={36} color="#9CA3AF" />
             </View>
             <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 mb-2">
-              {t("employers.emptyTitle", { defaultValue: "No employers found" })}
+              {t("employers.emptyTitle", {
+                defaultValue: "No employers found",
+              })}
             </Text>
             <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 text-center leading-5 px-8">
               {t("employers.emptySubtitle", {

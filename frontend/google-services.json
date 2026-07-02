@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "837646165919",
+    "project_id": "my-talenta-app",
+    "storage_bucket": "my-talenta-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837646165919:android:87819e9341419022623faa",
+        "android_client_info": {
+          "package_name": "com.salomonlegend.talenta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvoIRKWCHCYMW7-UYfZjXNl6w9-5nCfnQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

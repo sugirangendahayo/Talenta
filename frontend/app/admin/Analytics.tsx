@@ -2,7 +2,7 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { getAnalytics } from "@/lib/adminService";
 import type { AdminAnalytics, JobStatus } from "@/types/admin.types";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -151,7 +151,9 @@ export default function AdminAnalytics() {
       Alert.alert(
         t("common:error", { defaultValue: "Error" }),
         e?.message ??
-          t("analytics.loadError", { defaultValue: "Failed to load analytics" })
+          t("analytics.loadError", {
+            defaultValue: "Failed to load analytics",
+          }),
       );
     } finally {
       setLoading(false);
@@ -182,7 +184,7 @@ export default function AdminAnalytics() {
     (data?.jobseekerWithDocs ?? 0) + (data?.jobseekerWithoutDocs ?? 0);
   const totalJobs = Object.values(data?.jobsByStatus ?? {}).reduce(
     (a, b) => a + b,
-    0
+    0,
   );
 
   return (
@@ -190,124 +192,133 @@ export default function AdminAnalytics() {
       <Stack.Screen options={{ headerShown: false }} />
       <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
         {/* ── Header ── */}
-      <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-5 flex-row items-center border-b border-gray-100 dark:border-[#2a2a2a]">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          className="mr-4 w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
-        >
-          <Ionicons name="arrow-back" size={20} color={isDark ? "#9CA3AF" : "#6B7280"} />
-        </TouchableOpacity>
-        <View className="flex-1">
-          <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-100">
-            {t("analytics.title", { defaultValue: "Analytics" })}
-          </Text>
+        <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-5 flex-row items-center border-b border-gray-100 dark:border-[#2a2a2a]">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            className="mr-4 w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
+          >
+            <Ionicons
+              name="arrow-back"
+              size={20}
+              color={isDark ? "#9CA3AF" : "#6B7280"}
+            />
+          </TouchableOpacity>
+          <View className="flex-1">
+            <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-100">
+              {t("analytics.title", { defaultValue: "Analytics" })}
+            </Text>
+          </View>
+          <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
+            onPress={onRefresh}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons
+              name="refresh-outline"
+              size={18}
+              color={isDark ? "#9CA3AF" : "#6B7280"}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
-          onPress={onRefresh}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name="refresh-outline" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#0E7490"
-          />
-        }
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 16,
-          paddingBottom: 140,
-        }}
-      >
-        {/* ── Summary counts ── */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#0E7490"
+            />
+          }
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 16,
+            paddingBottom: 140,
+          }}
+        >
+          {/* ── Summary counts ── */}
           <CountCard
             label={t("stats.applications", { defaultValue: "Applications" })}
             value={data?.totalApplications ?? 0}
             icon="document-text-outline"
           />
 
-        {/* ── Employer verification ── */}
-        <SectionCard
-          title={t("analytics.employerVerification", {
-            defaultValue: "Employer Verification",
-          })}
-          icon="business-outline"
-        >
-          <BarRow
-            label={t("employers.verified", { defaultValue: "Verified" })}
-            value={data?.verifiedEmployers ?? 0}
-            total={totalEmployers}
-            color="#059669"
-          />
-          <BarRow
-            label={t("employers.unverified", { defaultValue: "Unverified" })}
-            value={data?.unverifiedEmployers ?? 0}
-            total={totalEmployers}
-            color="#D97706"
-          />
-          <Text className="text-[11px] font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1 text-right">
-            {totalEmployers} {t("filters.total", { defaultValue: "total" })}
-          </Text>
-        </SectionCard>
+          {/* ── Employer verification ── */}
+          <SectionCard
+            title={t("analytics.employerVerification", {
+              defaultValue: "Employer Verification",
+            })}
+            icon={<FontAwesome name="handshake-o" size={20} color="#0E7490" />}
+          >
+            <BarRow
+              label={t("employers.verified", { defaultValue: "Verified" })}
+              value={data?.verifiedEmployers ?? 0}
+              total={totalEmployers}
+              color="#059669"
+            />
+            <BarRow
+              label={t("employers.unverified", { defaultValue: "Unverified" })}
+              value={data?.unverifiedEmployers ?? 0}
+              total={totalEmployers}
+              color="#D97706"
+            />
+            <Text className="text-[11px] font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1 text-right">
+              {totalEmployers} {t("filters.total", { defaultValue: "total" })}
+            </Text>
+          </SectionCard>
 
-        {/* ── Jobseeker documents ── */}
-        <SectionCard
-          title={t("analytics.jobseekerDocs", {
-            defaultValue: "Jobseeker Documents",
-          })}
-          icon="people-outline"
-        >
-          <BarRow
-            label={t("jobseekers.hasDocs", { defaultValue: "Has Documents" })}
-            value={data?.jobseekerWithDocs ?? 0}
-            total={totalJobseekers}
-            color="#2563EB"
-          />
-          <BarRow
-            label={t("jobseekers.noDocs", { defaultValue: "No Documents" })}
-            value={data?.jobseekerWithoutDocs ?? 0}
-            total={totalJobseekers}
-            color="#6B7280"
-          />
-          <Text className="text-[11px] font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1 text-right">
-            {totalJobseekers} {t("filters.total", { defaultValue: "total" })}
-          </Text>
-        </SectionCard>
+          {/* ── Jobseeker documents ── */}
+          <SectionCard
+            title={t("analytics.jobseekerDocs", {
+              defaultValue: "Jobseeker Documents",
+            })}
+            icon="people-outline"
+          >
+            <BarRow
+              label={t("jobseekers.hasDocs", { defaultValue: "Has Documents" })}
+              value={data?.jobseekerWithDocs ?? 0}
+              total={totalJobseekers}
+              color="#2563EB"
+            />
+            <BarRow
+              label={t("jobseekers.noDocs", { defaultValue: "No Documents" })}
+              value={data?.jobseekerWithoutDocs ?? 0}
+              total={totalJobseekers}
+              color="#6B7280"
+            />
+            <Text className="text-[11px] font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1 text-right">
+              {totalJobseekers} {t("filters.total", { defaultValue: "total" })}
+            </Text>
+          </SectionCard>
 
-        {/* ── Jobs by status ── */}
-        <SectionCard
-          title={t("analytics.jobsByStatus", {
-            defaultValue: "Jobs By Status",
-          })}
-          icon="briefcase-outline"
-        >
-          {(Object.entries(data?.jobsByStatus ?? {}) as [JobStatus, number][]).map(
-            ([status, count]) => (
+          {/* ── Jobs by status ── */}
+          <SectionCard
+            title={t("analytics.jobsByStatus", {
+              defaultValue: "Jobs By Status",
+            })}
+            icon="briefcase-outline"
+          >
+            {(
+              Object.entries(data?.jobsByStatus ?? {}) as [JobStatus, number][]
+            ).map(([status, count]) => (
               <BarRow
                 key={status}
                 label={t(`status.${status}`, {
-                  defaultValue: status.charAt(0).toUpperCase() + status.slice(1),
+                  defaultValue:
+                    status.charAt(0).toUpperCase() + status.slice(1),
                 })}
                 value={count}
                 total={totalJobs}
                 color={JOB_STATUS_COLORS[status]}
               />
-            )
-          )}
-          <Text className="text-[11px] font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1 text-right">
-            {totalJobs} {t("filters.total", { defaultValue: "total" })}
-          </Text>
-        </SectionCard>
-      </ScrollView>
-    </View>
+            ))}
+            <Text className="text-[11px] font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1 text-right">
+              {totalJobs} {t("filters.total", { defaultValue: "total" })}
+            </Text>
+          </SectionCard>
+        </ScrollView>
+      </View>
     </>
   );
 }

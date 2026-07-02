@@ -211,6 +211,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
   const VISIBLE_TABS = ["jobseekers/Home", "jobseekers/Jobs", "jobseekers/Applications", "jobseekers/Profile"];
   const visibleRoutes = state.routes.filter((r: any) => VISIBLE_TABS.includes(r.name));
+  
+console.log("Expo Router gave me:", state.routes.map((r: any) => r.name));
+console.log("Filtered down to:", visibleRoutes.map((r: any) => r.name));
 
   useEffect(() => {
     slideY.value = isVisible ? 0 : 150;

@@ -38,6 +38,7 @@ export interface Applicant {
     experience_level?: string;
     skills?: string[];
     cv_document_url?: string;
+    profile_image_url?: string | null;
   };
   jobs: {
     title: string;

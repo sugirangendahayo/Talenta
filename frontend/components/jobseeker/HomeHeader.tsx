@@ -8,7 +8,6 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useRef, useState } from "react";
 import {
-  ImageBackground,
   Text,
   TextInput,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import {
   Animated,
   Keyboard,
 } from "react-native";
+import UserAvatar from "@/components/common/UserAvatar";
 
 interface HomeHeaderProps {
   onSearchChange?: (query: string) => void;
@@ -32,15 +32,10 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
   const transition = useRef(new Animated.Value(0)).current;
   const inputRef = useRef<TextInput>(null);
 
-  const getFirstName = () => {
-    if (role === "jobseeker" && profile) {
-      const jobseekerProfile = profile as JobseekerProfile;
-      return jobseekerProfile.first_name;
-    }
-    return "Guest";
-  };
-
-  const firstName = getFirstName();
+  const jobseekerProfile = role === "jobseeker" && profile ? (profile as JobseekerProfile) : null;
+  const firstName = jobseekerProfile?.first_name ?? "Guest";
+  const profileImageUrl = jobseekerProfile?.profile_image_url ?? null;
+  const avatarName = firstName !== "Guest" ? `${firstName} ${(jobseekerProfile as any)?.last_name ?? ""}`.trim() : "Guest";
 
   const handleNotificationsPress = () => {
     router.push("/jobseekers/notifications");
@@ -105,22 +100,15 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
         >
           {/* Left: avatar + greeting */}
           <View className="flex-row items-center gap-3">
-            <View
-              className="w-10 h-10 rounded-full border border-gray-200 dark:border-[#2a2a2a] overflow-hidden bg-white dark:bg-[#080A08]"
+            <UserAvatar
+              imageUrl={profileImageUrl}
+              name={avatarName}
+              size={38}
               style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                elevation: 2,
+                borderWidth: 1,
+                borderColor: profileImageUrl ? "transparent" : "#E5E7EB",
               }}
-            >
-              <ImageBackground
-                source={require("@/assets/images/user_.png")}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            </View>
+            />
             <Text className="font-quicksandSemibold text-sm text-gray-500 dark:text-gray-400 leading-tight">
               {t("greeting", { firstName })}
             </Text>

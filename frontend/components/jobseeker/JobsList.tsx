@@ -3,9 +3,11 @@ import { useJobs } from "@/hooks/useJobs";
 import { useBookmarkSet, useAppliedSet } from "@/hooks/useBookmarks";
 import { FullJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+// import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
+import UserAvatar from "@/components/common/UserAvatar";
 import React from "react";
 import {
   ActivityIndicator,
@@ -15,7 +17,7 @@ import {
   View,
   Text,
 } from "react-native";
-import { useTranslation } from "react-i18next";
+
 
 interface JobsListProps {
   selectedCategory: string;
@@ -106,11 +108,11 @@ const JobsList: React.FC<JobsListProps> = ({
       >
         <View className="flex-row items-start justify-between mb-3">
           <View className="flex-row items-center flex-1 mr-3">
-            <View className="w-12 h-12 rounded-2xl border border-gray-100 dark:border-[#222] bg-cyan-50 items-center justify-center">
-              <Text className="text-lg font-quicksandBold text-cyan-600 dark:text-cyan-400">
-                {companyName.charAt(0).toUpperCase()}
-              </Text>
-            </View>
+            <UserAvatar 
+              imageUrl={item.employer_profiles?.profile_image_url} 
+              name={companyName} 
+              size={48} 
+            />
             <View className="flex-1 ml-3">
               <View className="flex-row items-center gap-1">
                 <Text

@@ -15,6 +15,7 @@ export interface ApplicationJobSummary {
     company_name: string;
     business_verification_status?: string;
     premium_plan?: string;
+    profile_image_url?: string | null;
   };
 }
 

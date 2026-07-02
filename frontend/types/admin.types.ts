@@ -25,6 +25,7 @@ export interface AdminEmployer {
   premium_plan?: PremiumPlan;
   premium_activated_at?: string | null;
   premium_expires_at?: string | null;
+  profile_image_url?: string | null;
   profile_completed: boolean;
   created_at: string;
 }
@@ -41,6 +42,7 @@ export interface AdminJobseeker {
   experience_level?: string;
   id_document_url?: string;
   cv_document_url?: string;
+  profile_image_url?: string | null;
   profile_completed: boolean;
   created_at: string;
 }

@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useNotifications } from "@/hooks/useNotifications";
+import UserAvatar from "@/components/common/UserAvatar";
 
 interface DashboardHeaderProps {}
 
@@ -27,7 +28,12 @@ export default function DashboardHeader() {
       ? (profile as EmployerProfile).company_name || "There"
       : "There";
 
-  // First letter of company name for avatar
+  const profileImageUrl =
+    role === "employer" && profile
+      ? (profile as EmployerProfile).profile_image_url
+      : undefined;
+
+  // First letter of company name for avatar (kept as fallback inside UserAvatar)
   const initial = companyName.charAt(0).toUpperCase();
 
   return (
@@ -35,11 +41,11 @@ export default function DashboardHeader() {
       <View className="flex-row items-center justify-between">
         {/* Left: Avatar + greeting */}
         <View className="flex-row items-center gap-3">
-          <View className="w-11 h-11 bg-cyan-50 rounded-full items-center justify-center border border-cyan-100">
-            <Text className="text-base font-quicksandBold text-cyan-700">
-              {initial}
-            </Text>
-          </View>
+          <UserAvatar
+            imageUrl={profileImageUrl}
+            name={companyName}
+            size={44}
+          />
           <View>
             <Text className="text-xs font-quicksandMedium text-gray-400">
               {getGreeting()}

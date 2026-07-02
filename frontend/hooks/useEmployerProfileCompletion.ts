@@ -22,10 +22,11 @@ const REQUIRED_FIELDS = [
   { key: "company_name", label: "Company Name", weight: 20 },
   { key: "email", label: "Email", weight: 10 },
   { key: "phone", label: "Phone Number", weight: 15 },
-  { key: "country", label: "Country", weight: 15 },
-  { key: "city", label: "City", weight: 15 },
+  { key: "country", label: "Country", weight: 10 },
+  { key: "city", label: "City", weight: 10 },
   { key: "company_address", label: "Company Address", weight: 15 },
   { key: "company_website", label: "Company Website", weight: 10 },
+  { key: "profile_image_url", label: "Profile Photo", weight: 10 },
 ];
 
 export function useEmployerProfileCompletion() {

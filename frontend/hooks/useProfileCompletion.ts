@@ -35,6 +35,7 @@ const REQUIRED_FIELDS = [
   { key: "experience_level", label: "Experience Level", weight: 10 },
   { key: "skills", label: "Skills", weight: 10 },
   { key: "cv_document_url", label: "CV/Resume", weight: 10 },
+  { key: "profile_image_url", label: "Profile Photo", weight: 10 },
 ];
 
 export function useProfileCompletion() {

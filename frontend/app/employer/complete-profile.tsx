@@ -1,6 +1,10 @@
-import { useEmployerProfileCompletion } from "@/hooks/useEmployerProfileCompletion";
+import UserAvatar from "@/components/common/UserAvatar";
 import { ProfileFormSkeleton } from "@/components/skeletons/ProfileFormSkeleton";
-import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEmployerProfileCompletion } from "@/hooks/useEmployerProfileCompletion";
+import { useProfileImage } from "@/hooks/useProfileImage";
+import { EmployerProfile } from "@/lib/supabase";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -155,7 +159,9 @@ function PhoneInputField({
                   className="flex-row items-center px-5 py-3 gap-3"
                   style={{
                     backgroundColor:
-                      selectedCountry.code === item.code ? "#ECFEFF" : "transparent",
+                      selectedCountry.code === item.code
+                        ? "#ECFEFF"
+                        : "transparent",
                   }}
                   activeOpacity={0.7}
                 >
@@ -179,7 +185,13 @@ function PhoneInputField({
   );
 }
 
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+function FieldLabel({
+  label,
+  required,
+}: {
+  label: string;
+  required?: boolean;
+}) {
   return (
     <Text className="text-gray-600 dark:text-gray-400 font-quicksandSemibold text-sm mb-2">
       {label}
@@ -209,7 +221,9 @@ function SectionCard({
     >
       <View className="flex-row items-center mb-5 gap-2.5">
         {icon}
-        <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">{title}</Text>
+        <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
+          {title}
+        </Text>
       </View>
       {children}
     </View>
@@ -242,7 +256,8 @@ function InputField({
 
 export default function EmployerCompleteProfileScreen() {
   const router = useRouter();
-  const { t } = useTranslation("profile"); // Assumes we have profile translations, fallback strings provided
+  const { t } = useTranslation("profile");
+  const { user, profile, refreshProfile } = useAuth();
   const {
     loading,
     saving,
@@ -252,6 +267,20 @@ export default function EmployerCompleteProfileScreen() {
     saveProfile,
   } = useEmployerProfileCompletion();
 
+  const employerProfile = profile as EmployerProfile | null;
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(
+    employerProfile?.profile_image_url ?? null,
+  );
+
+  const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
+    user?.id ?? "",
+    "employer_profiles",
+    async (url) => {
+      setLocalImageUrl(url);
+      await refreshProfile();
+    },
+  );
+
   const handleSave = async () => {
     const success = await saveProfile();
     if (success && completionStatus.isComplete) router.back();
@@ -260,7 +289,10 @@ export default function EmployerCompleteProfileScreen() {
   // ─── Skeleton loading state ───────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]" edges={["top"]}>
+      <SafeAreaView
+        className="flex-1 bg-white dark:bg-[#080A08]"
+        edges={["top"]}
+      >
         <ProfileFormSkeleton />
       </SafeAreaView>
     );
@@ -283,7 +315,9 @@ export default function EmployerCompleteProfileScreen() {
           Complete Company Profile
         </Text>
         <View className="bg-gray-100 dark:bg-[#141414] rounded-full px-3 py-1 border border-gray-200 dark:border-[#2a2a2a]">
-          <Text className="font-quicksandBold text-xs text-gray-700 dark:text-gray-300">{pct}%</Text>
+          <Text className="font-quicksandBold text-xs text-gray-700 dark:text-gray-300">
+            {pct}%
+          </Text>
         </View>
       </View>
 
@@ -302,7 +336,9 @@ export default function EmployerCompleteProfileScreen() {
             <Text className="font-quicksandSemibold text-sm text-gray-600 dark:text-gray-400">
               Profile Completion
             </Text>
-            <Text className="font-quicksandBold text-sm text-cyan-700">{pct}%</Text>
+            <Text className="font-quicksandBold text-sm text-cyan-700">
+              {pct}%
+            </Text>
           </View>
           <View className="h-2 bg-gray-200 dark:bg-[#1e1e1e] rounded-full overflow-hidden">
             <View
@@ -317,9 +353,35 @@ export default function EmployerCompleteProfileScreen() {
           )}
         </View>
 
+        {/* ── Profile Photo ── */}
+        <View className="items-center pt-6 pb-2">
+          <View className="relative">
+            <UserAvatar
+              imageUrl={localImageUrl ?? employerProfile?.profile_image_url}
+              name={formData.company_name || "C"}
+              size={96}
+            />
+            <TouchableOpacity
+              onPress={pickAndUpload}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-cyan-700 rounded-full items-center justify-center border-2 border-white"
+              activeOpacity={0.85}
+            >
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="camera" size={15} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+          <Text className="mt-2 font-quicksandMedium text-xs text-gray-400">
+            Tap camera to update photo
+          </Text>
+        </View>
+
         {/* ── Company Information ── */}
         <SectionCard
-          icon={<Ionicons name="business-outline" size={18} color="#0E7490" />}
+          icon={<FontAwesome name="handshake-o" size={18} color="#0E7490" />}
           title="Company Information"
         >
           <View className="mb-4">
@@ -402,7 +464,8 @@ export default function EmployerCompleteProfileScreen() {
               Verification Required
             </Text>
             <Text className="font-quicksandMedium text-xs text-gray-400 leading-relaxed">
-              To post jobs and interact with jobseekers, you'll need to submit your business registration later for verification.
+              To post jobs and interact with jobseekers, you'll need to submit
+              your business registration later for verification.
             </Text>
           </View>
         </View>
@@ -437,8 +500,14 @@ export default function EmployerCompleteProfileScreen() {
               <ActivityIndicator color="white" />
             ) : (
               <>
-                <Text className="text-white font-quicksandBold text-sm">Save Profile</Text>
-                <Ionicons name="checkmark-circle-outline" size={18} color="white" />
+                <Text className="text-white font-quicksandBold text-sm">
+                  Save Profile
+                </Text>
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={18}
+                  color="white"
+                />
               </>
             )}
           </TouchableOpacity>
