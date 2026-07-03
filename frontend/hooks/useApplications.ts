@@ -13,6 +13,7 @@ export interface Application {
   // Joined job data
   jobs: {
     id: string;
+    employer_id: string;
     title: string;
     location: string;
     salary_min: number;
@@ -74,6 +75,7 @@ export function useApplications(options: UseApplicationsOptions = {}) {
             *,
             jobs!inner(
               id,
+              employer_id,
               title,
               location,
               salary_min,
