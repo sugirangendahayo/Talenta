@@ -266,9 +266,11 @@ console.log("Filtered down to:", visibleRoutes.map((r: any) => r.name));
         )}
 
         <View style={styles.tabsRow}>
-          {visibleRoutes.map((route: any) => {
+          {state.routes.map((route: any, index: number) => {
             const { options } = descriptors[route.key];
-            const isFocused = state.routes[state.index]?.name === route.name;
+            if (options.href === null || route.name === "jobseekers/saved-jobs") return null;
+            
+            const isFocused = state.index === index;
 
             const onPress = () => {
               const event = navigation.emit({
