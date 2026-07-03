@@ -7,6 +7,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
 import { formatSalaryRange, getRelativeTimeLabel } from "../../../app/utils/formatters";
 import type { JobApplication } from "@/types/appication";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -23,6 +24,7 @@ function ApplicationCard({
   onWithdraw,
 }: ApplicationCardProps) {
   const { t } = useTranslation("jobs");
+  const router = useRouter();
 
   const status =
     APPLICATION_STATUS_META[application.status] ?? DEFAULT_STATUS_META;
@@ -61,36 +63,48 @@ function ApplicationCard({
       <View className="flex-1 p-4">
         {/* Company mark + role/company + status badge */}
         <View className="flex-row items-start">
-          <UserAvatar 
-            imageUrl={application.jobs.employer_profiles?.profile_image_url} 
-            name={companyName} 
-            size={48} 
-          />
+          <TouchableOpacity 
+            onPress={(e) => {
+              e.stopPropagation();
+              router.push({
+                pathname: "/(shared)/user/[id]",
+                params: { id: application.jobs.employer_id, role: 'employer' }
+              });
+            }}
+            activeOpacity={0.75}
+            className="flex-row items-start flex-1"
+          >
+            <UserAvatar 
+              imageUrl={application.jobs.employer_profiles?.profile_image_url} 
+              name={companyName} 
+              size={48} 
+            />
 
-          <View className="flex-1 ml-3">
-            <Text
-              className="text-base font-quicksandBold text-gray-800 dark:text-gray-200"
-              numberOfLines={1}
-            >
-              {application.jobs.title}
-            </Text>
-            <View className="flex-row items-center mt-0.5">
+            <View className="flex-1 ml-3">
               <Text
-                className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm"
+                className="text-base font-quicksandBold text-gray-800 dark:text-gray-200"
                 numberOfLines={1}
               >
-                {companyName}
+                {application.jobs.title}
               </Text>
-              {isEmployerVerified && (
-                <MaterialIcons
-                  name="verified"
-                  size={13}
-                  color="#0E7490"
-                  style={{ marginLeft: 4 }}
-                />
-              )}
+              <View className="flex-row items-center mt-0.5">
+                <Text
+                  className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm"
+                  numberOfLines={1}
+                >
+                  {companyName}
+                </Text>
+                {isEmployerVerified && (
+                  <MaterialIcons
+                    name="verified"
+                    size={13}
+                    color="#0E7490"
+                    style={{ marginLeft: 4 }}
+                  />
+                )}
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View
             className={`flex-row items-center ${status.badgeBg} px-2.5 py-1 rounded-full ml-2`}
