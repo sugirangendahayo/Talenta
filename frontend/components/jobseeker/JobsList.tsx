@@ -107,7 +107,14 @@ const JobsList: React.FC<JobsListProps> = ({
         accessibilityLabel={`${item.title} ${t("jobs:at", { defaultValue: "at" })} ${companyName}`}
       >
         <View className="flex-row items-start justify-between mb-3">
-          <View className="flex-row items-center flex-1 mr-3">
+          <TouchableOpacity 
+            onPress={() => router.push({
+              pathname: "/(shared)/user/[id]",
+              params: { id: item.employer_id, role: 'employer' }
+            })}
+            activeOpacity={0.75}
+            className="flex-row items-center flex-1 mr-3"
+          >
             <UserAvatar 
               imageUrl={item.employer_profiles?.profile_image_url} 
               name={companyName} 
@@ -141,7 +148,7 @@ const JobsList: React.FC<JobsListProps> = ({
                 </Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* ── Bookmark ── now actually wired up (it had no onPress before),
               fixed 40x40 tap area + hitSlop so it doesn't get swallowed by the
