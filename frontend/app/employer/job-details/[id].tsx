@@ -568,19 +568,45 @@ export default function EmployerJobDetailsScreen() {
                 <Ionicons name="briefcase-outline" size={15} color="#0E7490" />
               }
             />
-            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 dark:text-gray-400 ml-9">
-              {job.experience_level}
-            </Text>
+            {job.experience_level === "No experience required" ? (
+              <View className="ml-9 flex-row items-start gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl px-3 py-2.5">
+                <Ionicons name="checkmark-circle" size={16} color="#059669" style={{ marginTop: 1 }} />
+                <View className="flex-1">
+                  <Text className="font-quicksandBold text-[13px] text-emerald-700 dark:text-emerald-400 mb-0.5">
+                    No experience required
+                  </Text>
+                  <Text className="font-quicksandMedium text-[12px] text-emerald-600 dark:text-emerald-500 leading-[18px]">
+                    Fresh graduates and career-changers are welcome to apply.
+                  </Text>
+                </View>
+              </View>
+            ) : job.experience_level === "0–1 years" ? (
+              <View className="ml-9 flex-row items-start gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl px-3 py-2.5">
+                <Ionicons name="time-outline" size={16} color="#2563EB" style={{ marginTop: 1 }} />
+                <View className="flex-1">
+                  <Text className="font-quicksandBold text-[13px] text-blue-700 dark:text-blue-400 mb-0.5">
+                    0–1 years (entry level)
+                  </Text>
+                  <Text className="font-quicksandMedium text-[12px] text-blue-600 dark:text-blue-500 leading-[18px]">
+                    No minimum years required — internship or short experience qualifies.
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Text className="font-quicksandMedium text-[13.5px] text-gray-500 dark:text-gray-400 ml-9">
+                {job.experience_level}
+              </Text>
+            )}
           </View>
         )}
 
         {/* ── Skills ──────────────────────────────────────────────────── */}
-        {job.skills_required && job.skills_required.length > 0 && (
-          <View className="mx-4 mb-3 bg-white dark:bg-[#0E0E0E] rounded-2xl px-4 py-4 border border-gray-100 dark:border-[#2a2a2a]">
-            <SectionHeader
-              title="Skills required"
-              icon={<Octicons name="checklist" size={15} color="#0E7490" />}
-            />
+        <View className="mx-4 mb-3 bg-white dark:bg-[#0E0E0E] rounded-2xl px-4 py-4 border border-gray-100 dark:border-[#2a2a2a]">
+          <SectionHeader
+            title="Skills required"
+            icon={<Octicons name="checklist" size={15} color="#0E7490" />}
+          />
+          {job.skills_required && job.skills_required.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">
               {job.skills_required.map((skill, i) => (
                 <View
@@ -593,8 +619,20 @@ export default function EmployerJobDetailsScreen() {
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          ) : (
+            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl px-3 py-2.5">
+              <Ionicons name="school-outline" size={16} color="#D97706" style={{ marginTop: 1 }} />
+              <View className="flex-1">
+                <Text className="font-quicksandBold text-[13px] text-amber-700 dark:text-amber-400 mb-0.5">
+                  No specific skills required
+                </Text>
+                <Text className="font-quicksandMedium text-[12px] text-amber-600 dark:text-amber-500 leading-[18px]">
+                  Training will be provided — applicants can apply without prior skills.
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
 
         {/* ── Overview table ───────────────────────────────────────────
             Plain white card with gray-100 hairline dividers — same as
