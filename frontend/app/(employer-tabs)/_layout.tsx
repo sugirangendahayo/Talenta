@@ -273,6 +273,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         <View style={styles.tabsRow}>
           {state.routes.map((route: any, index: number) => {
             const { options } = descriptors[route.key];
+            if (options.href === null || route.name === "employers/notifications") return null;
+            
             const isFocused = state.index === index;
 
             const onPress = () => {
