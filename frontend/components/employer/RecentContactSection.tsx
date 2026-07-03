@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import UserAvatar from "@/components/common/UserAvatar";
 
 interface ContactCardProps {
   contact: RecentContact;
@@ -119,11 +120,11 @@ const ContactCard = ({ contact }: ContactCardProps) => {
         <View className="flex-row items-start justify-between">
           {/* Avatar + name */}
           <View className="flex-row items-center gap-2.5 flex-1">
-            <View className="w-9 h-9 bg-cyan-50 rounded-full items-center justify-center border border-cyan-100">
-              <Text className="text-sm font-quicksandBold text-cyan-700">
-                {contact.candidate_name.charAt(0).toUpperCase()}
-              </Text>
-            </View>
+            <UserAvatar
+              imageUrl={contact.profile_image_url}
+              name={contact.candidate_name}
+              size={36}
+            />
             <View className="flex-1">
               <Text className="text-sm font-quicksandBold text-gray-800 dark:text-gray-200">
                 {contact.candidate_name}
