@@ -2,7 +2,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
-import { getAdminStats, getRecentActivity } from "@/lib/adminService";
+import { getAdminStats, getRecentActivity, getPendingReportCount } from "@/lib/adminService";
 import type {
   AdminEmployer,
   AdminJob,
@@ -109,13 +109,19 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingReports, setPendingReports] = useState(0);
 
   const load = useCallback(async () => {
     try {
       setError(null);
-      const [s, a] = await Promise.all([getAdminStats(), getRecentActivity()]);
+      const [s, a, rCount] = await Promise.all([
+        getAdminStats(),
+        getRecentActivity(),
+        getPendingReportCount(),
+      ]);
       setStats(s);
       setActivity(a);
+      setPendingReports(rCount);
     } catch (e: any) {
       setError(
         e?.message ??
@@ -177,6 +183,7 @@ export default function AdminDashboard() {
     title: string;
     subtitle: string;
     icon: React.ComponentProps<typeof Ionicons>["name"];
+    badge?: number;
     onPress: () => void;
   }[] = [
     {
@@ -213,7 +220,15 @@ export default function AdminDashboard() {
         defaultValue: "All users by role",
       }),
       icon: "people-circle-outline",
+      badge: 0,
       onPress: () => router.push("/admin/Users"),
+    },
+    {
+      title: "Reports Inbox",
+      subtitle: `${pendingReports} report${pendingReports !== 1 ? 's' : ''} awaiting review`,
+      icon: "flag-outline",
+      badge: pendingReports,
+      onPress: () => router.push("/(admin-tabs)/admin/Reports"),
     },
   ];
 
@@ -347,6 +362,13 @@ export default function AdminDashboard() {
                   {action.subtitle}
                 </Text>
               </View>
+              {(action.badge ?? 0) > 0 && (
+                <View className="bg-red-500 rounded-full min-w-[20px] h-5 items-center justify-center px-1 mr-2">
+                  <Text className="text-[10px] font-quicksandBold text-white">
+                    {(action.badge ?? 0) > 99 ? '99+' : action.badge}
+                  </Text>
+                </View>
+              )}
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </TouchableOpacity>
           ))}

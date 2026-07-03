@@ -283,7 +283,10 @@ export default function EmployerCompleteProfileScreen() {
 
   const handleSave = async () => {
     const success = await saveProfile();
-    if (success && completionStatus.isComplete) router.back();
+    if (success) {
+      await refreshProfile();
+      if (completionStatus.isComplete) router.back();
+    }
   };
 
   // ─── Skeleton loading state ───────────────────────────────────────────────

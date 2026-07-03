@@ -176,11 +176,13 @@ export default function ApplicantCard({
           t("alerts.noCV.message", { defaultValue: "This applicant has not uploaded a CV." }),
         );
 
-  const handleViewDetails = () =>
-    router.push({
-      pathname: "/employer/applicant-details",
-      params: { applicationId: applicant.id },
-    });
+const handleViewDetails = () =>
+  router.push({
+    pathname: "/(shared)/user/[id]",
+    params: {
+      id: applicant.id.toString(),
+    },
+  });
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
@@ -198,7 +200,10 @@ export default function ApplicantCard({
 
         {/* ── Top row: name block + status badge ──────────────────────── */}
         <TouchableOpacity
-          onPress={handleViewDetails}
+          onPress={() => router.push({
+            pathname: "/(shared)/user/[id]",
+            params: { id: applicant.jobseeker_id, role: 'jobseeker' }
+          })}
           activeOpacity={0.75}
           className="flex-row items-start justify-between mb-3"
         >
@@ -235,6 +240,14 @@ export default function ApplicantCard({
             </Text>
           </View>
         </TouchableOpacity>
+
+        {/* ── Applied Job ─────────────────────────────────────────────── */}
+        <View className="flex-row items-center bg-gray-50 dark:bg-[#1a1a1a] rounded-lg px-2.5 py-1.5 mb-3 self-start border border-gray-100 dark:border-[#2a2a2a]">
+          <Ionicons name="briefcase-outline" size={12} color={iconColor} />
+          <Text className="text-xs font-quicksandSemibold text-gray-700 dark:text-gray-300 ml-1.5">
+            Applied for: <Text className="font-quicksandBold text-cyan-700 dark:text-cyan-400">{applicant.jobs.title}</Text>
+          </Text>
+        </View>
 
         {/* ── Meta: experience + applied date ─────────────────────────── */}
         <View className="flex-row items-center gap-3 mb-3">

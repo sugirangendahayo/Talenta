@@ -299,7 +299,14 @@ export default function JobDetailsScreen() {
         {/* ── JOB HEADER ── */}
         <View className="px-4 pt-6">
           <View className="flex flex-row items-start justify-between mb-4">
-            <View className="flex flex-row items-center flex-1 mr-3">
+            <TouchableOpacity 
+              onPress={() => router.push({
+                pathname: "/(shared)/user/[id]",
+                params: { id: job.employer_id, role: 'employer' }
+              })}
+              activeOpacity={0.75}
+              className="flex flex-row items-center flex-1 mr-3"
+            >
               <UserAvatar
                 imageUrl={job.employer_profiles?.profile_image_url}
                 name={companyName}
@@ -325,7 +332,7 @@ export default function JobDetailsScreen() {
                   </Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
 
           {/* Applied + bookmarked status — compact chips instead of two
@@ -384,36 +391,62 @@ export default function JobDetailsScreen() {
         {/* Experience */}
         {job.experience_level && (
           <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 py-4">
-            <View className="flex-row items-center gap-2 mb-2">
-              <View className="w-7 h-7 rounded-lg bg-cyan-50 items-center justify-center">
+            <View className="flex-row items-center gap-2 mb-3">
+              <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
                 <Ionicons name="briefcase-outline" size={15} color="#0E7490" />
               </View>
               <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100">
                 {t("jobs:details.experience", { defaultValue: "Experience" })}
               </Text>
             </View>
-            <Text className="font-quicksandMedium text-[13.5px] text-gray-500 dark:text-gray-400 ml-9">
-              {job.experience_level}
-            </Text>
+            {job.experience_level === "No experience required" ? (
+              <View className="ml-9 flex-row items-start gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-xl px-3 py-2.5">
+                <Ionicons name="checkmark-circle" size={16} color="#059669" style={{ marginTop: 1 }} />
+                <View className="flex-1">
+                  <Text className="font-quicksandBold text-[13px] text-emerald-700 dark:text-emerald-400 mb-0.5">
+                    No experience required
+                  </Text>
+                  <Text className="font-quicksandMedium text-[12px] text-emerald-600 dark:text-emerald-500 leading-[18px]">
+                    You don't need prior work experience to apply — fresh graduates are welcome.
+                  </Text>
+                </View>
+              </View>
+            ) : job.experience_level === "0–1 years" ? (
+              <View className="ml-9 flex-row items-start gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl px-3 py-2.5">
+                <Ionicons name="time-outline" size={16} color="#2563EB" style={{ marginTop: 1 }} />
+                <View className="flex-1">
+                  <Text className="font-quicksandBold text-[13px] text-blue-700 dark:text-blue-400 mb-0.5">
+                    0–1 years (entry level)
+                  </Text>
+                  <Text className="font-quicksandMedium text-[12px] text-blue-600 dark:text-blue-500 leading-[18px]">
+                    No minimum years required — internship or short experience counts.
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Text className="font-quicksandMedium text-[13.5px] text-gray-500 dark:text-gray-400 ml-9">
+                {job.experience_level}
+              </Text>
+            )}
           </View>
         )}
 
         {/* Skills */}
-        {job.skills_required && job.skills_required.length > 0 && (
-          <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 py-4">
-            <View className="flex-row items-center gap-2 mb-3">
-              <View className="w-7 h-7 rounded-lg bg-cyan-50 items-center justify-center">
-                <Octicons name="checklist" size={15} color="#0E7490" />
-              </View>
-              <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100">
-                {t("jobs:details.skillsRequired", { defaultValue: "Skills required" })}
-              </Text>
+        <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 py-4">
+          <View className="flex-row items-center gap-2 mb-3">
+            <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
+              <Octicons name="checklist" size={15} color="#0E7490" />
             </View>
+            <Text className="font-quicksandBold text-[15px] text-gray-900 dark:text-gray-100">
+              {t("jobs:details.skillsRequired", { defaultValue: "Skills required" })}
+            </Text>
+          </View>
+          {job.skills_required && job.skills_required.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">
               {job.skills_required.map((skill, index) => (
                 <View
                   key={index}
-                  className="bg-gray-50 dark:bg-[#080A08] border border-gray-200 dark:border-[#2a2a2a] px-3 py-1.5 rounded-full"
+                  className="bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] px-3 py-1.5 rounded-full"
                 >
                   <Text className="font-quicksandSemiBold text-[12px] text-gray-700 dark:text-gray-300">
                     {skill}
@@ -421,8 +454,20 @@ export default function JobDetailsScreen() {
                 </View>
               ))}
             </View>
-          </View>
-        )}
+          ) : (
+            <View className="flex-row items-start gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-xl px-3 py-2.5">
+              <Ionicons name="school-outline" size={16} color="#D97706" style={{ marginTop: 1 }} />
+              <View className="flex-1">
+                <Text className="font-quicksandBold text-[13px] text-amber-700 dark:text-amber-400 mb-0.5">
+                  No specific skills required
+                </Text>
+                <Text className="font-quicksandMedium text-[12px] text-amber-600 dark:text-amber-500 leading-[18px]">
+                  Training will be provided — you can apply without prior skills.
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
 
         {/* Overview */}
         <View className="mx-4 mb-3 bg-white dark:bg-[#080A08] rounded-2xl px-4 pt-4 pb-1">

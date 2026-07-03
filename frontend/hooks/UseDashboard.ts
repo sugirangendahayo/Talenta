@@ -45,6 +45,7 @@ export interface RecentContact {
   job_title: string;
   phone: string | null;
   email: string;
+  profile_image_url: string | null;
   last_contact: string;
   status: string;
 }
@@ -243,7 +244,8 @@ export function useDashboard() {
             first_name,
             last_name,
             phone,
-            email
+            email,
+            profile_image_url
           ),
           jobs!inner(
             employer_id,
@@ -270,6 +272,7 @@ export function useDashboard() {
           job_title: app.jobs?.title || "Unknown Position",
           phone: app.jobseeker_profiles?.phone || null,
           email: app.jobseeker_profiles?.email || "",
+          profile_image_url: app.jobseeker_profiles?.profile_image_url || null,
           last_contact: app.updated_at,
           status: app.status,
         };

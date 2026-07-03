@@ -7,8 +7,9 @@ import {
   rejectEmployerWithReason,
   verifyEmployer,
 } from "@/lib/adminService";
-import type { AdminEmployer } from "@/types/admin.types";
+import { AdminEmployer } from "@/types/admin.types";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +42,7 @@ function EmployerCard({
   isDark: boolean;
 }) {
   const { t } = useTranslation("admin");
+  const router = useRouter();
 
   return (
     <View
@@ -57,33 +59,42 @@ function EmployerCard({
       <View className="flex-1 p-4">
         {/* Header row */}
         <View className="flex-row items-start">
-          <UserAvatar
-            imageUrl={employer.profile_image_url}
-            name={employer.company_name}
-            size={40}
-            style={{ marginRight: 10, marginTop: 2 }}
-          />
-          <View className="flex-1 mr-2">
-            <View className="flex-row items-center gap-1">
+          <TouchableOpacity
+            onPress={() => router.push({
+              pathname: "/(shared)/user/[id]",
+              params: { id: employer.id, role: 'employer' }
+            })}
+            activeOpacity={0.75}
+            className="flex-row items-start flex-1"
+          >
+            <UserAvatar
+              imageUrl={employer.profile_image_url}
+              name={employer.company_name}
+              size={40}
+              style={{ marginRight: 10, marginTop: 2 }}
+            />
+            <View className="flex-1 mr-2">
+              <View className="flex-row items-center gap-1">
+                <Text
+                  className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
+                  numberOfLines={1}
+                >
+                  {employer.company_name}
+                </Text>
+                {employer.business_verification_status === "approved" &&
+                  employer.premium_plan &&
+                  employer.premium_plan !== "free" && (
+                    <MaterialIcons name="verified" size={14} color="#0E7490" />
+                  )}
+              </View>
               <Text
-                className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
+                className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
                 numberOfLines={1}
               >
-                {employer.company_name}
+                {employer.email}
               </Text>
-              {employer.business_verification_status === "approved" &&
-                employer.premium_plan &&
-                employer.premium_plan !== "free" && (
-                  <MaterialIcons name="verified" size={14} color="#0E7490" />
-                )}
             </View>
-            <Text
-              className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
-              numberOfLines={1}
-            >
-              {employer.email}
-            </Text>
-          </View>
+          </TouchableOpacity>
           {/* Status badge */}
           <BusinessVerificationBadge
             status={employer.business_verification_status}

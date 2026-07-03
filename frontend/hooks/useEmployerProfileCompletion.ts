@@ -10,6 +10,7 @@ export interface EmployerProfileFormData {
   company_address: string;
   country: string;
   city: string;
+  profile_image_url?: string | null;
 }
 
 export interface ProfileCompletionStatus {
@@ -40,6 +41,7 @@ export function useEmployerProfileCompletion() {
     company_address: "",
     country: "",
     city: "",
+    profile_image_url: null,
   });
   
   // Verification docs can be added later as needed
@@ -83,6 +85,7 @@ export function useEmployerProfileCompletion() {
           company_address: data.company_address || "",
           country: data.country || "",
           city: data.city || "",
+          profile_image_url: data.profile_image_url || null,
         });
         setBusinessLicenseUrl(data.business_license_url);
         calculateCompletion(data);

@@ -7,12 +7,16 @@ import type {
   AdminEmployer,
   AdminJob,
   AdminJobseeker,
+  AdminReport,
   AdminStats,
   AdminUser,
   JobStatus,
+  ModerationAction,
   RecentActivity,
+  ReportStatus,
 } from "@/types/admin.types";
 import { approveBusinessVerification, rejectBusinessVerification } from "./verificationService";
+
 
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────
 
@@ -186,4 +190,84 @@ export async function getAnalytics(): Promise<AdminAnalytics> {
     jobseekerWithDocs,
     jobseekerWithoutDocs,
   };
+}
+
+// ─── Reports ─────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch all reports, newest first.
+ * Optionally filter by status.
+ * Returns basic reporter info joined from profiles for display.
+ */
+export async function getReports(
+  statusFilter: ReportStatus | 'all' = 'all',
+): Promise<AdminReport[]> {
+  let query = supabase
+    .from('reports')
+    .select(`
+      *,
+      reporter:profiles!reporter_id (
+        id,
+        role
+      )
+    `)
+    .order('created_at', { ascending: false });
+
+  if (statusFilter !== 'all') {
+    query = query.eq('status', statusFilter);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as AdminReport[];
+}
+
+/**
+ * Update a report's status (e.g., mark as 'reviewing', 'resolved', 'dismissed').
+ * Optionally add resolution notes.
+ */
+export async function updateReportStatus(
+  reportId: string,
+  status: ReportStatus,
+  resolutionNotes?: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('reports')
+    .update({
+      status,
+      resolution_notes: resolutionNotes ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', reportId);
+
+  if (error) throw error;
+}
+
+/**
+ * Get moderation history for a specific user, newest first.
+ */
+export async function getModerationHistory(
+  targetUserId: string,
+): Promise<ModerationAction[]> {
+  const { data, error } = await supabase
+    .from('moderation_actions')
+    .select('*')
+    .eq('target_user_id', targetUserId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as ModerationAction[];
+}
+
+/**
+ * Get report count by status — used for dashboard badge.
+ */
+export async function getPendingReportCount(): Promise<number> {
+  const { count, error } = await supabase
+    .from('reports')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+
+  if (error) return 0;
+  return count ?? 0;
 }

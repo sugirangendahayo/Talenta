@@ -221,6 +221,7 @@ function AdminTabBar({ state, descriptors, navigation }: any) {
     "admin/Employers",
     "admin/Jobseekers",
     "admin/Jobs",
+    "admin/Reports",
   ];
   const visibleRoutes = state.routes.filter((r: any) =>
     VISIBLE_TABS.includes(r.name),
@@ -445,6 +446,15 @@ function TabsContent() {
           title: t("navigation.jobs", { defaultValue: "Jobs" }),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="briefcase-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="admin/Reports"
+        options={{
+          title: "Reports",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="flag-outline" size={size} color={color} />
           ),
         }}
       />

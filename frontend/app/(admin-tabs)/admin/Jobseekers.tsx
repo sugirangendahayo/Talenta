@@ -4,6 +4,7 @@ import { getJobseekers } from "@/lib/adminService";
 import type { AdminJobseeker } from "@/types/admin.types";
 import UserAvatar from "@/components/common/UserAvatar";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -26,6 +27,7 @@ type DocFilter = "all" | "has_docs" | "no_docs";
 
 function JobseekerCard({ jobseeker }: { jobseeker: AdminJobseeker }) {
   const { t } = useTranslation("admin");
+  const router = useRouter();
   const hasDocs = !!(jobseeker.id_document_url || jobseeker.cv_document_url);
   const accentHex = hasDocs ? "#2563EB" : "#6B7280"; // Blue for has docs, Gray for no docs
 
@@ -46,26 +48,35 @@ function JobseekerCard({ jobseeker }: { jobseeker: AdminJobseeker }) {
       <View className="flex-1 p-4">
         {/* Header row */}
         <View className="flex-row items-start">
-          <UserAvatar
-            imageUrl={jobseeker.profile_image_url}
-            name={`${jobseeker.first_name} ${jobseeker.last_name}`}
-            size={40}
-            style={{ marginRight: 10, marginTop: 2 }}
-          />
-          <View className="flex-1 mr-2">
-            <Text
-              className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
-              numberOfLines={1}
-            >
-              {jobseeker.first_name} {jobseeker.last_name}
-            </Text>
-            <Text
-              className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
-              numberOfLines={1}
-            >
-              {jobseeker.email}
-            </Text>
-          </View>
+          <TouchableOpacity
+            onPress={() => router.push({
+              pathname: "/(shared)/user/[id]",
+              params: { id: jobseeker.id, role: 'jobseeker' }
+            })}
+            activeOpacity={0.75}
+            className="flex-row items-start flex-1"
+          >
+            <UserAvatar
+              imageUrl={jobseeker.profile_image_url}
+              name={`${jobseeker.first_name} ${jobseeker.last_name}`}
+              size={40}
+              style={{ marginRight: 10, marginTop: 2 }}
+            />
+            <View className="flex-1 mr-2">
+              <Text
+                className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
+                numberOfLines={1}
+              >
+                {jobseeker.first_name} {jobseeker.last_name}
+              </Text>
+              <Text
+                className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
+                numberOfLines={1}
+              >
+                {jobseeker.email}
+              </Text>
+            </View>
+          </TouchableOpacity>
           {/* Status badge */}
           <View
             className={`flex-row items-center px-2.5 py-1 rounded-full ${

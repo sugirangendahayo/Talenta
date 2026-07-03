@@ -2,15 +2,19 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
   Animated,
-  KeyboardAvoidingView,
+  Dimensions,
+  Keyboard,
+  KeyboardEvent,
+  LayoutAnimation,
   Modal,
   PanResponder,
   Platform,
@@ -19,9 +23,19 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  UIManager,
   View,
 } from "react-native";
 import { toast } from "sonner-native";
+
+// Android needs this opted in explicitly per-app before LayoutAnimation will
+// do anything; iOS has it enabled by default. Safe to call unconditionally.
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const STEPS = 3;
 
@@ -66,6 +80,16 @@ const EXPIRY_OPTIONS = [
   { labelKey: "expiry.90", days: 90 },
 ];
 
+// Structured experience ranges instead of forcing free-text ("3 years of experience").
+// value is what actually gets stored — human-readable and consistent for filtering later.
+const EXPERIENCE_LEVELS = [
+  { id: "none", labelKey: "experience.none", value: "No experience required" },
+  { id: "entry", labelKey: "experience.entry", value: "0–1 years" },
+  { id: "junior", labelKey: "experience.junior", value: "1–3 years" },
+  { id: "mid", labelKey: "experience.mid", value: "3–5 years" },
+  { id: "senior", labelKey: "experience.senior", value: "5+ years" },
+];
+
 const getDefaultExpiry = () => {
   const d = new Date();
   d.setDate(d.getDate() + 30);
@@ -92,7 +116,10 @@ const emptyForm = () => ({
   category: "",
   typeKeys: [] as string[],
   description: "",
+  experienceLevel: "" as string, // id from EXPERIENCE_LEVELS
+  noRequirements: false,
   requirements: [] as string[],
+  noSkills: false,
   skills: [] as string[],
   expiresAt: getDefaultExpiry(),
 });
@@ -126,6 +153,8 @@ function StyledInput({
   multiline,
   numberOfLines,
   style,
+  onFocus,
+  editable = true,
 }: {
   value: string;
   onChangeText: (v: string) => void;
@@ -134,6 +163,8 @@ function StyledInput({
   multiline?: boolean;
   numberOfLines?: number;
   style?: object;
+  onFocus?: () => void;
+  editable?: boolean;
 }) {
   return (
     <TextInput
@@ -145,8 +176,10 @@ function StyledInput({
       multiline={multiline}
       numberOfLines={numberOfLines}
       textAlignVertical={multiline ? "top" : "center"}
+      onFocus={onFocus}
+      editable={editable}
       className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-xl px-4 py-3 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100"
-      style={style}
+      style={[style, !editable && { opacity: 0.5 }]}
     />
   );
 }
@@ -193,9 +226,55 @@ function Tag({ label, onRemove }: { label: string; onRemove: () => void }) {
         activeOpacity={0.7}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Ionicons name="close" size={12} color={isDark ? "#9CA3AF" : "#6B7280"} />
+        <Ionicons
+          name="close"
+          size={12}
+          color={isDark ? "#9CA3AF" : "#6B7280"}
+        />
       </TouchableOpacity>
     </View>
+  );
+}
+
+// A toggle row that flips a field like "no requirements needed" / "no specific skills".
+// Placed above the tag input so the employer sees the opt-out before they start typing.
+function NoneToggle({
+  label,
+  value,
+  onToggle,
+}: {
+  label: string;
+  value: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onToggle}
+      activeOpacity={0.7}
+      className={`flex-row items-center justify-between px-4 py-3 rounded-xl border mb-3 ${
+        value
+          ? "bg-cyan-50 dark:bg-cyan-950/30 border-cyan-200 dark:border-cyan-800"
+          : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+      }`}
+    >
+      <Text
+        className={`text-sm font-quicksandSemiBold flex-1 mr-3 ${
+          value
+            ? "text-cyan-800 dark:text-cyan-300"
+            : "text-gray-600 dark:text-gray-300"
+        }`}
+      >
+        {label}
+      </Text>
+      <View
+        className={`w-11 h-6 rounded-full justify-center px-0.5 ${
+          value ? "bg-cyan-700" : "bg-gray-300 dark:bg-gray-600"
+        }`}
+        style={{ alignItems: value ? "flex-end" : "flex-start" }}
+      >
+        <View className="w-5 h-5 rounded-full bg-white" />
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -206,6 +285,8 @@ function TagInput({
   onAdd,
   onRemove,
   required,
+  disabled,
+  onFocus,
 }: {
   label: string;
   placeholder: string;
@@ -213,6 +294,8 @@ function TagInput({
   onAdd: (v: string) => void;
   onRemove: (i: number) => void;
   required?: boolean;
+  disabled?: boolean;
+  onFocus?: () => void;
 }) {
   const [text, setText] = useState("");
 
@@ -226,14 +309,16 @@ function TagInput({
 
   return (
     <FieldWrap>
-      <FieldLabel required={required}>{label}</FieldLabel>
+      <FieldLabel required={required && !disabled}>{label}</FieldLabel>
       <StyledInput
         value={text}
         onChangeText={setText}
         placeholder={placeholder}
+        editable={!disabled}
+        onFocus={onFocus}
       />
       {/* Hint to confirm with Return key */}
-      {text.trim().length > 0 && (
+      {!disabled && text.trim().length > 0 && (
         <View className="flex-row mt-2">
           <TouchableOpacity
             onPress={commit}
@@ -247,7 +332,7 @@ function TagInput({
           </TouchableOpacity>
         </View>
       )}
-      {tags.length > 0 && (
+      {!disabled && tags.length > 0 && (
         <View className="flex-row flex-wrap mt-3">
           {tags.map((tag, i) => (
             <Tag key={i} label={tag} onRemove={() => onRemove(i)} />
@@ -284,14 +369,81 @@ export default function PostJobSheet({
   onClose,
   onSuccess,
 }: PostJobSheetProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
   const { isDark } = useTheme();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
 
+  const employerProfile = profile as EmployerProfile | null;
+
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(emptyForm());
   const [submitting, setSubmitting] = useState(false);
+
+  // ── Keyboard handling ──────────────────────────────────────────
+  // KeyboardAvoidingView's "padding" behavior calculates its offset from the
+  // view's measured frame, but inside a Modal (own native window on iOS) that
+  // frame doesn't line up with the actual screen, so the push is wrong or a
+  // no-op. Tracking keyboard height directly and driving layout off that
+  // number sidesteps the bad measurement entirely and works the same on both
+  // platforms, since we're not depending on any RN heuristic for "how much to
+  // push" — just the keyboard's own reported height.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const showEvt =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvt =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const onShow = (e: KeyboardEvent) => {
+      // Configure the transition before the state change that triggers it,
+      // so the sheet height animates in step with the keyboard sliding up
+      // instead of snapping to its new size.
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(
+          Platform.OS === "ios" ? e.duration || 250 : 220,
+          LayoutAnimation.Types.easeInEaseOut,
+          LayoutAnimation.Properties.opacity,
+        ),
+      );
+      setKeyboardHeight(e.endCoordinates.height);
+    };
+    const onHide = () => {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(
+          220,
+          LayoutAnimation.Types.easeInEaseOut,
+          LayoutAnimation.Properties.opacity,
+        ),
+      );
+      setKeyboardHeight(0);
+    };
+
+    const showSub = Keyboard.addListener(showEvt, onShow);
+    const hideSub = Keyboard.addListener(hideEvt, onHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Reset keyboard tracking whenever the sheet closes so a stale height
+  // doesn't linger and squash the layout the next time it opens.
+  useEffect(() => {
+    if (!visible) setKeyboardHeight(0);
+  }, [visible]);
+
+  // When a field is focused, nudge the ScrollView so the field sits above the
+  // keyboard rather than trusting scroll-into-view timing, which is unreliable
+  // the instant the keyboard starts animating in.
+  const scrollFieldIntoView = (approxY: number) => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: approxY, animated: true });
+    }, 50);
+  };
 
   const updateField = (key: string, value: unknown) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -348,9 +500,16 @@ export default function PostJobSheet({
         });
     }
     if (step === 2) {
-      if (form.requirements.length === 0)
+      if (!form.experienceLevel)
+        return t("validation.experienceRequired", {
+          defaultValue: "Select an experience level.",
+        });
+      // Requirements/skills are only mandatory if the employer hasn't opted
+      // out via the "none needed" toggle.
+      if (!form.noRequirements && form.requirements.length === 0)
         return t("validation.requirementsRequired", {
-          defaultValue: "Add at least one requirement.",
+          defaultValue:
+            "Add at least one requirement, or mark that none are needed.",
         });
     }
     return null;
@@ -388,12 +547,27 @@ export default function PostJobSheet({
       }
     }
     if (!user) return;
+    
+    // Safety net: ensure profile is complete and business is verified
+    if (!employerProfile?.profile_completed) {
+      Alert.alert("Profile Incomplete", "Please complete your profile before posting jobs.");
+      return;
+    }
+    
+    if (employerProfile?.business_verification_status !== "approved") {
+      Alert.alert("Verification Required", "Your business must be verified before posting jobs.");
+      return;
+    }
+    
     setSubmitting(true);
     try {
       const min = parseFloat(form.salaryMin.replace(/[^0-9.]/g, "")) || 0;
       const max = parseFloat(form.salaryMax.replace(/[^0-9.]/g, "")) || 0;
       const expiry = form.expiresAt.toISOString().split("T")[0];
       const dbTypes = form.typeKeys.map((k) => JOB_TYPE_VALUES[k]).join(", ");
+      const experienceValue =
+        EXPERIENCE_LEVELS.find((e) => e.id === form.experienceLevel)?.value ??
+        "";
       const { error } = await supabase.from("jobs").insert({
         employer_id: user.id,
         title: form.title.trim() || "Untitled",
@@ -403,8 +577,8 @@ export default function PostJobSheet({
         job_type: dbTypes,
         category: form.category || "it",
         description: form.description.trim(),
-        experience_level: form.requirements[0] || "",
-        skills_required: form.skills,
+        experience_level: experienceValue,
+        skills_required: form.noSkills ? [] : form.skills,
         status: asDraft ? "draft" : "active",
         expires_at: expiry,
       });
@@ -418,7 +592,12 @@ export default function PostJobSheet({
       handleClose();
       onSuccess();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null && "message" in err && typeof (err as { message: unknown }).message === "string"
+            ? (err as { message: string }).message
+            : String(err);
       Alert.alert(
         t("error.title", { defaultValue: "Something went wrong" }),
         msg,
@@ -473,6 +652,7 @@ export default function PostJobSheet({
           placeholder={t("postJob.placeholders.title", {
             defaultValue: "e.g. Senior React Developer",
           })}
+          onFocus={() => scrollFieldIntoView(0)}
         />
       </FieldWrap>
 
@@ -486,6 +666,7 @@ export default function PostJobSheet({
           placeholder={t("postJob.placeholders.location", {
             defaultValue: "e.g. Kigali / Remote",
           })}
+          onFocus={() => scrollFieldIntoView(80)}
         />
       </FieldWrap>
 
@@ -502,6 +683,7 @@ export default function PostJobSheet({
                 defaultValue: "Min",
               })}
               keyboardType="numeric"
+              onFocus={() => scrollFieldIntoView(160)}
             />
           </View>
           <View className="w-4 h-px bg-gray-300 dark:bg-gray-600" />
@@ -513,6 +695,7 @@ export default function PostJobSheet({
                 defaultValue: "Max",
               })}
               keyboardType="numeric"
+              onFocus={() => scrollFieldIntoView(160)}
             />
           </View>
         </View>
@@ -601,6 +784,7 @@ export default function PostJobSheet({
           multiline
           numberOfLines={6}
           style={{ minHeight: 130, paddingTop: 12 }}
+          onFocus={() => scrollFieldIntoView(400)}
         />
       </FieldWrap>
     </>
@@ -608,38 +792,91 @@ export default function PostJobSheet({
 
   const renderStep2 = () => (
     <>
-      <TagInput
-        label={t("postJob.fields.requirements", {
-          defaultValue: "Requirements",
-        })}
-        placeholder={t("postJob.placeholders.requirements", {
-          defaultValue: "e.g. 3+ years experience",
-        })}
-        tags={form.requirements}
-        onAdd={(v) => updateField("requirements", [...form.requirements, v])}
-        onRemove={(i) =>
-          updateField(
-            "requirements",
-            form.requirements.filter((_, idx) => idx !== i),
-          )
-        }
-        required
-      />
+      {/* Experience level — chip selector instead of free-text so employers
+          aren't forced to phrase "3 years of experience" themselves, and so
+          short/partial experience (a few months, a semester internship) has
+          a natural home instead of being rounded up or typed awkwardly. */}
+      <FieldWrap>
+        <FieldLabel required>
+          {t("postJob.fields.experience", {
+            defaultValue: "Experience level",
+          })}
+        </FieldLabel>
+        <View className="flex-row flex-wrap mt-1">
+          {EXPERIENCE_LEVELS.map((lvl) => (
+            <SelectChip
+              key={lvl.id}
+              label={t(lvl.labelKey, { defaultValue: lvl.value })}
+              selected={form.experienceLevel === lvl.id}
+              onPress={() => updateField("experienceLevel", lvl.id)}
+            />
+          ))}
+        </View>
+      </FieldWrap>
 
-      <TagInput
-        label={t("postJob.fields.skills", { defaultValue: "Skills" })}
-        placeholder={t("postJob.placeholders.skills", {
-          defaultValue: "e.g. React, Node.js, SQL",
+      {/* Requirements — with an explicit opt-out */}
+      <View className="mb-1">
+        <FieldLabel>
+          {t("postJob.fields.requirements", {
+            defaultValue: "Requirements",
+          })}
+        </FieldLabel>
+      </View>
+      <NoneToggle
+        label={t("postJob.noRequirements", {
+          defaultValue: "No specific requirements needed",
         })}
-        tags={form.skills}
-        onAdd={(v) => updateField("skills", [...form.skills, v])}
-        onRemove={(i) =>
-          updateField(
-            "skills",
-            form.skills.filter((_, idx) => idx !== i),
-          )
-        }
+        value={form.noRequirements}
+        onToggle={() => updateField("noRequirements", !form.noRequirements)}
       />
+      {!form.noRequirements && (
+        <TagInput
+          label=""
+          placeholder={t("postJob.placeholders.requirements", {
+            defaultValue: "e.g. Valid driver's license, own laptop",
+          })}
+          tags={form.requirements}
+          onAdd={(v) => updateField("requirements", [...form.requirements, v])}
+          onRemove={(i) =>
+            updateField(
+              "requirements",
+              form.requirements.filter((_, idx) => idx !== i),
+            )
+          }
+          onFocus={() => scrollFieldIntoView(300)}
+        />
+      )}
+
+      {/* Skills — with the same opt-out pattern */}
+      <View className="mb-1">
+        <FieldLabel>
+          {t("postJob.fields.skills", { defaultValue: "Skills" })}
+        </FieldLabel>
+      </View>
+      <NoneToggle
+        label={t("postJob.noSkills", {
+          defaultValue: "No specific skills required",
+        })}
+        value={form.noSkills}
+        onToggle={() => updateField("noSkills", !form.noSkills)}
+      />
+      {!form.noSkills && (
+        <TagInput
+          label=""
+          placeholder={t("postJob.placeholders.skills", {
+            defaultValue: "e.g. React, Node.js, SQL",
+          })}
+          tags={form.skills}
+          onAdd={(v) => updateField("skills", [...form.skills, v])}
+          onRemove={(i) =>
+            updateField(
+              "skills",
+              form.skills.filter((_, idx) => idx !== i),
+            )
+          }
+          onFocus={() => scrollFieldIntoView(500)}
+        />
+      )}
     </>
   );
 
@@ -663,10 +900,26 @@ export default function PostJobSheet({
         defaultValue: "Requirements",
       }),
       subtitle: t("postJob.steps.requirements.subtitle", {
-        defaultValue: "What the ideal candidate brings",
+        defaultValue: "Experience and what the ideal candidate brings",
       }),
     },
   ];
+
+  // On iOS the keyboard floats over content and the Modal renders in its own
+  // native window, so KeyboardAvoidingView's frame-based "padding" behavior
+  // doesn't compute a sane offset here (this was the original bug). Instead
+  // we shrink the sheet by the keyboard's own reported height, which needs a
+  // real pixel value — percentage height + marginBottom doesn't shrink an
+  // element, it just repositions a fixed-size box and pushes the top edge
+  // off-screen. On Android, adjustResize (the default windowSoftInputMode in
+  // Expo/RN) already shrinks the whole window, so compensating manually
+  // there would squash things twice.
+  const windowHeight = Dimensions.get("window").height;
+  const baseSheetHeight = windowHeight * 0.93;
+  const sheetHeight =
+    Platform.OS === "ios" && keyboardHeight > 0
+      ? Math.max(baseSheetHeight - keyboardHeight, windowHeight * 0.5)
+      : baseSheetHeight;
 
   return (
     <Modal
@@ -690,7 +943,7 @@ export default function PostJobSheet({
             backgroundColor: isDark ? "#080A08" : "#ffffff",
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: "93%",
+            height: sheetHeight,
             flexDirection: "column",
             shadowColor: "#000",
             shadowOffset: { width: 0, height: -3 },
@@ -729,18 +982,19 @@ export default function PostJobSheet({
             </TouchableOpacity>
           </View>
 
-          {/* Scrollable body */}
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            className="flex-1"
-          >
+          {/* Scrollable body — no KeyboardAvoidingView here; keyboardHeight
+              (tracked above) drives the sheet's own size instead, which is
+              the part that actually works reliably inside a Modal. */}
+          <View className="flex-1">
             <ScrollView
+              ref={scrollRef}
               contentContainerStyle={{
                 paddingHorizontal: 24,
                 paddingBottom: 28,
               }}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
             >
               {step === 0 && renderStep0()}
               {step === 1 && renderStep1()}
@@ -801,7 +1055,7 @@ export default function PostJobSheet({
                 )}
               </TouchableOpacity>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </Animated.View>
       </View>
     </Modal>
