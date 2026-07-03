@@ -198,7 +198,10 @@ export default function ApplicantCard({
 
         {/* ── Top row: name block + status badge ──────────────────────── */}
         <TouchableOpacity
-          onPress={handleViewDetails}
+          onPress={() => router.push({
+            pathname: "/(shared)/user/[id]",
+            params: { id: applicant.jobseeker_id, role: 'jobseeker' }
+          })}
           activeOpacity={0.75}
           className="flex-row items-start justify-between mb-3"
         >
