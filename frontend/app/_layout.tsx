@@ -176,6 +176,9 @@ function RootLayoutNav() {
       <Stack.Screen name="(employer-tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(admin-tabs)" options={{ headerShown: false }} />
 
+      {/* Shared screens — accessible from every role tab group */}
+      <Stack.Screen name="(shared)" options={{ headerShown: false }} />
+
       {/* Job seeker screens */}
       <Stack.Screen
         name="jobseekers/job-details/[id]"
