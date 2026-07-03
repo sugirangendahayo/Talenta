@@ -199,7 +199,14 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                 activeOpacity={0.8}
               >
                 <View className="flex-row items-start justify-between mb-3">
-                  <View className="flex-row items-center flex-1 mr-3">
+                  <TouchableOpacity 
+                    onPress={() => router.push({
+                      pathname: "/(shared)/user/[id]",
+                      params: { id: item.employer_id, role: 'employer' }
+                    })}
+                    activeOpacity={0.75}
+                    className="flex-row items-center flex-1 mr-3"
+                  >
                     {/* Company avatar */}
                     <UserAvatar 
                       imageUrl={item.employer_profiles?.profile_image_url} 
@@ -225,7 +232,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                         </Text>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity>
 
                   {/* ── Bookmark button ──────────────────────────────────────
                       Fixed 40x40 tap area (was icon + p-2, ~32px — under the
