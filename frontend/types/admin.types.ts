@@ -97,3 +97,46 @@ export interface RecentActivity {
   recentJobseekers: AdminJobseeker[];
   recentJobs: AdminJob[];
 }
+
+// ── Moderation / Reports ─────────────────────────────────────────────────────
+
+export type ReportStatus = 'pending' | 'reviewing' | 'resolved' | 'dismissed';
+export type ReportReason = 'spam' | 'harassment' | 'fraud' | 'inappropriate' | 'suspicious' | 'other';
+export type ReportTargetType = 'user' | 'job' | 'post' | 'comment' | 'company';
+
+export interface AdminReport {
+  id: string;
+  reporter_id: string;
+  target_type: ReportTargetType;
+  target_id: string;
+  reason: ReportReason;
+  details: string | null;
+  status: ReportStatus;
+  resolution_notes: string | null;
+  resolved_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined via RPC/view — reporter display info
+  reporter?: {
+    id: string;
+    role: string;
+    // name pulled from jobseeker_profiles or employer_profiles
+    display_name?: string;
+    email?: string;
+  };
+}
+
+export type ModerationActionType =
+  | 'warning' | 'under_review' | 'suspension' | 'ban' | 'unban'
+  | 'flag_suspicious' | 'verification_revoked' | 'unsuspend';
+
+export interface ModerationAction {
+  id: string;
+  admin_id: string | null;
+  target_user_id: string;
+  action_type: ModerationActionType;
+  reason: string;
+  internal_notes: string | null;
+  duration_hours: number | null;
+  created_at: string;
+}
