@@ -1,7 +1,7 @@
 // app/(employer-tabs)/_layout.tsx
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import Animated, {
   useAnimatedStyle,
@@ -11,6 +11,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { TouchableOpacity } from "react-native";
+import { useAuth } from "@/contexts/AuthContext";
+import { EmployerProfile } from "@/lib/supabase";
 import {
   TabBarVisibilityProvider,
   useTabBarVisibility,
@@ -219,6 +221,48 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const { isDark } = useTheme();
   const slideY = useSharedValue(0);
   const [sheetVisible, setSheetVisible] = useState(false);
+  
+  const { profile } = useAuth();
+  const router = useRouter();
+  const employerProfile = profile as EmployerProfile | null;
+
+  const handlePostJobPress = () => {
+    if (!employerProfile?.profile_completed) {
+      Alert.alert(
+        "Profile Incomplete",
+        "You need to complete your company profile before posting a job.",
+        [
+          { text: "Later", style: "cancel" },
+          {
+            text: "Complete Profile",
+            onPress: () => router.push("/employer/complete-profile"),
+          },
+        ]
+      );
+      return;
+    }
+
+    const verificationStatus = employerProfile?.business_verification_status;
+    if (verificationStatus !== "approved") {
+      const isPending = verificationStatus === "pending_review";
+      Alert.alert(
+        isPending ? "Verification Pending" : "Business Verification Required",
+        isPending
+          ? "Your documents are currently under review. You'll be able to post jobs once your business is verified."
+          : "You need to submit and get your business registration approved before posting jobs.",
+        [
+          { text: "Later", style: "cancel" },
+          {
+            text: isPending ? "View Status" : "Submit Docs",
+            onPress: () => router.push("/employer/business-verification"),
+          },
+        ]
+      );
+      return;
+    }
+
+    setSheetVisible(true);
+  };
 
   useEffect(() => {
     slideY.value = isVisible ? 0 : 150;
@@ -307,7 +351,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         </View>
       </Animated.View>
 
-      <PostJobFAB slideY={slideY} onPress={() => setSheetVisible(true)} />
+      <PostJobFAB slideY={slideY} onPress={handlePostJobPress} />
       <PostJobSheet visible={sheetVisible} onClose={() => setSheetVisible(false)} onSuccess={() => {}} />
     </>
   );

@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
@@ -368,10 +369,12 @@ export default function PostJobSheet({
   onClose,
   onSuccess,
 }: PostJobSheetProps) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
   const { isDark } = useTheme();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
+
+  const employerProfile = profile as EmployerProfile | null;
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(emptyForm());
@@ -544,6 +547,18 @@ export default function PostJobSheet({
       }
     }
     if (!user) return;
+    
+    // Safety net: ensure profile is complete and business is verified
+    if (!employerProfile?.profile_completed) {
+      Alert.alert("Profile Incomplete", "Please complete your profile before posting jobs.");
+      return;
+    }
+    
+    if (employerProfile?.business_verification_status !== "approved") {
+      Alert.alert("Verification Required", "Your business must be verified before posting jobs.");
+      return;
+    }
+    
     setSubmitting(true);
     try {
       const min = parseFloat(form.salaryMin.replace(/[^0-9.]/g, "")) || 0;

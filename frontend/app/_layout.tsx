@@ -226,6 +226,11 @@ function RootLayoutNav() {
         name="employer/upload-documents"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="employer/business-verification"
+        options={{ headerShown: false }}
+      />
+
 
       {/* Admin screens */}
       <Stack.Screen name="admin/Users" options={{ headerShown: false }} />
