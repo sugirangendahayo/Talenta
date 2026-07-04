@@ -70,8 +70,9 @@ export default function JobseekerProfile() {
       jobseekerData.experience_level,
       jobseekerData.skills && jobseekerData.skills.length > 0,
       jobseekerData.cv_document_url,
+      jobseekerData.profile_image_url,
     ];
-    const filledFields = fields.filter((field) => field).length;
+    const filledFields = fields.filter((field) => field && field !== "").length;
     setCompletionPercentage(Math.round((filledFields / fields.length) * 100));
   };
 
@@ -323,13 +324,6 @@ export default function JobseekerProfile() {
               </Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.applications", { defaultValue: "Applications" })}
-              </Text>
-            </View>
-            <View className="w-px bg-gray-100 dark:bg-[#141414]" />
-            <View className="flex-1 items-center">
-              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">0</Text>
-              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
-                {t("stats.interviews", { defaultValue: "Interviews" })}
               </Text>
             </View>
             <View className="w-px bg-gray-100 dark:bg-[#141414]" />
