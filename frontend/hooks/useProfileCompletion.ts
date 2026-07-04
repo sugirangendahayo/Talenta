@@ -55,6 +55,7 @@ export function useProfileCompletion() {
     skills: [],
   });
   const [cvUrl, setCvUrl] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [completionStatus, setCompletionStatus] =
     useState<ProfileCompletionStatus>({
       completionPercentage: 0,
@@ -99,6 +100,7 @@ export function useProfileCompletion() {
           skills: data.skills || [],
         });
         setCvUrl(data.cv_document_url);
+        setProfileImageUrl(data.profile_image_url);
         calculateCompletion(data);
       }
     } catch (err: any) {
@@ -200,6 +202,7 @@ export function useProfileCompletion() {
       const { isComplete } = calculateCompletion({
         ...updateData,
         cv_document_url: cvUrl,
+        profile_image_url: profileImageUrl,
       });
 
       updateData.profile_completed = isComplete;
