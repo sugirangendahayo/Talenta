@@ -94,7 +94,7 @@ export default function Applications() {
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
-      <ApplicationsHeader onRefresh={refresh} isRefreshing={refreshing} />
+      <ApplicationsHeader applicationCount={applications.length} />
       <StatusFilterBar activeFilter={activeFilter} onChange={setActiveFilter} />
 
       {loading ? (
