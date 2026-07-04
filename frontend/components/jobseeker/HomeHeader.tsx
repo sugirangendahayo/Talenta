@@ -16,6 +16,7 @@ import {
   Keyboard,
 } from "react-native";
 import UserAvatar from "@/components/common/UserAvatar";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface HomeHeaderProps {
   onSearchChange?: (query: string) => void;
@@ -31,6 +32,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
   // Controls the whole-row crossfade: 0 = default content, 1 = search bar
   const transition = useRef(new Animated.Value(0)).current;
   const inputRef = useRef<TextInput>(null);
+  const { isDark } = useTheme();
 
   const jobseekerProfile = role === "jobseeker" && profile ? (profile as JobseekerProfile) : null;
   const firstName = jobseekerProfile?.first_name ?? "Guest";
@@ -123,19 +125,24 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
             >
               <Ionicons name="search-outline" size={17} color="#374151" />
             </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleNotificationsPress}
-              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
-              activeOpacity={0.7}
-            >
-              <View className="absolute -right-0.5 -top-0.5 bg-cyan-700 dark:bg-cyan-800 rounded-full min-w-[14px] h-[14px] items-center justify-center px-0.5 z-10">
-                <Text className="text-white font-quicksandBold" style={{ fontSize: 9 }}>
-                  1{/* {unreadCount > 99 ? "99+" : unreadCount} */}
+   <TouchableOpacity
+            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center relative"
+            onPress={() => router.push("/jobseekers/notifications")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={18}
+              color={isDark ? "#9CA3AF" : "#6B7280"}
+            />
+            {unreadCount > 0 && (
+              <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 items-center justify-center border border-white dark:border-[#080A08]">
+                <Text className="text-[9px] font-bold text-white">
+                  {unreadCount > 99 ? "99+" : unreadCount}
                 </Text>
               </View>
-              <Octicons name="bell" size={17} color="#374151" />
-            </TouchableOpacity>
+            )}
+          </TouchableOpacity>
           </View>
         </Animated.View>
 
