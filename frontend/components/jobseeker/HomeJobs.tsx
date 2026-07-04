@@ -9,6 +9,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { toast } from "sonner-native";
 import { useTranslation } from "react-i18next";
 import UserAvatar from "@/components/common/UserAvatar";
 
@@ -240,7 +241,15 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                       reliably lands on the button instead of falling through
                       to the card's own onPress underneath it. */}
                   <TouchableOpacity
-                    onPress={() => toggleInSet(item.id)}
+                    onPress={async () => {
+                      const wasSaved = bookmarkedIds.has(item.id);
+                      await toggleInSet(item.id);
+                      if (wasSaved) {
+                        toast(t("home:featuredJobs.removedFromSaved", { defaultValue: "Removed from saved jobs" }));
+                      } else {
+                        toast.success(t("home:featuredJobs.savedJob", { defaultValue: "Job saved!" }));
+                      }
+                    }}
                     activeOpacity={0.7}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     accessibilityRole="button"
