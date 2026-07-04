@@ -4,11 +4,10 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 interface ApplicationsHeaderProps {
-  onRefresh: () => void;
-  isRefreshing?: boolean;
+  applicationCount?: number;
 }
 
-export default function ApplicationsHeader({ onRefresh, isRefreshing }: ApplicationsHeaderProps) {
+export default function ApplicationsHeader({ applicationCount }: ApplicationsHeaderProps) {
   const { t } = useTranslation("jobs");
 
   return (
@@ -22,23 +21,14 @@ export default function ApplicationsHeader({ onRefresh, isRefreshing }: Applicat
         </Text>
       </View>
 
-      <TouchableOpacity
-        onPress={onRefresh}
-        disabled={isRefreshing}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel={t("applications.header.refresh", {
-          defaultValue: "Refresh applications",
-        })}
-        className="bg-cyan-50 w-11 h-11 rounded-2xl items-center justify-center"
-      >
-        <Ionicons
-          name="refresh"
-          size={20}
-          color="#0E7490"
-          style={isRefreshing ? { opacity: 0.4 } : undefined}
-        />
-      </TouchableOpacity>
+      {applicationCount !== undefined && (
+        <View className="bg-cyan-50 dark:bg-cyan-900/40 px-3.5 py-2.5 rounded-2xl items-center justify-center flex-row border border-cyan-100 dark:border-cyan-800">
+          <Ionicons name="document-text" size={16} color="#0E7490" />
+          <Text className="text-cyan-700 font-quicksandBold ml-1.5 text-sm">
+            {applicationCount}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
