@@ -9,7 +9,7 @@ import {
   DashboardSkeleton,
 } from "@/components/skeletons/DashboardSkeleton";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import { useDashboard } from "@/hooks/useDashboard";
+import { useDashboard } from "@/hooks/UseDashboard";
 import { Ionicons } from "@expo/vector-icons";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";

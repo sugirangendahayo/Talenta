@@ -69,14 +69,14 @@ export default function StatCards({ stats }: StatsCardsProps) {
     },
     {
       icon: "people" as keyof typeof Ionicons.glyphMap,
-      iconColor: "#10B981",
+      iconColor: "#0E7490",
       value: stats.totalApplicants,
       label: t("stats.applicants"),
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
     },
     {
       icon: "star" as keyof typeof Ionicons.glyphMap,
-      iconColor: "#F59E0B",
+      iconColor: "#0E7490",
       value: stats.shortlistedApplicants,
       label: t("stats.shortlisted"),
       onPress: () => router.push("/(employer-tabs)/employers/Applicants"),
