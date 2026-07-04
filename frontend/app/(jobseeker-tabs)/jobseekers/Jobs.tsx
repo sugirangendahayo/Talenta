@@ -37,6 +37,10 @@ export default function Jobs() {
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<{ jobType: string; experienceLevel: string }>({
+    jobType: "all",
+    experienceLevel: "all",
+  });
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
@@ -62,10 +66,13 @@ export default function Jobs() {
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
           categories={categories}
+          filters={filters}
+          onFiltersChange={setFilters}
         />
         <JobsList
           selectedCategory={selectedCategory}
           searchQuery={searchQuery}
+          filters={filters}
           onScroll={handleScroll}
         />
       </View>
