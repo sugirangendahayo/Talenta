@@ -6,10 +6,12 @@ import PostJobSheet from "@/components/employer/PostJobSheet";
 import { EmployerJobsSkeleton } from "@/components/skeletons/EmployerJobsSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Alert,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -17,6 +19,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 interface Category {
   id: string;
@@ -44,8 +47,9 @@ const CATEGORY_NAMES: Record<string, string> = {
 };
 
 export default function Jobs() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
+  const router = useRouter();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +59,47 @@ export default function Jobs() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
+
+  const employerProfile = profile as EmployerProfile | null;
+
+  // ── Gate: profile must be complete AND business verification approved ──────
+  const handlePostJobPress = () => {
+    if (!employerProfile?.profile_completed) {
+      Alert.alert(
+        "Profile Incomplete",
+        "You need to complete your company profile before posting a job.",
+        [
+          { text: "Later", style: "cancel" },
+          {
+            text: "Complete Profile",
+            onPress: () => router.push("/employer/complete-profile"),
+          },
+        ]
+      );
+      return;
+    }
+
+    const verificationStatus = employerProfile?.business_verification_status;
+    if (verificationStatus !== "approved") {
+      const isPending = verificationStatus === "pending_review";
+      Alert.alert(
+        isPending ? "Verification Pending" : "Business Verification Required",
+        isPending
+          ? "Your documents are currently under review. You'll be able to post jobs once your business is verified."
+          : "You need to submit and get your business registration approved before posting jobs.",
+        [
+          { text: "Later", style: "cancel" },
+          {
+            text: isPending ? "View Status" : "Submit Docs",
+            onPress: () => router.push("/employer/business-verification"),
+          },
+        ]
+      );
+      return;
+    }
+
+    setSheetVisible(true);
+  };
 
   useEffect(() => {
     fetchJobs();
@@ -125,7 +170,7 @@ export default function Jobs() {
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
-        <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
+        <EmployerJobsHeader onPostJob={handlePostJobPress} />
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-red-600 font-quicksandBold text-lg text-center">
             {error}
@@ -146,7 +191,7 @@ export default function Jobs() {
   // ─── Loaded state ───────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
-      <EmployerJobsHeader onPostJob={() => setSheetVisible(true)} />
+      <EmployerJobsHeader onPostJob={handlePostJobPress} />
 
       <EmployerJobFilters
         selectedCategory={selectedCategory}
