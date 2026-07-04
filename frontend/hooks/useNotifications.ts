@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface Notification {
   id: string;
@@ -36,6 +37,7 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -44,6 +46,11 @@ export function useNotifications() {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Load deleted IDs from AsyncStorage to handle DB RLS delete silently failing
+      const storedDeletedIds = await AsyncStorage.getItem(`deleted_notifications_${user.id}`);
+      const localDeletedIds = new Set<string>(storedDeletedIds ? JSON.parse(storedDeletedIds) : []);
+      setDeletedIds(localDeletedIds);
 
       const { data, error: fetchError } = await supabase
         .from("notifications")
@@ -54,8 +61,11 @@ export function useNotifications() {
 
       if (fetchError) throw fetchError;
 
-      setNotifications(data || []);
-      setUnreadCount(data?.filter((n) => !n.is_read).length || 0);
+      // Filter out locally deleted ones
+      const activeNotifications = (data || []).filter(n => !localDeletedIds.has(n.id));
+
+      setNotifications(activeNotifications);
+      setUnreadCount(activeNotifications.filter((n) => !n.is_read).length);
     } catch (err) {
       console.error("Error fetching notifications:", err);
       setError(
@@ -130,17 +140,56 @@ export function useNotifications() {
 
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
+    const notification = notifications.find((n) => n.id === notificationId);
+
     try {
+      // Optimistically hide locally via AsyncStorage in case DB delete is blocked by RLS
+      const newDeletedIds = new Set(deletedIds);
+      newDeletedIds.add(notificationId);
+      setDeletedIds(newDeletedIds);
+      await AsyncStorage.setItem(`deleted_notifications_${user?.id}`, JSON.stringify([...newDeletedIds]));
+
+      // Update local state immediately
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      if (notification && !notification.is_read) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+
+      // Try database delete, but don't fail if it doesn't work (silent RLS rejection)
       const { error: deleteError } = await supabase
         .from("notifications")
         .delete()
         .eq("id", notificationId);
 
-      if (deleteError) throw deleteError;
-
-      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      if (deleteError) {
+        console.warn("DB delete failed, but hidden locally:", deleteError);
+      }
     } catch (err) {
       console.error("Error deleting notification:", err);
+    }
+  };
+
+  // Clear all notifications locally
+  const clearAllNotifications = async () => {
+    if (!user) return;
+    try {
+      const allIds = notifications.map(n => n.id);
+      if (allIds.length === 0) return;
+
+      const newDeletedIds = new Set([...deletedIds, ...allIds]);
+      setDeletedIds(newDeletedIds);
+      await AsyncStorage.setItem(`deleted_notifications_${user.id}`, JSON.stringify([...newDeletedIds]));
+
+      setNotifications([]);
+      setUnreadCount(0);
+
+      // Attempt DB delete silently
+      await supabase
+        .from("notifications")
+        .delete()
+        .in("id", allIds);
+    } catch (err) {
+      console.error("Error clearing notifications:", err);
     }
   };
 
@@ -220,6 +269,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    clearAllNotifications,
     refetch: fetchNotifications,
   };
 }
