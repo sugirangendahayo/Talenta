@@ -1,6 +1,8 @@
 // app/(employer)/applicants.tsx
 import ApplicantCard from "@/components/employer/ApplicantCard";
 import ApplicantFilters from "@/components/employer/ApplicantFilters";
+import { ApplicationCardSkeleton } from "@/components/skeletons/ApplicationCardSkeleton";
+import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Applicant } from "@/types/job.types";
@@ -10,7 +12,6 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   Text,
@@ -18,6 +19,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 type FilterStatus = "all" | "pending" | "shortlisted" | "hired" | "rejected";
 
@@ -268,11 +270,12 @@ export default function ApplicantsScreen() {
 
       {/* ── List ── */}
       {isLoading && applicants.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 mt-3">
-            {t("states.loading", { ns: "applicants", defaultValue: "Loading applicants…" })}
-          </Text>
+        <View className="flex-1 px-4 pt-3">
+          <SkeletonList
+            count={5}
+            staggerMs={60}
+            renderItem={() => <ApplicationCardSkeleton />}
+          />
         </View>
       ) : (
         <FlatList
