@@ -29,6 +29,9 @@ export default function EmployerProfile() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
+  const [activeJobsCount, setActiveJobsCount] = useState(0);
+  const [applicantsCount, setApplicantsCount] = useState(0);
+  const [hiredCount, setHiredCount] = useState(0);
   const lastScrollY = useRef(0);
 
   const employerData =
@@ -44,6 +47,41 @@ export default function EmployerProfile() {
       }
     },
   );
+
+  // Fetch real stats for the profile card
+  React.useEffect(() => {
+    if (!user) return;
+    const fetchStats = async () => {
+      try {
+        // Active jobs count
+        const { count: jobs } = await supabase
+          .from("jobs")
+          .select("*", { count: "exact", head: true })
+          .eq("employer_id", user.id)
+          .eq("status", "active");
+
+        // Total applicants across all employer's jobs
+        const { count: applicants } = await supabase
+          .from("job_applications")
+          .select("*, jobs!inner(employer_id)", { count: "exact", head: true })
+          .eq("jobs.employer_id", user.id);
+
+        // Hired count
+        const { count: hired } = await supabase
+          .from("job_applications")
+          .select("*, jobs!inner(employer_id)", { count: "exact", head: true })
+          .eq("jobs.employer_id", user.id)
+          .eq("status", "hired");
+
+        setActiveJobsCount(jobs ?? 0);
+        setApplicantsCount(applicants ?? 0);
+        setHiredCount(hired ?? 0);
+      } catch (err) {
+        console.error("Error fetching employer stats:", err);
+      }
+    };
+    fetchStats();
+  }, [user]);
 
   const handleLogout = () => {
     Alert.alert(t("logout.button"), t("logout.confirm"), [
@@ -285,7 +323,7 @@ export default function EmployerProfile() {
           <View className="flex-row">
             <View className="flex-1 items-center">
               <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
-                0
+                {activeJobsCount}
               </Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.activeJobs")}
@@ -294,7 +332,7 @@ export default function EmployerProfile() {
             <View className="w-px bg-gray-100 dark:bg-[#222]" />
             <View className="flex-1 items-center">
               <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
-                0
+                {applicantsCount}
               </Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.applicants")}
@@ -303,7 +341,7 @@ export default function EmployerProfile() {
             <View className="w-px bg-gray-100 dark:bg-[#222]" />
             <View className="flex-1 items-center">
               <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
-                0
+                {hiredCount}
               </Text>
               <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
                 {t("stats.hired")}
