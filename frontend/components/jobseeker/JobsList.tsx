@@ -17,17 +17,54 @@ import {
   View,
   Text,
 } from "react-native";
+import { toast } from "sonner-native";
+
+const HighlightText = ({ text, highlight, className, numberOfLines }: any) => {
+  if (!highlight || !highlight.trim()) {
+    return (
+      <Text className={className} numberOfLines={numberOfLines}>
+        {text}
+      </Text>
+    );
+  }
+
+  const escapeRegExp = (string: string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  };
+
+  const regex = new RegExp(`(${escapeRegExp(highlight)})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <Text className={className} numberOfLines={numberOfLines}>
+      {parts.map((part: string, i: number) =>
+        regex.test(part) ? (
+          <Text key={i} className="bg-yellow-200 dark:bg-yellow-900/40 text-gray-900 dark:text-yellow-100">
+            {part}
+          </Text>
+        ) : (
+          <Text key={i}>{part}</Text>
+        )
+      )}
+    </Text>
+  );
+};
 
 
 interface JobsListProps {
   selectedCategory: string;
   searchQuery: string;
+  filters?: {
+    jobType?: string;
+    experienceLevel?: string;
+  };
   onScroll?: (event: any) => void;
 }
 
 const JobsList: React.FC<JobsListProps> = ({
   selectedCategory,
   searchQuery,
+  filters,
   onScroll,
 }) => {
   const router = useRouter();
@@ -55,6 +92,7 @@ const JobsList: React.FC<JobsListProps> = ({
     searchQuery: searchQuery,
     pageSize: 10,
     recommended: false,
+    filters,
   });
 
   const handleJobPress = (jobId: string) => {
@@ -122,22 +160,22 @@ const JobsList: React.FC<JobsListProps> = ({
             />
             <View className="flex-1 ml-3">
               <View className="flex-row items-center gap-1">
-                <Text
+                <HighlightText
                   className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs"
                   numberOfLines={1}
-                >
-                  {companyName}
-                </Text>
+                  text={companyName}
+                  highlight={searchQuery}
+                />
                 {isEmployerVerified && (
                   <MaterialIcons name="verified" size={12} color="#0E7490" />
                 )}
               </View>
-              <Text
+              <HighlightText
                 className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 mt-0.5"
                 numberOfLines={1}
-              >
-                {item.title}
-              </Text>
+                text={item.title}
+                highlight={searchQuery}
+              />
               <View className="flex-row items-center gap-1 mt-0.5">
                 <Ionicons name="location-sharp" size={11} color="#0E7490" />
                 <Text
@@ -154,7 +192,15 @@ const JobsList: React.FC<JobsListProps> = ({
               fixed 40x40 tap area + hitSlop so it doesn't get swallowed by the
               card's own onPress underneath it. */}
           <TouchableOpacity
-            onPress={() => toggleInSet(item.id)}
+            onPress={async () => {
+              const wasSaved = bookmarkedIds.has(item.id);
+              await toggleInSet(item.id);
+              if (wasSaved) {
+                toast(t("home:featuredJobs.removedFromSaved", { defaultValue: "Removed from saved jobs" }));
+              } else {
+                toast.success(t("home:featuredJobs.savedJob", { defaultValue: "Job saved!" }));
+              }
+            }}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
