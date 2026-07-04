@@ -35,6 +35,10 @@ interface UseJobsOptions {
     skills?: string[];
     experience_level?: string;
   };
+  filters?: {
+    jobType?: string;
+    experienceLevel?: string;
+  };
 }
 
 export function useJobs(options: UseJobsOptions = {}) {
@@ -44,6 +48,7 @@ export function useJobs(options: UseJobsOptions = {}) {
     pageSize = 10,
     recommended = false,
     userProfile,
+    filters,
   } = options;
 
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -156,6 +161,15 @@ export function useJobs(options: UseJobsOptions = {}) {
           );
         }
 
+        // Apply advanced filters
+        if (filters?.jobType && filters.jobType !== "all") {
+          // Use ilike for comma separated job_type matches
+          query = query.ilike("job_type", `%${filters.jobType}%`);
+        }
+        if (filters?.experienceLevel && filters.experienceLevel !== "all") {
+          query = query.eq("experience_level", filters.experienceLevel);
+        }
+
         // Cursor pagination
         if (cursor) {
           query = query.lt("created_at", cursor);
@@ -197,7 +211,7 @@ export function useJobs(options: UseJobsOptions = {}) {
         setLoadingMore(false);
       }
     },
-    [category, searchQuery, pageSize, recommended, userProfile, recommendJobs],
+    [category, searchQuery, pageSize, recommended, userProfile, filters, recommendJobs],
   );
 
   // Check for new jobs
@@ -250,7 +264,7 @@ export function useJobs(options: UseJobsOptions = {}) {
   // Initial fetch
   useEffect(() => {
     fetchJobs();
-  }, [category, searchQuery]);
+  }, [category, searchQuery, filters]);
 
   // Check for new jobs when screen comes into focus
   useFocusEffect(
