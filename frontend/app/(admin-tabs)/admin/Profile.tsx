@@ -215,47 +215,7 @@ export default function AdminProfile() {
             </TouchableOpacity>
           </View>
 
-          {/* Divider */}
-          <View className="h-px bg-gray-100 dark:bg-[#222] mt-4 mb-3" />
 
-          {/* Stats row */}
-          <View className="flex-row">
-            {[
-              {
-                label: t("stats.users", { defaultValue: "Total Users" }),
-                value: "—",
-              },
-              {
-                label: t("stats.jobs", { defaultValue: "Active Jobs" }),
-                value: "—",
-              },
-              {
-                label: t("stats.reports", { defaultValue: "Reports" }),
-                value: "—",
-              },
-            ].map((stat, i, arr) => (
-              <View key={i} className="flex-1 items-center">
-                <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-100">
-                  {stat.value}
-                </Text>
-                <Text className="text-gray-400 dark:text-gray-500 font-quicksandMedium text-xs mt-0.5 text-center">
-                  {stat.label}
-                </Text>
-                {i < arr.length - 1 && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "10%",
-                      bottom: "10%",
-                      width: 1,
-                      backgroundColor: "#F3F4F6",
-                    }}
-                  />
-                )}
-              </View>
-            ))}
-          </View>
         </View>
 
         {/* ── Settings Sections ── */}
