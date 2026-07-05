@@ -6,11 +6,12 @@ import LanguageSelector from "@/components/modal/LanguageSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useProfileImage } from "@/hooks/useProfileImage";
-import { EmployerProfile as EmployerProfileType } from "@/lib/supabase";
+import { EmployerProfile as EmployerProfileType, supabase } from "@/lib/supabase";
 import { Feather, FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import {  useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 import {
   ActivityIndicator,
   Alert,
@@ -49,7 +50,7 @@ export default function EmployerProfile() {
   );
 
   // Fetch real stats for the profile card
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) return;
     const fetchStats = async () => {
       try {
