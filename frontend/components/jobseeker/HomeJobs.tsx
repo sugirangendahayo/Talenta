@@ -312,11 +312,9 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                       accessibilityLabel={t("home:featuredJobs.applyTo", {
                         defaultValue: `Apply to ${item.title}`,
                       })}
-                      className="bg-cyan-700 dark:bg-cyan-800 px-4 py-2 rounded-full"
+                       className="bg-cyan-700 dark:bg-cyan-800 w-10 h-10 rounded-full items-center justify-center"
                     >
-                      <Text className="text-white text-xs font-quicksandBold">
-                        {t("home:featuredJobs.apply", { defaultValue: "Apply" })}
-                      </Text>
+                       <MaterialIcons name="arrow-outward" size={18} color="#fff" />
                     </TouchableOpacity>
                   )}
                 </View>
