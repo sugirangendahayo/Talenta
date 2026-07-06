@@ -305,6 +305,7 @@ export default function NotificationsScreen() {
               tintColor="#0E7490"
             />
           }
+          keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         />
       )}
