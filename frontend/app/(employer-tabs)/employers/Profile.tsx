@@ -3,13 +3,22 @@ import UserAvatar from "@/components/common/UserAvatar";
 import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
 import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
 import LanguageSelector from "@/components/modal/LanguageSelector";
+import LogoutSheet from "@/components/modal/LogoutSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useProfileImage } from "@/hooks/useProfileImage";
-import { EmployerProfile as EmployerProfileType, supabase } from "@/lib/supabase";
-import { Feather, FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {
+  EmployerProfile as EmployerProfileType,
+  supabase,
+} from "@/lib/supabase";
+import {
+  Feather,
+  FontAwesome,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import {  useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -33,6 +42,7 @@ export default function EmployerProfile() {
   const [activeJobsCount, setActiveJobsCount] = useState(0);
   const [applicantsCount, setApplicantsCount] = useState(0);
   const [hiredCount, setHiredCount] = useState(0);
+  const [logoutSheetVisible, setLogoutSheetVisible] = useState(false);
   const lastScrollY = useRef(0);
 
   const employerData =
@@ -83,29 +93,28 @@ export default function EmployerProfile() {
     };
     fetchStats();
   }, [user]);
-
   const handleLogout = () => {
-    Alert.alert(t("logout.button"), t("logout.confirm"), [
-      { text: t("buttons.cancel", { ns: "common" }), style: "cancel" },
-      {
-        text: t("logout.button"),
-        style: "destructive",
-        onPress: async () => {
-          setIsLoggingOut(true);
-          try {
-            await signOut();
-            router.replace("/auth/signin");
-          } catch (error) {
-            console.error("Logout error:", error);
-            Alert.alert(t("common.error"), t("logout.error"));
-          } finally {
-            setIsLoggingOut(false);
-          }
-        },
-      },
-    ]);
+    setLogoutSheetVisible(true);
   };
 
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      setLogoutSheetVisible(false);
+      router.replace("/auth/signin");
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert(
+        t("messages.error", { defaultValue: "Error" }),
+        t("logout.error", {
+          defaultValue: "Failed to log out. Please try again.",
+        }),
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
     const scrollDirection =
@@ -414,36 +423,45 @@ export default function EmployerProfile() {
 
         {/* ── Logout ─────────────────────────────────────────────────── */}
         <TouchableOpacity
-          className="mx-6 mb-8 bg-red-50 dark:bg-red-900/10 rounded-2xl p-4 flex-row items-center justify-center border border-red-200 dark:border-red-900/30"
+          className="mx-6 mb-8 p-4 flex-row items-center justify-center border "
           onPress={handleLogout}
           disabled={isLoggingOut}
-          activeOpacity={0.85}
         >
           {isLoggingOut ? (
             <ActivityIndicator size="small" color="#DC2626" />
           ) : (
             <>
-              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-              <Text className="text-red-600 dark:text-red-400 font-quicksandBold text-lg ml-2">
-                {t("logout.button")}
+              <Text className="text-red-600 font-quicksandBold text-lg ml-2">
+                {t("logout.button", { defaultValue: "Log Out" })}
               </Text>
             </>
           )}
         </TouchableOpacity>
 
-        {/* ── App version ─────────────────────────────────────────────── */}
-        <View className="items-center pb-8">
-          <Text className="text-gray-400 dark:text-gray-600 font-quicksandMedium text-sm">
-            {t("version")}
+        {/* ── App version ── */}
+        <View className="items-center">
+          <Text className="text-gray-400 dark:text-gray-500 font-quicksandMedium text-xs">
+            {t("version", { defaultValue: "Talenta v1.0.0" })}
           </Text>
         </View>
       </ScrollView>
 
-      {/* Language selector modal */}
+      {/* ── Language Selector Modal ── */}
       <LanguageSelector
         visible={languageSelectorVisible}
         onClose={() => setLanguageSelectorVisible(false)}
         userId={user?.id}
+      />
+      <LogoutSheet
+        visible={logoutSheetVisible}
+        onClose={() => setLogoutSheetVisible(false)}
+        onConfirm={confirmLogout}
+        isLoggingOut={isLoggingOut}
+        title={t("logout.button", { defaultValue: "Log Out" })}
+        message={t("logout.confirm", {
+          defaultValue: "Are you sure you want to log out?",
+        })}
+        confirmLabel={t("logout.button", { defaultValue: "Log Out" })}
       />
     </View>
   );
