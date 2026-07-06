@@ -15,6 +15,7 @@ import { Image, Text as RNText, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-url-polyfill/auto";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { Toaster } from "sonner-native";
 import "../global.css";
 
@@ -293,19 +294,21 @@ export default function RootLayout() {
     <ThemeProvider>
       <ThemeSync />
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <RootLayoutNav />
-              <Toaster
-                position="top-center"
-                duration={2000}
-                richColors
-                visibleToasts={2}
-              />
-            </NotificationProvider>
-          </AuthProvider>
-        </SafeAreaProvider>
+        <KeyboardProvider>
+          <SafeAreaProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <RootLayoutNav />
+                <Toaster
+                  position="top-center"
+                  duration={2000}
+                  richColors
+                  visibleToasts={2}
+                />
+              </NotificationProvider>
+            </AuthProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </ThemeProvider>
   );

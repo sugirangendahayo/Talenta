@@ -7,11 +7,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Platform,
   ActivityIndicator,
-  KeyboardAvoidingView,
 } from "react-native";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -157,11 +156,7 @@ export default function InterviewDetailsModal({
       transparent={true}
       onRequestClose={handleCancel}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-      >
-        <View className="flex-1 justify-end bg-black/50">
+      <View className="flex-1 justify-end bg-black/50">
           <View className="bg-white dark:bg-[#080A08] rounded-t-3xl max-h-[90%]">
             {/* Header */}
             <View className="flex-row justify-between items-center p-6 border-b border-gray-200 dark:border-[#2a2a2a]">
@@ -181,9 +176,8 @@ export default function InterviewDetailsModal({
               </TouchableOpacity>
             </View>
 
-            <ScrollView
-              className="px-6 py-4"
-              showsVerticalScrollIndicator={false}
+            <KeyboardWrapper
+              contentStyle={{ paddingHorizontal: 24, paddingVertical: 16 }}
             >
               {/* Interview Type Selection */}
               <View className="mb-6">
@@ -387,7 +381,7 @@ export default function InterviewDetailsModal({
                   )}
                 </TouchableOpacity>
               </View>
-            </ScrollView>
+            </KeyboardWrapper>
 
             {/* Date Picker Modal */}
             {showDatePicker && (
@@ -411,7 +405,6 @@ export default function InterviewDetailsModal({
             )}
           </View>
         </View>
-      </KeyboardAvoidingView>
     </Modal>
   );
 }

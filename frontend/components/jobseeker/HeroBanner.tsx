@@ -150,7 +150,7 @@ export default function HeroBanner() {
             {t(activeSlide.titleKey, { defaultValue: "Find your dream job" })}
           </Text>
           <Text
-            className="text-white/80 font-quicksandMedium text-xs mb-4 leading-relaxed"
+            className="text-white/80  font-quicksandMedium text-xs mb-4 leading-relaxed"
             numberOfLines={2}
           >
             {t(activeSlide.subtitleKey, {
@@ -158,10 +158,10 @@ export default function HeroBanner() {
             })}
           </Text>
           <View className="self-start flex-row items-center bg-white dark:bg-[#080A08]/20 border border-white/30 px-4 py-2 rounded-full">
-            <Text className="text-white font-quicksandBold text-xs mr-1.5">
+            <Text className="text-black/80 dark:text-white font-quicksandBold text-xs mr-1.5">
               {t(activeSlide.ctaKey, { defaultValue: "Find job(s)" })}
             </Text>
-            <Ionicons name="arrow-forward" size={12} color="white" />
+            <Ionicons name="arrow-forward" size={12} color="black dark:white" />
           </View>
         </View>
 

@@ -11,16 +11,14 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 
 // ─── Countries ────────────────────────────────────────────────────────────────
 
@@ -310,17 +308,7 @@ export default function EmployerCompleteProfileScreen() {
       </View>
 
       {/* ── Keyboard-aware scroll ───────────────────────────────────────── */}
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
-      >
-        <ScrollView
-          className="flex-1"
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 48 }}
-        >
+      <KeyboardWrapper contentStyle={{ paddingBottom: 48 }}>
           {/* ── Progress bar ─────────────────────────────────────────────── */}
           <View className="mx-6 mt-5 mb-2">
             <View className="flex-row items-center justify-between mb-2">
@@ -501,8 +489,7 @@ export default function EmployerCompleteProfileScreen() {
               )}
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardWrapper>
     </SafeAreaView>
   );
 }

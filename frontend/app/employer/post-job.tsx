@@ -13,13 +13,11 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { toast } from "sonner-native";
 
@@ -240,16 +238,8 @@ export default function PostJob() {
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <PostJobHeader onSaveDraft={handleSaveDraft} />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          className="flex-1"
-        >
-          <View className="px-4 py-4">
+      <KeyboardWrapper contentStyle={{ paddingBottom: 100 }}>
+        <View className="px-4 py-4">
             {/* Section: Basic Information */}
             <View className="mb-6">
               <View className="flex flex-row items-center gap-2 mb-4">
@@ -387,7 +377,7 @@ export default function PostJob() {
               />
             </View>
           </View>
-        </ScrollView>
+      </KeyboardWrapper>
 
         {/* Fixed Bottom Action Buttons */}
         <View
@@ -429,7 +419,6 @@ export default function PostJob() {
             </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

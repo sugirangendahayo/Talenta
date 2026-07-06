@@ -22,9 +22,9 @@ export default function ApplicationsHeader({ applicationCount }: ApplicationsHea
       </View>
 
       {applicationCount !== undefined && (
-        <View className="bg-cyan-50 dark:bg-cyan-900/40 px-3.5 py-2.5 rounded-2xl items-center justify-center flex-row border border-cyan-100 dark:border-cyan-800">
-          <Ionicons name="document-text" size={16} color="#0E7490" />
-          <Text className="text-cyan-700 font-quicksandBold ml-1.5 text-sm">
+        <View className="bg-gray-50 dark:bg-gray-900/40 rounded-full w-12 h-12 items-center justify-center flex-row border border-gray-100 dark:border-gray-800">
+          <Ionicons name="document-text" size={16} color="gray" />
+          <Text className="text-red-700 font-quicksandBold ml-1.5 text-sm">
             {applicationCount}
           </Text>
         </View>

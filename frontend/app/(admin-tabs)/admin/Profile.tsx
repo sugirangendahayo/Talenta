@@ -1,8 +1,9 @@
 // app/(admin-tabs)/admin/Profile.tsx
 import LanguageSelector from "@/components/modal/LanguageSelector";
+import LogoutSheet from "@/components/modal/LogoutSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
-import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,42 +25,36 @@ export default function AdminProfile() {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
+  const [logoutSheetVisible, setLogoutSheetVisible] = useState(false);
   const lastScrollY = useRef(0);
 
   const handleLogout = () => {
-    Alert.alert(
-      t("logout.button", { defaultValue: "Sign Out" }),
-      t("logout.confirm", { defaultValue: "Are you sure you want to sign out?" }),
-      [
-        {
-          text: t("buttons.cancel", { ns: "common", defaultValue: "Cancel" }),
-          style: "cancel",
-        },
-        {
-          text: t("logout.button", { defaultValue: "Sign Out" }),
-          style: "destructive",
-          onPress: async () => {
-            setIsLoggingOut(true);
-            try {
-              await signOut();
-              router.replace("/auth/signin");
-            } catch {
-              Alert.alert(
-                t("common.error", { defaultValue: "Error" }),
-                t("logout.error", { defaultValue: "Failed to sign out. Please try again." })
-              );
-            } finally {
-              setIsLoggingOut(false);
-            }
-          },
-        },
-      ]
-    );
+    setLogoutSheetVisible(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      setLogoutSheetVisible(false);
+      router.replace("/auth/signin");
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert(
+        t("messages.error", { defaultValue: "Error" }),
+        t("logout.error", {
+          defaultValue: "Failed to log out. Please try again.",
+        }),
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDirection = currentScrollY > lastScrollY.current ? "down" : "up";
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
     if (scrollDirection === "down" && currentScrollY > 50) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
@@ -84,7 +79,9 @@ export default function AdminProfile() {
       items: [
         {
           icon: "lock" as const,
-          label: t("sections.account.privacy", { defaultValue: "Privacy & Security" }),
+          label: t("sections.account.privacy", {
+            defaultValue: "Privacy & Security",
+          }),
           value: undefined,
           onPress: () => router.push("/shared/privacy-security"),
         },
@@ -96,7 +93,9 @@ export default function AdminProfile() {
       items: [
         {
           icon: "translate" as const,
-          label: t("sections.language.appLanguage", { defaultValue: "App Language" }),
+          label: t("sections.language.appLanguage", {
+            defaultValue: "App Language",
+          }),
           value: getCurrentLanguageName(),
           onPress: () => setLanguageSelectorVisible(true),
         },
@@ -114,19 +113,25 @@ export default function AdminProfile() {
       items: [
         {
           icon: "support-agent" as const,
-          label: t("sections.support.contactSupport", { defaultValue: "Contact Support" }),
+          label: t("sections.support.contactSupport", {
+            defaultValue: "Contact Support",
+          }),
           value: undefined,
           onPress: undefined,
         },
         {
           icon: "description" as const,
-          label: t("sections.support.terms", { defaultValue: "Terms of Service" }),
+          label: t("sections.support.terms", {
+            defaultValue: "Terms of Service",
+          }),
           value: undefined,
           onPress: undefined,
         },
         {
           icon: "privacy-tip" as const,
-          label: t("sections.support.privacy", { defaultValue: "Privacy Policy" }),
+          label: t("sections.support.privacy", {
+            defaultValue: "Privacy Policy",
+          }),
           value: undefined,
           onPress: undefined,
         },
@@ -214,8 +219,6 @@ export default function AdminProfile() {
               <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
             </TouchableOpacity>
           </View>
-
-
         </View>
 
         {/* ── Settings Sections ── */}
@@ -277,18 +280,16 @@ export default function AdminProfile() {
 
         {/* ── Sign Out ── */}
         <TouchableOpacity
-          className="mx-6 mt-2 mb-4 bg-red-50 dark:bg-red-900/10 rounded-2xl py-4 flex-row items-center justify-center border border-red-100 dark:border-red-900/30"
+          className="mx-6 mb-8 p-4 flex-row items-center justify-center border "
           onPress={handleLogout}
           disabled={isLoggingOut}
-          activeOpacity={0.8}
         >
           {isLoggingOut ? (
             <ActivityIndicator size="small" color="#DC2626" />
           ) : (
             <>
-              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-              <Text className="text-red-500 font-quicksandBold text-[15px] ml-2">
-                {t("logout.button", { defaultValue: "Sign Out" })}
+              <Text className="text-red-600 font-quicksandBold text-lg ml-2">
+                {t("logout.button", { defaultValue: "Log Out" })}
               </Text>
             </>
           )}
@@ -307,6 +308,17 @@ export default function AdminProfile() {
         visible={languageSelectorVisible}
         onClose={() => setLanguageSelectorVisible(false)}
         userId={user?.id}
+      />
+      <LogoutSheet
+        visible={logoutSheetVisible}
+        onClose={() => setLogoutSheetVisible(false)}
+        onConfirm={confirmLogout}
+        isLoggingOut={isLoggingOut}
+        title={t("logout.button", { defaultValue: "Log Out" })}
+        message={t("logout.confirm", {
+          defaultValue: "Are you sure you want to log out?",
+        })}
+        confirmLabel={t("logout.button", { defaultValue: "Log Out" })}
       />
     </View>
   );
