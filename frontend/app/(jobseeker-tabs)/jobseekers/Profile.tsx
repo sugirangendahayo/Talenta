@@ -1,6 +1,9 @@
+import UserAvatar from "@/components/common/UserAvatar";
 import LanguageSelector from "@/components/modal/LanguageSelector";
+import LogoutSheet from "@/components/modal/LogoutSheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useProfileImage } from "@/hooks/useProfileImage";
 import {
   JobseekerProfile as JobseekerProfileType,
   supabase,
@@ -19,8 +22,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import UserAvatar from "@/components/common/UserAvatar";
-import { useProfileImage } from "@/hooks/useProfileImage";
 
 export default function JobseekerProfile() {
   const { profile, role, user, signOut, loading } = useAuth();
@@ -31,6 +32,7 @@ export default function JobseekerProfile() {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [applicationCount, setApplicationCount] = useState(0);
   const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
+  const [logoutSheetVisible, setLogoutSheetVisible] = useState(false);
 
   const lastScrollY = useRef(0);
 
@@ -45,7 +47,7 @@ export default function JobseekerProfile() {
       if ((useAuth as any)().refreshProfile) {
         await (useAuth as any)().refreshProfile();
       }
-    }
+    },
   );
 
   useEffect(() => {
@@ -90,37 +92,32 @@ export default function JobseekerProfile() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      t("logout.button", { defaultValue: "Log Out" }),
-      t("logout.confirm", { defaultValue: "Are you sure you want to log out?" }),
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          style: "destructive",
-          onPress: async () => {
-            setIsLoggingOut(true);
-            try {
-              await signOut();
-              router.replace("/auth/signin");
-            } catch (error) {
-              console.error("Logout error:", error);
-              Alert.alert(
-                t("messages.error", { defaultValue: "Error" }),
-                t("logout.error", { defaultValue: "Failed to log out. Please try again." })
-              );
-            } finally {
-              setIsLoggingOut(false);
-            }
-          },
-        },
-      ]
-    );
+    setLogoutSheetVisible(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      setLogoutSheetVisible(false);
+      router.replace("/auth/signin");
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert(
+        t("messages.error", { defaultValue: "Error" }),
+        t("logout.error", {
+          defaultValue: "Failed to log out. Please try again.",
+        }),
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
-    const scrollDirection = currentScrollY > lastScrollY.current ? "down" : "up";
+    const scrollDirection =
+      currentScrollY > lastScrollY.current ? "down" : "up";
     if (scrollDirection === "down" && currentScrollY > 50) {
       setIsVisible(false);
     } else if (scrollDirection === "up") {
@@ -145,18 +142,24 @@ export default function JobseekerProfile() {
       items: [
         {
           icon: "edit",
-          label: t("sections.account.editProfile", { defaultValue: "Edit Profile" }),
+          label: t("sections.account.editProfile", {
+            defaultValue: "Edit Profile",
+          }),
           type: "link",
           onPress: () => router.push("/jobseekers/complete-profile"),
         },
         {
           icon: "lock",
-          label: t("sections.account.privacy", { defaultValue: "Privacy & Security" }),
+          label: t("sections.account.privacy", {
+            defaultValue: "Privacy & Security",
+          }),
           type: "link",
         },
         {
           icon: "star",
-          label: t("sections.account.premium", { defaultValue: "Talenta Premium" }),
+          label: t("sections.account.premium", {
+            defaultValue: "Talenta Premium",
+          }),
           type: "link",
           onPress: () => router.push("/jobseekers/premium-upgrade"),
         },
@@ -168,7 +171,9 @@ export default function JobseekerProfile() {
       items: [
         {
           icon: "translate",
-          label: t("sections.language.appLanguage", { defaultValue: "App Language" }),
+          label: t("sections.language.appLanguage", {
+            defaultValue: "App Language",
+          }),
           value: getCurrentLanguageName(),
           type: "link",
           onPress: () => setLanguageSelectorVisible(true),
@@ -187,7 +192,9 @@ export default function JobseekerProfile() {
       items: [
         {
           icon: "description",
-          label: t("sections.documents.resume", { defaultValue: "Resume / CV" }),
+          label: t("sections.documents.resume", {
+            defaultValue: "Resume / CV",
+          }),
           type: "link",
           onPress: () => router.push("/jobseekers/upload-cv"),
         },
@@ -199,19 +206,25 @@ export default function JobseekerProfile() {
       items: [
         {
           icon: "support-agent",
-          label: t("sections.support.contactSupport", { defaultValue: "Contact Support" }),
+          label: t("sections.support.contactSupport", {
+            defaultValue: "Contact Support",
+          }),
           type: "link",
           onPress: undefined,
         },
         {
           icon: "description",
-          label: t("sections.support.terms", { defaultValue: "Terms & Conditions" }),
+          label: t("sections.support.terms", {
+            defaultValue: "Terms & Conditions",
+          }),
           type: "link",
           onPress: undefined,
         },
         {
           icon: "privacy-tip",
-          label: t("sections.support.privacy", { defaultValue: "Privacy Policy" }),
+          label: t("sections.support.privacy", {
+            defaultValue: "Privacy Policy",
+          }),
           type: "link",
           onPress: undefined,
         },
@@ -235,7 +248,9 @@ export default function JobseekerProfile() {
           {t("title", { defaultValue: "My Profile" })}
         </Text>
         <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-1">
-          {t("subtitle", { defaultValue: "Manage your account and preferences" })}
+          {t("subtitle", {
+            defaultValue: "Manage your account and preferences",
+          })}
         </Text>
       </View>
 
@@ -261,7 +276,10 @@ export default function JobseekerProfile() {
             <View className="relative">
               <UserAvatar
                 imageUrl={jobseekerData?.profile_image_url}
-                name={`${jobseekerData?.first_name || ""} ${jobseekerData?.last_name || ""}`.trim() || "JS"}
+                name={
+                  `${jobseekerData?.first_name || ""} ${jobseekerData?.last_name || ""}`.trim() ||
+                  "JS"
+                }
                 size={56}
               />
               <TouchableOpacity
@@ -270,7 +288,11 @@ export default function JobseekerProfile() {
                 className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white items-center justify-center"
               >
                 {uploadingPhoto ? (
-                  <ActivityIndicator size="small" color="white" style={{ transform: [{ scale: 0.5 }] }} />
+                  <ActivityIndicator
+                    size="small"
+                    color="white"
+                    style={{ transform: [{ scale: 0.5 }] }}
+                  />
                 ) : (
                   <Feather name="camera" size={11} color="white" />
                 )}
@@ -289,13 +311,18 @@ export default function JobseekerProfile() {
                   <MaterialIcons name="verified" size={14} color="#0E7490" />
                 )}
               </View>
-              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5" numberOfLines={1}>
+              <Text
+                className="text-gray-400 font-quicksandMedium text-xs mt-0.5"
+                numberOfLines={1}
+              >
                 {jobseekerData?.email || "email@example.com"}
               </Text>
               {/* Status chip */}
               <View className="flex-row items-center gap-1 mt-1.5 self-start bg-cyan-50 border border-cyan-100 px-2.5 py-1 rounded-full">
                 <MaterialIcons
-                  name={jobseekerData?.profile_completed ? "verified" : "pending"}
+                  name={
+                    jobseekerData?.profile_completed ? "verified" : "pending"
+                  }
                   size={12}
                   color="#0E7490"
                 />
@@ -359,12 +386,18 @@ export default function JobseekerProfile() {
                     ? "border-b border-gray-100 dark:border-[#222]"
                     : ""
                 }`}
-                onPress={item.type === "link" ? (item as any).onPress : undefined}
+                onPress={
+                  item.type === "link" ? (item as any).onPress : undefined
+                }
                 disabled={item.type !== "link"}
                 activeOpacity={0.7}
               >
                 <View className="flex-row items-center flex-1">
-                  <MaterialIcons name={item.icon as any} size={22} color="#6B7280" />
+                  <MaterialIcons
+                    name={item.icon as any}
+                    size={22}
+                    color="#6B7280"
+                  />
                   <View className="ml-4 flex-1">
                     <Text className="text-gray-800 dark:text-gray-200 font-quicksandMedium">
                       {item.label}
@@ -382,13 +415,11 @@ export default function JobseekerProfile() {
           </View>
         ))}
 
-
-
         <View className="h-2" />
 
         {/* Logout Button */}
         <TouchableOpacity
-          className="mx-6 mb-8 bg-red-50 rounded-2xl p-4 flex-row items-center justify-center border border-red-200"
+          className="mx-6 mb-8 p-4 flex-row items-center justify-center border "
           onPress={handleLogout}
           disabled={isLoggingOut}
         >
@@ -396,7 +427,7 @@ export default function JobseekerProfile() {
             <ActivityIndicator size="small" color="#DC2626" />
           ) : (
             <>
-              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+             
               <Text className="text-red-600 font-quicksandBold text-lg ml-2">
                 {t("logout.button", { defaultValue: "Log Out" })}
               </Text>
@@ -417,6 +448,17 @@ export default function JobseekerProfile() {
         visible={languageSelectorVisible}
         onClose={() => setLanguageSelectorVisible(false)}
         userId={user?.id}
+      />
+      <LogoutSheet
+        visible={logoutSheetVisible}
+        onClose={() => setLogoutSheetVisible(false)}
+        onConfirm={confirmLogout}
+        isLoggingOut={isLoggingOut}
+        title={t("logout.button", { defaultValue: "Log Out" })}
+        message={t("logout.confirm", {
+          defaultValue: "Are you sure you want to log out?",
+        })}
+        confirmLabel={t("logout.button", { defaultValue: "Log Out" })}
       />
     </View>
   );
