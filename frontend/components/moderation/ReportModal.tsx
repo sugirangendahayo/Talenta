@@ -3,15 +3,14 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -86,10 +85,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 justify-end bg-black/40"
-      >
+      <View className="flex-1 justify-end bg-black/40">
         <View className="bg-white dark:bg-[#0E0E0E] rounded-t-3xl px-5 pt-4 pb-8 max-h-[85%]">
           {/* Drag handle */}
           <View className="w-10 h-1 rounded-full bg-gray-200 dark:bg-[#333] self-center mb-5" />
@@ -110,7 +106,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <KeyboardWrapper>
             {/* Prompt */}
             <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mb-3">
               Why are you reporting this?
@@ -209,9 +205,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 )}
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </KeyboardWrapper>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
