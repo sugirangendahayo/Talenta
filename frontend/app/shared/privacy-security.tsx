@@ -10,13 +10,13 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 
 // ─── Password Section ─────────────────────────────────────────────────────────
 
@@ -276,13 +276,10 @@ export default function PrivacySecurityScreen() {
         </View>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 20, paddingBottom: 48 }}
-      >
+      <KeyboardWrapper contentStyle={{ paddingTop: 20, paddingBottom: 48 }}>
         <ChangePasswordSection isDark={isDark} />
         <DangerSection onDeleteAccount={handleDeleteAccount} />
-      </ScrollView>
+      </KeyboardWrapper>
 
       {/* Full-screen overlay while deleting */}
       {deleting && (
