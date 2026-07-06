@@ -11,15 +11,14 @@ import { useTranslation } from "react-i18next";
 import UserAvatar from "@/components/common/UserAvatar";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 
 interface Job {
   id: string;
@@ -469,11 +468,7 @@ export default function JobDetailsScreen() {
         transparent
         onRequestClose={() => setShowApplyModal(false)}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1 justify-end"
-          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
-        >
+        <View className="flex-1 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>
           <View className="bg-white dark:bg-[#0e0e0e] rounded-t-3xl px-5 pt-4 pb-8 max-h-[85%]">
             {/* Handle */}
             <View className="w-10 h-1 rounded-full bg-gray-200 dark:bg-[#2a2a2a] self-center mb-5" />
@@ -492,7 +487,7 @@ export default function JobDetailsScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <KeyboardWrapper>
               {/* Job summary — neutral icon, no cyan */}
               <View className="flex-row items-center bg-gray-50 dark:bg-[#141414] border border-gray-100 dark:border-[#2a2a2a] rounded-2xl p-4 mb-4" style={{ gap: 12 }}>
                 <View className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-[#1a1a1a] items-center justify-center flex-shrink-0">
@@ -576,9 +571,9 @@ export default function JobDetailsScreen() {
                   defaultValue: `Your application will be sent directly to ${companyName}`,
                 })}
               </Text>
-            </ScrollView>
+            </KeyboardWrapper>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       <InfoAlertModal
