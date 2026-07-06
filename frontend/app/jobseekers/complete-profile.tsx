@@ -11,7 +11,6 @@ import {
   FlatList,
   Modal,
   Platform,
-  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import { useProfileImage } from "@/hooks/useProfileImage";
 import UserAvatar from "@/components/common/UserAvatar";
 import { JobseekerProfile } from "@/lib/supabase";
@@ -375,12 +375,7 @@ export default function CompleteProfileScreen() {
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 40 }}
-      >
+      <KeyboardWrapper contentStyle={{ paddingBottom: 40 }}>
         {/* Progress card */}
         <View
           className="mx-6 mt-5 rounded-2xl border border-gray-100 dark:border-[#222] px-4 py-4"
@@ -653,7 +648,7 @@ export default function CompleteProfileScreen() {
             )}
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </KeyboardWrapper>
     </SafeAreaView>
   );
 }
