@@ -6,11 +6,10 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import KeyboardWrapper from '@/components/common/KeyboardWrapper';
 
 export interface PromptModalProps {
   visible: boolean;
@@ -57,12 +56,9 @@ export const PromptModal: React.FC<PromptModalProps> = ({
       onRequestClose={handleCancel}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="flex-1 justify-center items-center bg-black/50 px-6">
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className="w-full max-w-sm"
-          >
-            <View className="bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-xl w-full">
+        <View className="flex-1 bg-black/50 px-6">
+          <KeyboardWrapper contentStyle={{ justifyContent: 'center', alignItems: 'center' }}>
+            <View className="bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-xl w-full max-w-sm">
               <Text className="text-xl font-quicksandBold text-gray-900 dark:text-gray-100 mb-2">
                 {title}
               </Text>
@@ -106,7 +102,7 @@ export const PromptModal: React.FC<PromptModalProps> = ({
                 </TouchableOpacity>
               </View>
             </View>
-          </KeyboardAvoidingView>
+          </KeyboardWrapper>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
