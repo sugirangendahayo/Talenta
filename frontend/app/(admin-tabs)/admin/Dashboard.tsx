@@ -1,8 +1,11 @@
 // app/(admin-tabs)/admin/Dashboard.tsx
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications } from "@/hooks/useNotifications";
-import { getAdminStats, getRecentActivity, getPendingReportCount } from "@/lib/adminService";
+import {
+  getAdminStats,
+  getPendingReportCount,
+  getRecentActivity,
+} from "@/lib/adminService";
 import type {
   AdminEmployer,
   AdminJob,
@@ -10,8 +13,7 @@ import type {
   AdminStats,
   RecentActivity,
 } from "@/types/admin.types";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,9 +25,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
+import UserAvatar from "@/components/common/UserAvatar";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
@@ -33,22 +36,20 @@ function formatDate(iso: string) {
   });
 }
 
-// ─── Recent list card ─────────────────────────────────────────────────────────
-
 function RecentCard({
   title,
   icon,
   rows,
 }: {
   title: string;
-  icon: React.ComponentProps<typeof Ionicons>["name"];
-  rows: { primary: string; secondary: string; date: string }[];
+  icon: React.ReactNode;
+  rows: { primary: string; secondary: string; date: string; imageUrl?: string | null }[];
 }) {
   return (
     <View className="px-6 pt-5">
-      <View className="flex-row items-center gap-x-2 mb-3">
-        <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
-          <Ionicons name={icon} size={15} color="#0E7490" />
+      <View className="flex-row items-center gap-2 mb-3">
+        <View className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] items-center justify-center">
+          {icon}
         </View>
         <Text className="text-[15px] font-quicksandBold text-gray-900 dark:text-gray-100">
           {title}
@@ -67,6 +68,13 @@ function RecentCard({
         {rows.map((row, i) => (
           <View key={i}>
             <View className="flex-row items-center px-4 py-3.5">
+              <View className="mr-3">
+                <UserAvatar
+                  imageUrl={row.imageUrl}
+                  name={row.primary}
+                  size={32}
+                />
+              </View>
               <View className="flex-1">
                 <Text
                   className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
@@ -95,10 +103,7 @@ function RecentCard({
   );
 }
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
-
 export default function AdminDashboard() {
-  const { isDark } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useTranslation(["admin", "common"]);
@@ -138,20 +143,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     load();
   }, [load]);
-
   const onRefresh = () => {
     setRefreshing(true);
     load();
   };
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
-      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] items-center justify-center">
-        <ActivityIndicator size="large" color="#0E7490" />
+      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] pt-12">
+        <DashboardSkeleton />
       </View>
     );
   }
 
+  // Stat items — all Ionicons names, no JSX passed as icon value
   const statItems: {
     label: string;
     value: number;
@@ -160,7 +165,7 @@ export default function AdminDashboard() {
     {
       label: t("stats.employers", { defaultValue: "Employers" }),
       value: stats?.totalEmployers ?? 0,
-      icon: <FontAwesome name="handshake-o" size={24} color="#10B981" />,
+      icon: "business-outline",
     },
     {
       label: t("stats.jobseekers", { defaultValue: "Jobseekers" }),
@@ -179,10 +184,11 @@ export default function AdminDashboard() {
     },
   ];
 
+  // Quick actions — icon is React.ReactNode, not Ionicons name string
   const quickActions: {
     title: string;
     subtitle: string;
-    icon: React.ComponentProps<typeof Ionicons>["name"];
+    icon: React.ReactNode;
     badge?: number;
     onPress: () => void;
   }[] = [
@@ -193,7 +199,9 @@ export default function AdminDashboard() {
       subtitle: t("actions.employerVerificationDesc", {
         defaultValue: "Review & verify employer accounts",
       }),
-      icon: <MaterialIcons name="verified-user" size={24} color="#10B981" />,
+      icon: (
+        <Ionicons name="shield-checkmark-outline" size={15} color="#6B7280" />
+      ),
       onPress: () => router.push("/(admin-tabs)/admin/Employers"),
     },
     {
@@ -203,7 +211,7 @@ export default function AdminDashboard() {
       subtitle: t("actions.jobseekerDocsDesc", {
         defaultValue: "Review submitted CV & ID documents",
       }),
-      icon: "people-outline",
+      icon: <Ionicons name="people-outline" size={15} color="#6B7280" />,
       onPress: () => router.push("/(admin-tabs)/admin/Jobseekers"),
     },
     {
@@ -211,7 +219,7 @@ export default function AdminDashboard() {
       subtitle: t("actions.jobModerationDesc", {
         defaultValue: "Pause, activate or close job listings",
       }),
-      icon: "briefcase-outline",
+      icon: <Ionicons name="briefcase-outline" size={15} color="#6B7280" />,
       onPress: () => router.push("/(admin-tabs)/admin/Jobs"),
     },
     {
@@ -219,14 +227,16 @@ export default function AdminDashboard() {
       subtitle: t("actions.usersOverviewDesc", {
         defaultValue: "All users by role",
       }),
-      icon: "people-circle-outline",
-      badge: 0,
+      icon: <Ionicons name="people-circle-outline" size={15} color="#6B7280" />,
       onPress: () => router.push("/admin/Users"),
     },
     {
-      title: "Reports Inbox",
-      subtitle: `${pendingReports} report${pendingReports !== 1 ? 's' : ''} awaiting review`,
-      icon: "flag-outline",
+      title: t("actions.reportsInbox", { defaultValue: "Reports Inbox" }),
+      subtitle: t("actions.reportsInboxDesc", {
+        count: pendingReports,
+        defaultValue: `${pendingReports} report${pendingReports !== 1 ? "s" : ""} awaiting review`,
+      }),
+      icon: <Ionicons name="flag-outline" size={15} color="#6B7280" />,
       badge: pendingReports,
       onPress: () => router.push("/(admin-tabs)/admin/Reports"),
     },
@@ -234,9 +244,9 @@ export default function AdminDashboard() {
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
-      {/* ── Header ── */}
+      {/* Header */}
       <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-5 flex-row items-start justify-between">
-        <View>
+        <View className="flex-1 pr-4">
           <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-100">
             {t("dashboard.title", { defaultValue: "Dashboard" })}
           </Text>
@@ -244,31 +254,25 @@ export default function AdminDashboard() {
             {t("dashboard.subtitle", { defaultValue: "Platform overview" })}
           </Text>
         </View>
-        <View className="flex-row items-center gap-x-2">
+        <View className="flex-row items-center gap-2">
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
             onPress={() => router.push("/admin/Analytics")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
+            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
           >
-            <Ionicons
-              name="bar-chart-outline"
-              size={18}
-              color={isDark ? "#9CA3AF" : "#6B7280"}
-            />
+            <Ionicons name="bar-chart-outline" size={18} color="#6B7280" />
           </TouchableOpacity>
           <TouchableOpacity
-            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center relative"
             onPress={() => router.push("/(admin-tabs)/admin/notifications")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
+            className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
           >
-            <Ionicons
-              name="notifications-outline"
-              size={18}
-              color={isDark ? "#9CA3AF" : "#6B7280"}
-            />
+            <Ionicons name="notifications-outline" size={18} color="#6B7280" />
             {unreadCount > 0 && (
               <View className="absolute -top-1 -right-1 bg-red-500 rounded-full w-4 h-4 items-center justify-center border border-white dark:border-[#080A08]">
-                <Text className="text-[9px] font-bold text-white">
+                <Text className="text-[9px] font-quicksandBold text-white">
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </Text>
               </View>
@@ -283,21 +287,22 @@ export default function AdminDashboard() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#0E7490"
+            tintColor="#6B7280"
+            colors={["#6B7280"]}
           />
         }
         contentContainerStyle={{ paddingBottom: 140 }}
       >
-        {/* ── Error banner ── */}
+        {/* Error */}
         {error && (
           <View className="mx-6 mt-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-4">
-            <Text className="text-red-500 font-quicksandMedium text-sm">
+            <Text className="text-red-500 dark:text-red-400 font-quicksandMedium text-sm">
               {error}
             </Text>
           </View>
         )}
 
-        {/* ── Stats grid ── */}
+        {/* Platform Overview — UNTOUCHED as requested, icon squircle aligned to system */}
         <View className="px-6 pt-5">
           <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 mb-3">
             {t("dashboard.platformOverview", {
@@ -318,8 +323,8 @@ export default function AdminDashboard() {
                   elevation: 2,
                 }}
               >
-                <View className="w-9 h-9 bg-gray-100 dark:bg-[#141414] rounded-full items-center justify-center relative">
-                  <Ionicons name={item.icon} size={15}  color="#374151"/>
+                <View className="w-9 h-9 bg-gray-100 dark:bg-[#1e1e1e] rounded-xl items-center justify-center mb-2">
+                  <Ionicons name={item.icon} size={17} color="#6B7280" />
                 </View>
                 <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-100">
                   {item.value.toLocaleString()}
@@ -332,83 +337,97 @@ export default function AdminDashboard() {
           </View>
         </View>
 
-        {/* ── Quick actions ── */}
+        {/* Quick access — grouped in one card, quiet section label, dividers between rows */}
         <View className="px-6 pt-6">
-          <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 mb-3">
-            {t("dashboard.quickAccess", { defaultValue: "Quick Access" })}
+          <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mb-3 ml-1">
+            {t("dashboard.quickAccess", { defaultValue: "Quick access" })}
           </Text>
-          {quickActions.map((action) => (
-            <TouchableOpacity
-              key={action.title}
-              className="bg-white dark:bg-[#0E0E0E] rounded-2xl border border-gray-100 dark:border-[#2a2a2a] p-4 mb-3 flex-row items-center"
-              onPress={action.onPress}
-              activeOpacity={0.8}
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.04,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
-            >
-              <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center mr-3">
-                <Ionicons name={action.icon} size={15} color="#0E7490" />
+          <View
+            className="bg-white dark:bg-[#0E0E0E] rounded-2xl border border-gray-100 dark:border-[#2a2a2a] overflow-hidden"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+          >
+            {quickActions.map((action, i) => (
+              <View key={action.title}>
+                <TouchableOpacity
+                  onPress={action.onPress}
+                  activeOpacity={0.75}
+                  className="flex-row items-center px-4 py-4"
+                >
+                  <View className="w-8 h-8 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center mr-3">
+                    {action.icon}
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100">
+                      {action.title}
+                    </Text>
+                    <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5">
+                      {action.subtitle}
+                    </Text>
+                  </View>
+                  {(action.badge ?? 0) > 0 && (
+                    <View className="bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center px-1 mr-2">
+                      <Text className="text-[9px] font-quicksandBold text-white">
+                        {(action.badge ?? 0) > 99 ? "99+" : action.badge}
+                      </Text>
+                    </View>
+                  )}
+                  <Ionicons name="chevron-forward" size={15} color="#D1D5DB" />
+                </TouchableOpacity>
+                {i < quickActions.length - 1 && (
+                  <View className="h-px bg-gray-100 dark:bg-[#222] mx-4" />
+                )}
               </View>
-              <View className="flex-1">
-                <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-100">
-                  {action.title}
-                </Text>
-                <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mt-0.5">
-                  {action.subtitle}
-                </Text>
-              </View>
-              {(action.badge ?? 0) > 0 && (
-                <View className="bg-red-500 rounded-full min-w-[20px] h-5 items-center justify-center px-1 mr-2">
-                  <Text className="text-[10px] font-quicksandBold text-white">
-                    {(action.badge ?? 0) > 99 ? '99+' : action.badge}
-                  </Text>
-                </View>
-              )}
-              <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
-            </TouchableOpacity>
-          ))}
+            ))}
+          </View>
         </View>
 
-        {/* ── Recent employers ── */}
+        {/* Recent employers */}
         {(activity?.recentEmployers?.length ?? 0) > 0 && (
           <RecentCard
             title={t("dashboard.newEmployers", {
               defaultValue: "New Employers",
             })}
-            icon={<FontAwesome name="handshake-o" size={24} color="#10B981" />}
+            icon={
+              <Ionicons name="business-outline" size={15} color="#6B7280" />
+            }
             rows={activity!.recentEmployers.map((e: AdminEmployer) => ({
               primary: e.company_name,
               secondary: e.email,
               date: e.created_at,
+              imageUrl: e.profile_image_url,
             }))}
           />
         )}
 
-        {/* ── Recent jobseekers ── */}
+        {/* Recent jobseekers */}
         {(activity?.recentJobseekers?.length ?? 0) > 0 && (
           <RecentCard
             title={t("dashboard.newJobseekers", {
               defaultValue: "New Jobseekers",
             })}
-            icon="people-outline"
+            icon={<Ionicons name="people-outline" size={15} color="#6B7280" />}
             rows={activity!.recentJobseekers.map((js: AdminJobseeker) => ({
               primary: `${js.first_name} ${js.last_name}`,
               secondary: js.email,
               date: js.created_at,
+              imageUrl: js.profile_image_url,
             }))}
           />
         )}
 
-        {/* ── Recent jobs ── */}
+        {/* Recent jobs */}
         {(activity?.recentJobs?.length ?? 0) > 0 && (
           <RecentCard
             title={t("dashboard.newJobs", { defaultValue: "New Job Listings" })}
-            icon="briefcase-outline"
+            icon={
+              <Ionicons name="briefcase-outline" size={15} color="#6B7280" />
+            }
             rows={activity!.recentJobs.map((j: AdminJob) => ({
               primary: j.title,
               secondary:
@@ -418,6 +437,8 @@ export default function AdminDashboard() {
             }))}
           />
         )}
+
+        <View className="h-6" />
       </ScrollView>
     </View>
   );
