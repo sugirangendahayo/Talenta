@@ -9,8 +9,8 @@ import {
   supabase,
 } from "@/lib/supabase";
 import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -24,7 +24,7 @@ import {
 } from "react-native";
 
 export default function JobseekerProfile() {
-  const { profile, role, user, signOut, loading } = useAuth();
+  const { profile, role, user, signOut, loading, refreshProfile } = useAuth();
   const { setIsVisible } = useTabBarVisibility();
   const { t, i18n } = useTranslation("profile");
   const router = useRouter();
@@ -44,20 +44,11 @@ export default function JobseekerProfile() {
     "jobseeker_profiles",
     async () => {
       // Refresh context profile when done
-      if ((useAuth as any)().refreshProfile) {
-        await (useAuth as any)().refreshProfile();
-      }
+      await refreshProfile();
     },
   );
 
-  useEffect(() => {
-    if (jobseekerData) {
-      calculateCompletion();
-      fetchApplicationCount();
-    }
-  }, [jobseekerData]);
-
-  const calculateCompletion = () => {
+  const calculateCompletion = useCallback(() => {
     if (!jobseekerData) return;
     const fields = [
       jobseekerData.first_name,
@@ -76,7 +67,23 @@ export default function JobseekerProfile() {
     ];
     const filledFields = fields.filter((field) => field && field !== "").length;
     setCompletionPercentage(Math.round((filledFields / fields.length) * 100));
-  };
+  }, [jobseekerData]);
+
+  // Recalculate whenever profile data changes
+  useEffect(() => {
+    if (jobseekerData) {
+      calculateCompletion();
+      fetchApplicationCount();
+    }
+  }, [jobseekerData, calculateCompletion]);
+
+  // Refresh from DB every time this tab comes into focus so % syncs instantly
+  // after the user returns from the complete-profile screen
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [refreshProfile])
+  );
 
   const fetchApplicationCount = async () => {
     if (!jobseekerData?.id) return;
@@ -285,7 +292,7 @@ export default function JobseekerProfile() {
               <TouchableOpacity
                 onPress={pickAndUpload}
                 disabled={uploadingPhoto}
-                className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white items-center justify-center"
+                className="absolute -bottom-1 -right-1 bg-gray-700 dark:bg-gray-600 rounded-full p-1.5 border-2 border-white items-center justify-center"
               >
                 {uploadingPhoto ? (
                   <ActivityIndicator
@@ -308,7 +315,7 @@ export default function JobseekerProfile() {
                     : "Your Name"}
                 </Text>
                 {jobseekerData?.premium_plan === "professional" && (
-                  <MaterialIcons name="verified" size={14} color="#0E7490" />
+                  <MaterialIcons name="verified" size={14} color="#6B7280" />
                 )}
               </View>
               <Text
@@ -318,15 +325,15 @@ export default function JobseekerProfile() {
                 {jobseekerData?.email || "email@example.com"}
               </Text>
               {/* Status chip */}
-              <View className="flex-row items-center gap-1 mt-1.5 self-start bg-cyan-50 border border-cyan-100 px-2.5 py-1 rounded-full">
+              <View className="flex-row items-center gap-1 mt-1.5 self-start bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] px-2.5 py-1 rounded-full">
                 <MaterialIcons
                   name={
                     jobseekerData?.profile_completed ? "verified" : "pending"
                   }
                   size={12}
-                  color="#0E7490"
+                  color="#6B7280"
                 />
-                <Text className="text-cyan-700 text-xs font-quicksandBold">
+                <Text className="text-gray-600 dark:text-gray-400 text-xs font-quicksandBold">
                   {jobseekerData?.profile_completed
                     ? t("status.verified", { defaultValue: "Verified" })
                     : t("status.incomplete", { defaultValue: "Incomplete" })}
@@ -372,7 +379,7 @@ export default function JobseekerProfile() {
             className="mx-6 mb-4 bg-white dark:bg-[#080A08] rounded-3xl shadow-sm border border-gray-200 dark:border-[#2a2a2a] overflow-hidden"
           >
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
-              <Ionicons name={section.icon as any} size={20} color="#0E7490" />
+              <Ionicons name={section.icon as any} size={20} color="#6B7280" />
               <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
                 {section.title}
               </Text>
@@ -419,7 +426,7 @@ export default function JobseekerProfile() {
 
         {/* Logout Button */}
         <TouchableOpacity
-          className="mx-6 mb-8 p-4 flex-row items-center justify-center border "
+          className="mx-6 mb-8 p-4 flex-row items-center justify-center  "
           onPress={handleLogout}
           disabled={isLoggingOut}
         >
