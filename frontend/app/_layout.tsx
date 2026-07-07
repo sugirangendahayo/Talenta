@@ -42,20 +42,26 @@ function RootLayoutNav() {
     }
   }, [hasSeenOnboarding]);
 
+  const [authThemeReady, setAuthThemeReady] = useState(false);
+
   // Load the correct per-user theme when auth state resolves
   useEffect(() => {
     if (user && role) {
-      loadThemeForUser(user.id, role);
+      setAuthThemeReady(false);
+      loadThemeForUser(user.id, role).then(() => {
+        setAuthThemeReady(true);
+      });
     } else if (!user && isReady) {
       // Signed out – reset to app default (light)
       resetTheme();
+      setAuthThemeReady(true);
     }
   }, [user, role, isReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigation logic
   useEffect(() => {
     // Wait until both auth and onboarding status are loaded
-    if (!isReady || authLoading) return;
+    if (!isReady || authLoading || !authThemeReady) return;
 
     const inAuthGroup = segments[0] === "auth";
     const inWelcomeGroup = segments[0] === "welcome";
