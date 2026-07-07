@@ -145,9 +145,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  // Refresh profile data (exposed to components)
+  // Refresh profile data (exposed to components).
+  // We reset the mutex first so an in-flight background fetch never blocks
+  // an explicit refresh triggered by the user (e.g. after image upload).
   const refreshProfile = useCallback(async () => {
     if (user && role) {
+      fetchingProfile.current = false; // allow the fetch to proceed
       await fetchProfile(user.id, role);
     }
   }, [user, role, fetchProfile]);
