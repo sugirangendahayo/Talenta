@@ -49,6 +49,7 @@ export default function Signin() {
               onChangeText={(value) => handleInputChange("email", value)}
               keyboardType="email-address"
               autoCapitalize="none"
+              
               autoComplete="email"
               editable={!isLoading}
             />
@@ -96,7 +97,7 @@ export default function Signin() {
         <AuthLink
           text={t("signin.noAccount")}
           linkText={t("signin.signUpLink")}
-          onPress={() => router.push("/welcome/Step1")}
+          onPress={() => router.push("/auth/signup")}
           className="mt-8"
         />
       </View>
