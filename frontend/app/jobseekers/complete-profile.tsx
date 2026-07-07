@@ -4,10 +4,11 @@ import { ProfileFormSkeleton } from "@/components/skeletons/ProfileFormSkeleton"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Modal,
   Platform,
@@ -21,7 +22,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import { useProfileImage } from "@/hooks/useProfileImage";
 import UserAvatar from "@/components/common/UserAvatar";
-import { JobseekerProfile } from "@/lib/supabase";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+/** Minimum age to create a jobseeker account */
+const MIN_AGE_YEARS = 16;
+
+/** Maximum selectable date = today − 16 years */
+function getMaxDOB(): Date {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - MIN_AGE_YEARS);
+  return d;
+}
 
 const COUNTRIES = [
   { code: "RW", name: "Rwanda", dialCode: "+250", flag: "🇷🇼" },
@@ -48,25 +60,64 @@ const COUNTRIES = [
 
 type Country = (typeof COUNTRIES)[number];
 
+// ─── Shake animation helper ────────────────────────────────────────────────────
+function useShake() {
+  const anim = useRef(new Animated.Value(0)).current;
+  const shake = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(anim, { toValue: 8, duration: 60, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: -8, duration: 60, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 6, duration: 50, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: -6, duration: 50, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 0, duration: 40, useNativeDriver: true }),
+    ]).start();
+  }, [anim]);
+  return { anim, shake };
+}
 
-
+// ─── Phone input ───────────────────────────────────────────────────────────────
 function PhoneInputField({
   value,
   onChange,
+  hasError,
 }: {
   value: string;
   onChange: (fullNumber: string) => void;
+  hasError?: boolean;
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<Country>(COUNTRIES[0]);
-  const [nationalNumber, setNationalNumber] = useState("");
+  // Parse existing value into country + national number on first mount / value change
+  const parseInitial = useCallback(
+    (raw: string): { country: Country; national: string } => {
+      if (!raw) return { country: COUNTRIES[0], national: "" };
+      const matched = COUNTRIES.find((c) => raw.startsWith(c.dialCode));
+      if (matched) {
+        return { country: matched, national: raw.slice(matched.dialCode.length) };
+      }
+      return { country: COUNTRIES[0], national: raw };
+    },
+    []
+  );
+
+  const [selectedCountry, setSelectedCountry] = useState<Country>(() => parseInitial(value).country);
+  const [nationalNumber, setNationalNumber] = useState<string>(() => parseInitial(value).national);
   const [showPicker, setShowPicker] = useState(false);
   const [search, setSearch] = useState("");
 
+  // Sync when value changes externally (e.g. initial load from DB)
+  const prevValueRef = useRef(value);
+  useEffect(() => {
+    if (value !== prevValueRef.current) {
+      prevValueRef.current = value;
+      const parsed = parseInitial(value);
+      setSelectedCountry(parsed.country);
+      setNationalNumber(parsed.national);
+    }
+  }, [value, parseInitial]);
 
   const filteredCountries = COUNTRIES.filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.dialCode.includes(search),
+      c.dialCode.includes(search)
   );
 
   const handleNumberChange = (text: string) => {
@@ -82,11 +133,14 @@ function PhoneInputField({
     onChange(`${country.dialCode}${nationalNumber}`);
   };
 
-
   return (
     <>
       <View
-        className="flex-row rounded-2xl overflow-hidden border border-gray-200 dark:border-[#2a2a2a]"
+        className={`flex-row rounded-2xl overflow-hidden border ${
+          hasError
+            ? "border-red-500"
+            : "border-gray-200 dark:border-[#2a2a2a]"
+        }`}
         style={{ backgroundColor: "#F8FAFC" }}
       >
         <TouchableOpacity
@@ -189,11 +243,13 @@ function PhoneInputField({
   );
 }
 
+// ─── Primitives ────────────────────────────────────────────────────────────────
+
 function FieldLabel({ label, required }: { label: string; required?: boolean }) {
   return (
     <Text className="text-gray-600 dark:text-gray-400 font-quicksandSemibold text-sm mb-2">
       {label}
-      {required && <Text className="text-cyan-600 dark:text-cyan-400"> *</Text>}
+      {required && <Text className="text-red-500"> *</Text>}
     </Text>
   );
 }
@@ -230,13 +286,19 @@ function ChipGroup({
   options,
   selected,
   onSelect,
+  hasError,
 }: {
   options: string[];
   selected: string;
   onSelect: (v: string) => void;
+  hasError?: boolean;
 }) {
   return (
-    <View className="flex-row flex-wrap gap-2">
+    <View
+      className={`flex-row flex-wrap gap-2 rounded-xl p-1 ${
+        hasError ? "border border-red-500" : ""
+      }`}
+    >
       {options.map((option) => (
         <TouchableOpacity
           key={option}
@@ -265,10 +327,12 @@ function InputField({
   value,
   onChangeText,
   placeholder,
+  hasError,
 }: {
   value: string;
   onChangeText: (t: string) => void;
   placeholder: string;
+  hasError?: boolean;
 }) {
   return (
     <TextInput
@@ -276,44 +340,78 @@ function InputField({
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor="#9CA3AF"
-      className="rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a]"
+      className={`rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border ${
+        hasError ? "border-red-500" : "border-gray-200 dark:border-[#2a2a2a]"
+      }`}
       style={{ backgroundColor: "#F8FAFC" }}
     />
   );
 }
 
+function ErrorText({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <Text className="text-red-500 font-quicksandMedium text-xs mt-1">{message}</Text>
+  );
+}
+
+// ─── Required fields definition ───────────────────────────────────────────────
+const FORM_REQUIRED = [
+  "first_name",
+  "last_name",
+  "phone",
+  "date_of_birth",
+  "gender",
+  "country",
+  "city",
+  "education_level",
+  "experience_level",
+  "skills",
+] as const;
+
 // ────────────────────────────────────────────────────────────────────────────
 export default function CompleteProfileScreen() {
   const router = useRouter();
   const { t } = useTranslation("profile");
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, refreshProfile: refreshAuthProfile } = useAuth();
   const {
     loading,
     saving,
     formData,
+    profileImageUrl,
     completionStatus,
     updateField,
     addSkill,
     removeSkill,
     saveProfile,
+    setExternalImageUrl,
   } = useProfileCompletion();
 
-  const jobseekerProfile = profile as JobseekerProfile | null;
-  const [localImageUrl, setLocalImageUrl] = useState<string | null>(
-    jobseekerProfile?.profile_image_url ?? null
-  );
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+
+  // Sync localImageUrl from hook when it changes (initial DB load)
+  useEffect(() => {
+    if (profileImageUrl && !localImageUrl) {
+      setLocalImageUrl(profileImageUrl);
+    }
+  }, [profileImageUrl]);
 
   const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
     user?.id ?? "",
     "jobseeker_profiles",
     async (url) => {
       setLocalImageUrl(url);
-      await refreshProfile();
+      setExternalImageUrl(url); // push into hook for completion tracking
+      await refreshAuthProfile(); // sync auth context
     }
   );
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newSkill, setNewSkill] = useState("");
+
+  // ─── Validation state ─────────────────────────────────────────────────────
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const { anim: shakeAnim, shake } = useShake();
 
   const genderOptions = ["Male", "Female", "Other", "Prefer not to say"];
   const educationLevels = [
@@ -326,15 +424,39 @@ export default function CompleteProfileScreen() {
   ];
   const experienceLevels = ["Entry Level", "Intermediate", "Senior", "Expert"];
 
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.first_name.trim()) newErrors.first_name = "First name is required";
+    if (!formData.last_name.trim()) newErrors.last_name = "Last name is required";
+    if (!formData.phone || formData.phone.length < 8) newErrors.phone = "Valid phone number is required";
+    if (!formData.date_of_birth) newErrors.date_of_birth = "Date of birth is required";
+    if (!formData.gender) newErrors.gender = "Please select your gender";
+    if (!formData.country.trim()) newErrors.country = "Country is required";
+    if (!formData.city.trim()) newErrors.city = "City is required";
+    if (!formData.education_level) newErrors.education_level = "Please select your education level";
+    if (!formData.experience_level) newErrors.experience_level = "Please select your experience level";
+    if (!formData.skills || formData.skills.length === 0) newErrors.skills = "Add at least one skill";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validate()) {
+      shake();
+      return;
+    }
     const success = await saveProfile();
-    if (success && completionStatus.isComplete) router.back();
+    if (success) {
+      await refreshAuthProfile();
+      if (completionStatus.isComplete) router.back();
+    }
   };
 
   const handleDateChange = (_: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
       updateField("date_of_birth", selectedDate.toISOString().split("T")[0]);
+      setErrors((prev) => ({ ...prev, date_of_birth: undefined }));
     }
   };
 
@@ -342,6 +464,7 @@ export default function CompleteProfileScreen() {
     if (newSkill.trim()) {
       addSkill(newSkill);
       setNewSkill("");
+      setErrors((prev) => ({ ...prev, skills: undefined }));
     }
   };
 
@@ -355,6 +478,7 @@ export default function CompleteProfileScreen() {
   }
 
   const pct = completionStatus.completionPercentage;
+  const maxDOB = getMaxDOB();
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-[#080A08]" edges={["top"]}>
@@ -404,7 +528,7 @@ export default function CompleteProfileScreen() {
         <View className="items-center pt-6 pb-2">
           <View className="relative">
             <UserAvatar
-              imageUrl={localImageUrl ?? jobseekerProfile?.profile_image_url}
+              imageUrl={localImageUrl ?? profileImageUrl}
               name={`${formData.first_name} ${formData.last_name}`.trim() || "JS"}
               size={96}
             />
@@ -427,174 +551,201 @@ export default function CompleteProfileScreen() {
         </View>
 
         {/* ── Personal Information ── */}
-        <SectionCard
-          icon={<Ionicons name="person-outline" size={18} color="#0E7490" />}
-          title={t("completeProfile.sections.personal.title")}
-        >
-          <View className="mb-4">
-            <FieldLabel label={t("completeProfile.sections.personal.firstName")} required />
-            <InputField
-              value={formData.first_name}
-              onChangeText={(t) => updateField("first_name", t)}
-              placeholder={t("completeProfile.placeholders.firstName")}
-            />
-          </View>
+        <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
+          <SectionCard
+            icon={<Ionicons name="person-outline" size={18} color="#0E7490" />}
+            title={t("completeProfile.sections.personal.title")}
+          >
+            <View className="mb-4">
+              <FieldLabel label={t("completeProfile.sections.personal.firstName")} required />
+              <InputField
+                value={formData.first_name}
+                onChangeText={(v) => { updateField("first_name", v); setErrors((p) => ({ ...p, first_name: undefined })); }}
+                placeholder={t("completeProfile.placeholders.firstName")}
+                hasError={!!errors.first_name}
+              />
+              <ErrorText message={errors.first_name} />
+            </View>
 
-          <View className="mb-4">
-            <FieldLabel label={t("completeProfile.sections.personal.lastName")} required />
-            <InputField
-              value={formData.last_name}
-              onChangeText={(t) => updateField("last_name", t)}
-              placeholder={t("completeProfile.placeholders.lastName")}
-            />
-          </View>
+            <View className="mb-4">
+              <FieldLabel label={t("completeProfile.sections.personal.lastName")} required />
+              <InputField
+                value={formData.last_name}
+                onChangeText={(v) => { updateField("last_name", v); setErrors((p) => ({ ...p, last_name: undefined })); }}
+                placeholder={t("completeProfile.placeholders.lastName")}
+                hasError={!!errors.last_name}
+              />
+              <ErrorText message={errors.last_name} />
+            </View>
 
-          <View className="mb-4">
-            <FieldLabel label={t("completeProfile.sections.personal.phone")} required />
-            <PhoneInputField
-              value={formData.phone}
-              onChange={(n) => updateField("phone", n)}
-            />
-          </View>
+            <View className="mb-4">
+              <FieldLabel label={t("completeProfile.sections.personal.phone")} required />
+              <PhoneInputField
+                value={formData.phone}
+                onChange={(n) => { updateField("phone", n); setErrors((p) => ({ ...p, phone: undefined })); }}
+                hasError={!!errors.phone}
+              />
+              <ErrorText message={errors.phone} />
+            </View>
 
-          <View className="mb-4">
-            <FieldLabel label={t("completeProfile.sections.personal.dob")} required />
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              className="flex-row items-center justify-between rounded-2xl px-4 py-3 border border-gray-200 dark:border-[#2a2a2a]"
-              style={{ backgroundColor: "#F8FAFC" }}
-              activeOpacity={0.7}
-            >
-              <Text
-                className={`font-quicksandMedium text-sm ${
-                  formData.date_of_birth ? "text-gray-800 dark:text-gray-200" : "text-gray-400"
+            <View className="mb-4">
+              <FieldLabel label={t("completeProfile.sections.personal.dob")} required />
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                className={`flex-row items-center justify-between rounded-2xl px-4 py-3 border ${
+                  errors.date_of_birth ? "border-red-500" : "border-gray-200 dark:border-[#2a2a2a]"
                 }`}
+                style={{ backgroundColor: "#F8FAFC" }}
+                activeOpacity={0.7}
               >
-                {formData.date_of_birth || t("completeProfile.placeholders.dob")}
-              </Text>
-              <Ionicons name="calendar-outline" size={17} color="#9CA3AF" />
-            </TouchableOpacity>
-          </View>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={
-                formData.date_of_birth ? new Date(formData.date_of_birth) : new Date()
-              }
-              mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              onChange={handleDateChange}
-              maximumDate={new Date()}
-            />
-          )}
-
-          <View>
-            <FieldLabel label={t("completeProfile.sections.personal.gender")} required />
-            <ChipGroup
-              options={genderOptions}
-              selected={formData.gender}
-              onSelect={(v) => updateField("gender", v)}
-            />
-          </View>
-        </SectionCard>
-
-        {/* ── Location ── */}
-        <SectionCard
-          icon={<Ionicons name="location-outline" size={18} color="#0E7490" />}
-          title={t("completeProfile.sections.location.title")}
-        >
-          <View className="mb-4">
-            <FieldLabel label={t("completeProfile.sections.location.country")} required />
-            <InputField
-              value={formData.country}
-              onChangeText={(t) => updateField("country", t)}
-              placeholder={t("completeProfile.placeholders.country")}
-            />
-          </View>
-          <View>
-            <FieldLabel label={t("completeProfile.sections.location.city")} required />
-            <InputField
-              value={formData.city}
-              onChangeText={(t) => updateField("city", t)}
-              placeholder={t("completeProfile.placeholders.city")}
-            />
-          </View>
-        </SectionCard>
-
-        {/* ── Education & Experience ── */}
-        <SectionCard
-          icon={<Ionicons name="school-outline" size={18} color="#0E7490" />}
-          title={t("completeProfile.sections.education.title")}
-        >
-          <View className="mb-5">
-            <FieldLabel label={t("completeProfile.sections.education.level")} required />
-            <ChipGroup
-              options={educationLevels}
-              selected={formData.education_level}
-              onSelect={(v) => updateField("education_level", v)}
-            />
-          </View>
-          <View>
-            <FieldLabel label={t("completeProfile.sections.education.experience")} required />
-            <ChipGroup
-              options={experienceLevels}
-              selected={formData.experience_level}
-              onSelect={(v) => updateField("experience_level", v)}
-            />
-          </View>
-        </SectionCard>
-
-        {/* ── Skills ── */}
-        <SectionCard
-          icon={<MaterialIcons name="stars" size={18} color="#0E7490" />}
-          title={t("completeProfile.sections.skills.title")}
-        >
-          <View className="flex-row gap-2 mb-4">
-            <TextInput
-              value={newSkill}
-              onChangeText={setNewSkill}
-              placeholder={t("completeProfile.sections.skills.addPlaceholder")}
-              placeholderTextColor="#9CA3AF"
-              className="flex-1 rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a]"
-              style={{ backgroundColor: "#F8FAFC" }}
-              onSubmitEditing={handleAddSkill}
-              returnKeyType="done"
-            />
-            <TouchableOpacity
-              onPress={handleAddSkill}
-              className="w-12 bg-cyan-700 dark:bg-cyan-800 rounded-2xl items-center justify-center"
-              activeOpacity={0.85}
-            >
-              <Ionicons name="add" size={22} color="white" />
-            </TouchableOpacity>
-          </View>
-
-          {formData.skills.length > 0 ? (
-            <View className="flex-row flex-wrap gap-2">
-              {formData.skills.map((skill, index) => (
-                <View
-                  key={index}
-                  className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-[#2a2a2a]"
-                  style={{ backgroundColor: "#F8FAFC" }}
+                <Text
+                  className={`font-quicksandMedium text-sm ${
+                    formData.date_of_birth ? "text-gray-800 dark:text-gray-200" : "text-gray-400"
+                  }`}
                 >
-                  <Text className="text-gray-700 dark:text-gray-300 font-quicksandSemibold text-xs">
-                    {skill}
-                  </Text>
-                  <TouchableOpacity onPress={() => removeSkill(index)} activeOpacity={0.7}>
-                    <Ionicons name="close-circle" size={15} color="#9CA3AF" />
-                  </TouchableOpacity>
-                </View>
-              ))}
+                  {formData.date_of_birth || t("completeProfile.placeholders.dob")}
+                </Text>
+                <Ionicons name="calendar-outline" size={17} color="#9CA3AF" />
+              </TouchableOpacity>
+              <ErrorText message={errors.date_of_birth} />
+              {!errors.date_of_birth && (
+                <Text className="text-gray-400 font-quicksandMedium text-xs mt-1">
+                  Minimum age: {MIN_AGE_YEARS} years old
+                </Text>
+              )}
             </View>
-          ) : (
-            <View className="items-center py-5">
-              <Ionicons name="sparkles-outline" size={24} color="#D1D5DB" />
-              <Text className="text-gray-400 font-quicksandMedium text-sm mt-2">
-                {t("completeProfile.sections.skills.noSkills")}
-              </Text>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={
+                  formData.date_of_birth ? new Date(formData.date_of_birth) : maxDOB
+                }
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={handleDateChange}
+                maximumDate={maxDOB}
+              />
+            )}
+
+            <View>
+              <FieldLabel label={t("completeProfile.sections.personal.gender")} required />
+              <ChipGroup
+                options={genderOptions}
+                selected={formData.gender}
+                onSelect={(v) => { updateField("gender", v); setErrors((p) => ({ ...p, gender: undefined })); }}
+                hasError={!!errors.gender}
+              />
+              <ErrorText message={errors.gender} />
             </View>
-          )}
-        </SectionCard>
+          </SectionCard>
+
+          {/* ── Location ── */}
+          <SectionCard
+            icon={<Ionicons name="location-outline" size={18} color="#0E7490" />}
+            title={t("completeProfile.sections.location.title")}
+          >
+            <View className="mb-4">
+              <FieldLabel label={t("completeProfile.sections.location.country")} required />
+              <InputField
+                value={formData.country}
+                onChangeText={(v) => { updateField("country", v); setErrors((p) => ({ ...p, country: undefined })); }}
+                placeholder={t("completeProfile.placeholders.country")}
+                hasError={!!errors.country}
+              />
+              <ErrorText message={errors.country} />
+            </View>
+            <View>
+              <FieldLabel label={t("completeProfile.sections.location.city")} required />
+              <InputField
+                value={formData.city}
+                onChangeText={(v) => { updateField("city", v); setErrors((p) => ({ ...p, city: undefined })); }}
+                placeholder={t("completeProfile.placeholders.city")}
+                hasError={!!errors.city}
+              />
+              <ErrorText message={errors.city} />
+            </View>
+          </SectionCard>
+
+          {/* ── Education & Experience ── */}
+          <SectionCard
+            icon={<Ionicons name="school-outline" size={18} color="#0E7490" />}
+            title={t("completeProfile.sections.education.title")}
+          >
+            <View className="mb-5">
+              <FieldLabel label={t("completeProfile.sections.education.level")} required />
+              <ChipGroup
+                options={educationLevels}
+                selected={formData.education_level}
+                onSelect={(v) => { updateField("education_level", v); setErrors((p) => ({ ...p, education_level: undefined })); }}
+                hasError={!!errors.education_level}
+              />
+              <ErrorText message={errors.education_level} />
+            </View>
+            <View>
+              <FieldLabel label={t("completeProfile.sections.education.experience")} required />
+              <ChipGroup
+                options={experienceLevels}
+                selected={formData.experience_level}
+                onSelect={(v) => { updateField("experience_level", v); setErrors((p) => ({ ...p, experience_level: undefined })); }}
+                hasError={!!errors.experience_level}
+              />
+              <ErrorText message={errors.experience_level} />
+            </View>
+          </SectionCard>
+
+          {/* ── Skills ── */}
+          <SectionCard
+            icon={<MaterialIcons name="stars" size={18} color="#0E7490" />}
+            title={t("completeProfile.sections.skills.title")}
+          >
+            <View className={`flex-row gap-2 mb-4 ${errors.skills ? "border border-red-500 rounded-2xl p-1" : ""}`}>
+              <TextInput
+                value={newSkill}
+                onChangeText={setNewSkill}
+                placeholder={t("completeProfile.sections.skills.addPlaceholder")}
+                placeholderTextColor="#9CA3AF"
+                className="flex-1 rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a]"
+                style={{ backgroundColor: "#F8FAFC" }}
+                onSubmitEditing={handleAddSkill}
+                returnKeyType="done"
+              />
+              <TouchableOpacity
+                onPress={handleAddSkill}
+                className="w-12 bg-cyan-700 dark:bg-cyan-800 rounded-2xl items-center justify-center"
+                activeOpacity={0.85}
+              >
+                <Ionicons name="add" size={22} color="white" />
+              </TouchableOpacity>
+            </View>
+            <ErrorText message={errors.skills} />
+
+            {formData.skills.length > 0 ? (
+              <View className="flex-row flex-wrap gap-2">
+                {formData.skills.map((skill, index) => (
+                  <View
+                    key={index}
+                    className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-[#2a2a2a]"
+                    style={{ backgroundColor: "#F8FAFC" }}
+                  >
+                    <Text className="text-gray-700 dark:text-gray-300 font-quicksandSemibold text-xs">
+                      {skill}
+                    </Text>
+                    <TouchableOpacity onPress={() => removeSkill(index)} activeOpacity={0.7}>
+                      <Ionicons name="close-circle" size={15} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View className="items-center py-5">
+                <Ionicons name="sparkles-outline" size={24} color="#D1D5DB" />
+                <Text className="text-gray-400 font-quicksandMedium text-sm mt-2">
+                  {t("completeProfile.sections.skills.noSkills")}
+                </Text>
+              </View>
+            )}
+          </SectionCard>
+        </Animated.View>
 
         {/* CV note */}
         <View
