@@ -78,8 +78,8 @@ const ContactCard = ({ contact }: ContactCardProps) => {
       case "shortlisted":
         return {
           text: t("status.shortlisted"),
-          className: "bg-cyan-50 border border-cyan-100",
-          textClassName: "text-cyan-700",
+          className: "bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a]",
+          textClassName: "text-gray-600 dark:text-gray-400",
         };
       default:
         return {
@@ -209,8 +209,8 @@ export default function RecentContactsSection({
         {/* Header */}
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2">
-            <View className="w-8 h-8 bg-cyan-50 rounded-full items-center justify-center">
-              <Ionicons name="people-outline" size={17} color="#0E7490" />
+            <View className="w-8 h-8 bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] rounded-full items-center justify-center">
+              <Ionicons name="people-outline" size={17} color="#6B7280" />
             </View>
             <View>
               <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
@@ -230,10 +230,10 @@ export default function RecentContactsSection({
             className="flex-row items-center gap-0.5"
             onPress={() => router.push("/(employer-tabs)/employers/Applicants")}
           >
-            <Text className="text-sm font-quicksandBold text-cyan-700">
+            <Text className="text-sm font-quicksandBold text-gray-600 dark:text-gray-400">
               {t("buttons.viewAll", { ns: "common" })}
             </Text>
-            <Ionicons name="chevron-forward" size={14} color="#0E7490" />
+            <Ionicons name="chevron-forward" size={14} color="#6B7280" />
           </TouchableOpacity>
         </View>
 
