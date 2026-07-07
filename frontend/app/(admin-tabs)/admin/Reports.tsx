@@ -16,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { PromptModal } from "@/components/common/PromptModal";
+import AdminListSkeleton from "@/components/skeletons/AdminListSkeleton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -345,12 +346,10 @@ export default function AdminReports() {
     { key: "all",       label: t("admin:reports.filters.all",       { defaultValue: "All" }) },
   ];
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] items-center justify-center">
-        <ActivityIndicator size="large" color="#0E7490" />
-      </View>
-    );
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
+  if (loading && !refreshing) {
+    return <AdminListSkeleton count={5} showFilterBar={true} />;
   }
 
   return (
