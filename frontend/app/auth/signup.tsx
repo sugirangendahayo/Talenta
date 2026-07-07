@@ -57,7 +57,7 @@ export default function Signup() {
           <PrimaryButton onPress={handleSignup} disabled={isLoading}>
             {/* Inline content inside the button */}
             <View className="flex flex-row items-center justify-center">
-              <Text className="text-white font-bold">
+              <Text className="text-white font-quicksandBold">
                 {isLoading
                   ? t("signup.creatingAccount")
                   : t("signup.createAccountButton")}
