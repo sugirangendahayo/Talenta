@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AdminListSkeleton from "@/components/skeletons/AdminListSkeleton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -298,12 +299,10 @@ export default function AdminJobseekers() {
     (js) => js.id_document_url || js.cv_document_url
   ).length;
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] items-center justify-center">
-        <ActivityIndicator size="large" color="#0E7490" />
-      </View>
-    );
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
+  if (loading && !refreshing) {
+    return <AdminListSkeleton count={5} showFilterBar={true} />;
   }
 
   const CHIPS: { key: DocFilter; label: string }[] = [
