@@ -74,6 +74,18 @@ export default function AdminProfile() {
 
   const settingsSections = [
     {
+      title: t("sections.administration.title", { defaultValue: "Administration" }),
+      icon: "shield-checkmark-outline" as const,
+      items: [
+        {
+          icon: "flag" as const,
+          label: t("sections.administration.reports", { defaultValue: "Reports" }),
+          value: undefined,
+          onPress: () => router.push("/(admin-tabs)/admin/Reports"),
+        },
+      ],
+    },
+    {
       title: t("sections.account.title", { defaultValue: "Account" }),
       icon: "person-outline" as const,
       items: [
@@ -183,8 +195,8 @@ export default function AdminProfile() {
           <View className="flex-row items-center">
             {/* Avatar squircle */}
             <View className="relative">
-              <View className="w-[60px] h-[60px] rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
-                <Ionicons name="shield-checkmark" size={28} color="#0E7490" />
+              <View className="w-[60px] h-[60px] rounded-full bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] items-center justify-center">
+                <Ionicons name="shield-checkmark" size={28} color="#6B7280" />
               </View>
               {/* Online dot */}
               <View className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0E0E0E]" />
@@ -202,9 +214,9 @@ export default function AdminProfile() {
                 {user?.email ?? ""}
               </Text>
               {/* Role badge */}
-              <View className="flex-row items-center gap-x-1 mt-1.5 self-start bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-900/40 px-2.5 py-1 rounded-full">
-                <View className="w-1.5 h-1.5 rounded-full bg-cyan-700" />
-                <Text className="text-cyan-700 dark:text-cyan-400 text-xs font-quicksandBold">
+              <View className="flex-row items-center gap-x-1 mt-1.5 self-start bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] px-2.5 py-1 rounded-full">
+                <View className="w-1.5 h-1.5 rounded-full bg-gray-500" />
+                <Text className="text-gray-600 dark:text-gray-400 text-xs font-quicksandBold">
                   {t("roleAdmin", { defaultValue: "Admin" })}
                 </Text>
               </View>
@@ -236,8 +248,8 @@ export default function AdminProfile() {
           >
             {/* Section header */}
             <View className="flex-row items-center px-4 py-3 border-b border-gray-100 dark:border-[#222]">
-              <View className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
-                <Ionicons name={section.icon} size={15} color="#0E7490" />
+              <View className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] items-center justify-center">
+                <Ionicons name={section.icon} size={15} color="#6B7280" />
               </View>
               <Text className="text-[15px] font-quicksandBold text-gray-900 dark:text-gray-100 ml-2">
                 {section.title}
@@ -280,7 +292,7 @@ export default function AdminProfile() {
 
         {/* ── Sign Out ── */}
         <TouchableOpacity
-          className="mx-6 mb-8 p-4 flex-row items-center justify-center border "
+          className="mx-6 mb-8 p-4 flex-row items-center justify-center  "
           onPress={handleLogout}
           disabled={isLoggingOut}
         >
