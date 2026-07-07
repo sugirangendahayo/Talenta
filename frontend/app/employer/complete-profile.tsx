@@ -3,13 +3,13 @@ import { ProfileFormSkeleton } from "@/components/skeletons/ProfileFormSkeleton"
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployerProfileCompletion } from "@/hooks/useEmployerProfileCompletion";
 import { useProfileImage } from "@/hooks/useProfileImage";
-import { EmployerProfile } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Modal,
   Text,
@@ -20,7 +20,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 
-// ─── Countries ────────────────────────────────────────────────────────────────
+// ─── Countries ─────────────────────────────────────────────────────────────────
 
 const COUNTRIES = [
   { code: "RW", name: "Rwanda", dialCode: "+250", flag: "🇷🇼" },
@@ -47,24 +47,69 @@ const COUNTRIES = [
 
 type Country = (typeof COUNTRIES)[number];
 
-// ─── Phone input ──────────────────────────────────────────────────────────────
+// ─── Shake animation helper ────────────────────────────────────────────────────
+function useShake() {
+  const anim = useRef(new Animated.Value(0)).current;
+  const shake = useCallback(() => {
+    Animated.sequence([
+      Animated.timing(anim, { toValue: 8, duration: 60, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: -8, duration: 60, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 6, duration: 50, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: -6, duration: 50, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 0, duration: 40, useNativeDriver: true }),
+    ]).start();
+  }, [anim]);
+  return { anim, shake };
+}
+
+// ─── Phone input ───────────────────────────────────────────────────────────────
 
 function PhoneInputField({
   value,
   onChange,
+  hasError,
 }: {
   value: string;
   onChange: (fullNumber: string) => void;
+  hasError?: boolean;
 }) {
-  const [selectedCountry, setSelectedCountry] = useState<Country>(COUNTRIES[0]);
-  const [nationalNumber, setNationalNumber] = useState("");
+  // Parse the stored full phone number back into country + national part
+  const parseInitial = useCallback(
+    (raw: string): { country: Country; national: string } => {
+      if (!raw) return { country: COUNTRIES[0], national: "" };
+      const matched = COUNTRIES.find((c) => raw.startsWith(c.dialCode));
+      if (matched) {
+        return { country: matched, national: raw.slice(matched.dialCode.length) };
+      }
+      return { country: COUNTRIES[0], national: raw };
+    },
+    []
+  );
+
+  const [selectedCountry, setSelectedCountry] = useState<Country>(
+    () => parseInitial(value).country
+  );
+  const [nationalNumber, setNationalNumber] = useState<string>(
+    () => parseInitial(value).national
+  );
   const [showPicker, setShowPicker] = useState(false);
   const [search, setSearch] = useState("");
+
+  // Re-sync when value changes externally (e.g. initial DB load)
+  const prevValueRef = useRef(value);
+  useEffect(() => {
+    if (value !== prevValueRef.current) {
+      prevValueRef.current = value;
+      const parsed = parseInitial(value);
+      setSelectedCountry(parsed.country);
+      setNationalNumber(parsed.national);
+    }
+  }, [value, parseInitial]);
 
   const filteredCountries = COUNTRIES.filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.dialCode.includes(search),
+      c.dialCode.includes(search)
   );
 
   const handleNumberChange = (text: string) => {
@@ -82,7 +127,13 @@ function PhoneInputField({
 
   return (
     <>
-      <View className="flex-row rounded-2xl overflow-hidden border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#141414]">
+      <View
+        className={`flex-row rounded-2xl overflow-hidden border ${
+          hasError
+            ? "border-red-500"
+            : "border-gray-200 dark:border-[#2a2a2a]"
+        } bg-gray-50 dark:bg-[#141414]`}
+      >
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
           className="flex-row items-center px-3 py-3.5 gap-1.5 border-r border-gray-200 dark:border-[#2a2a2a]"
@@ -182,7 +233,7 @@ function PhoneInputField({
   );
 }
 
-// ─── Primitives ───────────────────────────────────────────────────────────────
+// ─── Primitives ────────────────────────────────────────────────────────────────
 
 function FieldLabel({
   label,
@@ -194,7 +245,7 @@ function FieldLabel({
   return (
     <Text className="text-gray-600 dark:text-gray-400 font-quicksandBold text-xs uppercase tracking-wide mb-2">
       {label}
-      {required && <Text className="text-cyan-600 dark:text-cyan-400"> *</Text>}
+      {required && <Text className="text-red-500"> *</Text>}
     </Text>
   );
 }
@@ -204,11 +255,13 @@ function InputField({
   onChangeText,
   placeholder,
   keyboardType = "default",
+  hasError,
 }: {
   value: string;
   onChangeText: (t: string) => void;
   placeholder: string;
   keyboardType?: any;
+  hasError?: boolean;
 }) {
   return (
     <TextInput
@@ -217,12 +270,24 @@ function InputField({
       placeholder={placeholder}
       placeholderTextColor="#9CA3AF"
       keyboardType={keyboardType}
-      className="rounded-2xl px-4 py-3.5 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#141414]"
+      className={`rounded-2xl px-4 py-3.5 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border ${
+        hasError
+          ? "border-red-500"
+          : "border-gray-200 dark:border-[#2a2a2a]"
+      } bg-gray-50 dark:bg-[#141414]`}
     />
   );
 }
 
-// A clean section divider — label only, no icon, no card shadow
+function ErrorText({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <Text className="text-red-500 font-quicksandMedium text-xs mt-1">
+      {message}
+    </Text>
+  );
+}
+
 function SectionLabel({ label }: { label: string }) {
   return (
     <Text className="text-xs font-quicksandBold text-gray-400 dark:text-gray-500 uppercase tracking-wide px-6 mb-3 mt-8">
@@ -231,39 +296,74 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+// ─── Screen ────────────────────────────────────────────────────────────────────
 
 export default function EmployerCompleteProfileScreen() {
   const router = useRouter();
   const { t } = useTranslation("profile");
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, refreshProfile: refreshAuthProfile } = useAuth();
   const {
     loading,
     saving,
     formData,
+    profileImageUrl,
     completionStatus,
     updateField,
     saveProfile,
+    setExternalImageUrl,
   } = useEmployerProfileCompletion();
 
-  const employerProfile = profile as EmployerProfile | null;
-  const [localImageUrl, setLocalImageUrl] = useState<string | null>(
-    employerProfile?.profile_image_url ?? null,
-  );
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+
+  // Sync localImageUrl when the hook loads the DB value
+  useEffect(() => {
+    if (profileImageUrl && !localImageUrl) {
+      setLocalImageUrl(profileImageUrl);
+    }
+  }, [profileImageUrl]);
 
   const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
     user?.id ?? "",
     "employer_profiles",
     async (url) => {
       setLocalImageUrl(url);
-      await refreshProfile();
-    },
+      setExternalImageUrl(url); // push into hook → completion updates instantly
+      await refreshAuthProfile(); // sync auth context
+    }
   );
 
+  // ─── Validation ──────────────────────────────────────────────────────────
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const { anim: shakeAnim, shake } = useShake();
+
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.company_name.trim())
+      newErrors.company_name = "Company name is required";
+    if (!formData.email.trim())
+      newErrors.email = "Email is required";
+    if (!formData.phone || formData.phone.length < 8)
+      newErrors.phone = "Valid phone number is required";
+    if (!formData.company_website.trim())
+      newErrors.company_website = "Company website is required";
+    if (!formData.country.trim())
+      newErrors.country = "Country is required";
+    if (!formData.city.trim())
+      newErrors.city = "City is required";
+    if (!formData.company_address.trim())
+      newErrors.company_address = "Company address is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validate()) {
+      shake();
+      return;
+    }
     const success = await saveProfile();
     if (success) {
-      await refreshProfile();
+      await refreshAuthProfile();
       if (completionStatus.isComplete) router.back();
     }
   };
@@ -286,7 +386,7 @@ export default function EmployerCompleteProfileScreen() {
       className="flex-1 bg-gray-50 dark:bg-[#080A08]"
       edges={["top"]}
     >
-      {/* ── Header ─────────────────────────────────────────────────────── */}
+      {/* ── Header ──────────────────────────────────────────────────────── */}
       <View className="flex-row items-center px-4 py-4 border-b border-gray-100 dark:border-[#1f1f1f] bg-white dark:bg-[#080A08]">
         <TouchableOpacity
           onPress={() => router.back()}
@@ -299,7 +399,6 @@ export default function EmployerCompleteProfileScreen() {
         <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100 flex-1">
           Complete Profile
         </Text>
-        {/* Percentage pill */}
         <View className="bg-gray-100 dark:bg-[#1a1a1a] rounded-full px-3 py-1">
           <Text className="font-quicksandBold text-xs text-gray-600 dark:text-gray-400">
             {pct}%
@@ -307,58 +406,60 @@ export default function EmployerCompleteProfileScreen() {
         </View>
       </View>
 
-      {/* ── Keyboard-aware scroll ───────────────────────────────────────── */}
+      {/* ── Keyboard-aware scroll ────────────────────────────────────────── */}
       <KeyboardWrapper contentStyle={{ paddingBottom: 48 }}>
-          {/* ── Progress bar ─────────────────────────────────────────────── */}
-          <View className="mx-6 mt-5 mb-2">
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="font-quicksandBold text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                Completion
-              </Text>
-              <Text className="font-quicksandBold text-xs text-cyan-700 dark:text-cyan-400">
-                {pct}%
-              </Text>
-            </View>
-            <View className="h-1.5 bg-gray-200 dark:bg-[#1e1e1e] rounded-full overflow-hidden">
-              <View
-                className="h-full bg-cyan-700 rounded-full"
-                style={{ width: `${pct}%` }}
-              />
-            </View>
-            {completionStatus.missingFields.length > 0 && (
-              <Text className="text-gray-400 font-quicksandMedium text-xs mt-2">
-                Missing: {completionStatus.missingFields.join(", ")}
-              </Text>
-            )}
-          </View>
-
-          {/* ── Avatar ───────────────────────────────────────────────────── */}
-          <View className="items-center pt-6 pb-2">
-            <View className="relative">
-              <UserAvatar
-                imageUrl={localImageUrl ?? employerProfile?.profile_image_url}
-                name={formData.company_name || "C"}
-                size={88}
-              />
-              <TouchableOpacity
-                onPress={pickAndUpload}
-                disabled={uploadingPhoto}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-cyan-700 rounded-full items-center justify-center border-2 border-white dark:border-[#080A08]"
-                activeOpacity={0.85}
-              >
-                {uploadingPhoto ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Ionicons name="camera" size={14} color="white" />
-                )}
-              </TouchableOpacity>
-            </View>
-            <Text className="mt-2.5 font-quicksandMedium text-xs text-gray-400">
-              Tap to update photo
+        {/* ── Progress bar ─────────────────────────────────────────────── */}
+        <View className="mx-6 mt-5 mb-2">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="font-quicksandBold text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+              Completion
+            </Text>
+            <Text className="font-quicksandBold text-xs text-cyan-700 dark:text-cyan-400">
+              {pct}%
             </Text>
           </View>
+          <View className="h-1.5 bg-gray-200 dark:bg-[#1e1e1e] rounded-full overflow-hidden">
+            <View
+              className="h-full bg-cyan-700 rounded-full"
+              style={{ width: `${pct}%` }}
+            />
+          </View>
+          {completionStatus.missingFields.length > 0 && (
+            <Text className="text-gray-400 font-quicksandMedium text-xs mt-2">
+              Missing: {completionStatus.missingFields.join(", ")}
+            </Text>
+          )}
+        </View>
 
-          {/* ── Company Information ──────────────────────────────────────── */}
+        {/* ── Avatar ───────────────────────────────────────────────────── */}
+        <View className="items-center pt-6 pb-2">
+          <View className="relative">
+            <UserAvatar
+              imageUrl={localImageUrl ?? profileImageUrl}
+              name={formData.company_name || "C"}
+              size={88}
+            />
+            <TouchableOpacity
+              onPress={pickAndUpload}
+              disabled={uploadingPhoto}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-cyan-700 rounded-full items-center justify-center border-2 border-white dark:border-[#080A08]"
+              activeOpacity={0.85}
+            >
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="camera" size={14} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+          <Text className="mt-2.5 font-quicksandMedium text-xs text-gray-400">
+            Tap to update photo
+          </Text>
+        </View>
+
+        {/* ── Shake wrapper wraps all form fields ─────────────────────── */}
+        <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
+          {/* ── Company Information ───────────────────────────────────── */}
           <SectionLabel label="Company Information" />
           <View className="mx-6 bg-white dark:bg-[#0e0e0e] rounded-2xl border border-gray-100 dark:border-[#1f1f1f] overflow-hidden">
             {/* Company Name */}
@@ -366,9 +467,14 @@ export default function EmployerCompleteProfileScreen() {
               <FieldLabel label="Company Name" required />
               <InputField
                 value={formData.company_name}
-                onChangeText={(t) => updateField("company_name", t)}
+                onChangeText={(v) => {
+                  updateField("company_name", v);
+                  setErrors((p) => ({ ...p, company_name: undefined }));
+                }}
                 placeholder="e.g. Acme Corporation"
+                hasError={!!errors.company_name}
               />
+              <ErrorText message={errors.company_name} />
             </View>
 
             {/* Email */}
@@ -376,10 +482,15 @@ export default function EmployerCompleteProfileScreen() {
               <FieldLabel label="Email" required />
               <InputField
                 value={formData.email}
-                onChangeText={(t) => updateField("email", t)}
+                onChangeText={(v) => {
+                  updateField("email", v);
+                  setErrors((p) => ({ ...p, email: undefined }));
+                }}
                 placeholder="e.g. contact@acmecorp.com"
                 keyboardType="email-address"
+                hasError={!!errors.email}
               />
+              <ErrorText message={errors.email} />
             </View>
 
             {/* Phone */}
@@ -387,8 +498,13 @@ export default function EmployerCompleteProfileScreen() {
               <FieldLabel label="Phone Number" required />
               <PhoneInputField
                 value={formData.phone}
-                onChange={(n) => updateField("phone", n)}
+                onChange={(n) => {
+                  updateField("phone", n);
+                  setErrors((p) => ({ ...p, phone: undefined }));
+                }}
+                hasError={!!errors.phone}
               />
+              <ErrorText message={errors.phone} />
             </View>
 
             {/* Website */}
@@ -396,99 +512,120 @@ export default function EmployerCompleteProfileScreen() {
               <FieldLabel label="Company Website" required />
               <InputField
                 value={formData.company_website}
-                onChangeText={(t) => updateField("company_website", t)}
+                onChangeText={(v) => {
+                  updateField("company_website", v);
+                  setErrors((p) => ({ ...p, company_website: undefined }));
+                }}
                 placeholder="e.g. https://www.acmecorp.com"
                 keyboardType="url"
+                hasError={!!errors.company_website}
               />
+              <ErrorText message={errors.company_website} />
             </View>
           </View>
 
-          {/* ── Location ─────────────────────────────────────────────────── */}
+          {/* ── Location ─────────────────────────────────────────────── */}
           <SectionLabel label="Location" />
           <View className="mx-6 bg-white dark:bg-[#0e0e0e] rounded-2xl border border-gray-100 dark:border-[#1f1f1f] overflow-hidden">
             <View className="px-4 pt-4 pb-3 border-b border-gray-100 dark:border-[#1f1f1f]">
               <FieldLabel label="Country" required />
               <InputField
                 value={formData.country}
-                onChangeText={(t) => updateField("country", t)}
+                onChangeText={(v) => {
+                  updateField("country", v);
+                  setErrors((p) => ({ ...p, country: undefined }));
+                }}
                 placeholder="e.g. Rwanda"
+                hasError={!!errors.country}
               />
+              <ErrorText message={errors.country} />
             </View>
             <View className="px-4 py-3 border-b border-gray-100 dark:border-[#1f1f1f]">
               <FieldLabel label="City" required />
               <InputField
                 value={formData.city}
-                onChangeText={(t) => updateField("city", t)}
+                onChangeText={(v) => {
+                  updateField("city", v);
+                  setErrors((p) => ({ ...p, city: undefined }));
+                }}
                 placeholder="e.g. Kigali"
+                hasError={!!errors.city}
               />
+              <ErrorText message={errors.city} />
             </View>
             <View className="px-4 py-3">
               <FieldLabel label="Address" required />
               <InputField
                 value={formData.company_address}
-                onChangeText={(t) => updateField("company_address", t)}
+                onChangeText={(v) => {
+                  updateField("company_address", v);
+                  setErrors((p) => ({ ...p, company_address: undefined }));
+                }}
                 placeholder="e.g. 123 Business Road, Suite 400"
+                hasError={!!errors.company_address}
               />
+              <ErrorText message={errors.company_address} />
             </View>
           </View>
+        </Animated.View>
 
-          {/* ── Info note ────────────────────────────────────────────────── */}
-          <View className="mx-6 mt-6 bg-white dark:bg-[#0e0e0e] border border-gray-100 dark:border-[#1f1f1f] rounded-2xl p-4 flex-row items-start gap-3">
+        {/* ── Info note ────────────────────────────────────────────────── */}
+        <View className="mx-6 mt-6 bg-white dark:bg-[#0e0e0e] border border-gray-100 dark:border-[#1f1f1f] rounded-2xl p-4 flex-row items-start gap-3">
+          <Ionicons
+            name="shield-checkmark-outline"
+            size={17}
+            color="#0E7490"
+            style={{ marginTop: 1 }}
+          />
+          <View className="flex-1">
+            <Text className="font-quicksandBold text-sm text-gray-700 dark:text-gray-300 mb-0.5">
+              Verification Required
+            </Text>
+            <Text className="font-quicksandMedium text-xs text-gray-400 leading-5">
+              To post jobs and interact with jobseekers, submit your business
+              registration for verification after saving.
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Completion notice ─────────────────────────────────────────── */}
+        {completionStatus.isComplete && (
+          <View className="mx-6 mt-4 bg-white dark:bg-[#0e0e0e] border border-gray-100 dark:border-[#1f1f1f] rounded-2xl p-4 flex-row items-center gap-3">
             <Ionicons
-              name="shield-checkmark-outline"
+              name="checkmark-circle-outline"
               size={17}
               color="#0E7490"
-              style={{ marginTop: 1 }}
             />
             <View className="flex-1">
-              <Text className="font-quicksandBold text-sm text-gray-700 dark:text-gray-300 mb-0.5">
-                Verification Required
+              <Text className="font-quicksandBold text-sm text-gray-800 dark:text-gray-200">
+                Profile complete
               </Text>
-              <Text className="font-quicksandMedium text-xs text-gray-400 leading-5">
-                To post jobs and interact with jobseekers, submit your business
-                registration for verification after saving.
+              <Text className="font-quicksandMedium text-xs text-gray-400 mt-0.5">
+                All required fields are filled in.
               </Text>
             </View>
           </View>
+        )}
 
-          {/* ── Completion notice — neutral, no cyan background ──────────── */}
-          {completionStatus.isComplete && (
-            <View className="mx-6 mt-4 bg-white dark:bg-[#0e0e0e] border border-gray-100 dark:border-[#1f1f1f] rounded-2xl p-4 flex-row items-center gap-3">
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={17}
-                color="#0E7490"
-              />
-              <View className="flex-1">
-                <Text className="font-quicksandBold text-sm text-gray-800 dark:text-gray-200">
-                  Profile complete
-                </Text>
-                <Text className="font-quicksandMedium text-xs text-gray-400 mt-0.5">
-                  All required fields are filled in.
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* ── Save ─────────────────────────────────────────────────────── */}
-          <View className="mx-6 mt-6">
-            <TouchableOpacity
-              onPress={handleSave}
-              disabled={saving}
-              className={`rounded-2xl py-4 items-center justify-center ${
-                saving ? "bg-cyan-700/70" : "bg-cyan-700"
-              }`}
-              activeOpacity={0.85}
-            >
-              {saving ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text className="text-white font-quicksandBold text-sm">
-                  Save Profile
-                </Text>
-              )}
-            </TouchableOpacity>
-          </View>
+        {/* ── Save ─────────────────────────────────────────────────────── */}
+        <View className="mx-6 mt-6">
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={saving}
+            className={`rounded-2xl py-4 items-center justify-center ${
+              saving ? "bg-cyan-700/70" : "bg-cyan-700"
+            }`}
+            activeOpacity={0.85}
+          >
+            {saving ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white font-quicksandBold text-sm">
+                Save Profile
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </KeyboardWrapper>
     </SafeAreaView>
   );
