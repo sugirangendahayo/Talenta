@@ -23,8 +23,8 @@ const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
       }
     >
       {/* Avatar initial */}
-      <View className="w-8 h-8 bg-cyan-50 rounded-full items-center justify-center mr-3 border border-cyan-100">
-        <Text className="text-xs font-quicksandBold text-cyan-700">
+        <View className="w-8 h-8 bg-gray-100 dark:bg-[#1e1e1e] rounded-full items-center justify-center mr-3 border border-gray-200 dark:border-[#2a2a2a]">
+          <Text className="text-xs font-quicksandBold text-gray-600 dark:text-gray-400">
           {applicant.applicant_name.charAt(0).toUpperCase()}
         </Text>
       </View>
@@ -35,7 +35,7 @@ const ApplicantItem = ({ applicant }: ApplicantItemProps) => {
             {applicant.applicant_name}
           </Text>
           {applicant.is_new && (
-            <View className="bg-cyan-700 dark:bg-cyan-800 px-2 py-0.5 rounded-full">
+            <View className="bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] px-2 py-0.5 rounded-full">
               <Text className="text-[10px] font-quicksandBold text-white">
                 {t("priority.new")}
               </Text>
@@ -78,8 +78,8 @@ export default function AttentionSection({
         {/* Header */}
         <View className="flex-row items-center justify-between mb-1">
           <View className="flex-row items-center gap-2">
-            <View className="w-8 h-8 bg-cyan-50 rounded-full items-center justify-center">
-              <Ionicons name="alert-circle-outline" size={18} color="#0E7490" />
+            <View className="w-8 h-8 bg-gray-100 dark:bg-[#1e1e1e] rounded-full items-center justify-center border border-gray-200 dark:border-[#2a2a2a]">
+              <Ionicons name="alert-circle-outline" size={18} color="#6B7280" />
             </View>
             <View>
               <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200">
@@ -97,10 +97,10 @@ export default function AttentionSection({
             className="flex-row items-center gap-0.5"
             onPress={() => router.push("/(employer-tabs)/employers/Applicants")}
           >
-            <Text className="text-sm font-quicksandBold text-cyan-700">
+            <Text className="text-sm font-quicksandBold text-gray-600 dark:text-gray-400">
               {t("common.viewAll")}
             </Text>
-            <Ionicons name="chevron-forward" size={14} color="#0E7490" />
+            <Ionicons name="chevron-forward" size={14} color="#6B7280" />
           </TouchableOpacity>
         </View>
 
