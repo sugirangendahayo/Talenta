@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 
@@ -10,7 +10,6 @@ export interface EmployerProfileFormData {
   company_address: string;
   country: string;
   city: string;
-  profile_image_url?: string | null;
 }
 
 export interface ProfileCompletionStatus {
@@ -30,6 +29,25 @@ const REQUIRED_FIELDS = [
   { key: "profile_image_url", label: "Profile Photo", weight: 10 },
 ];
 
+const TOTAL_WEIGHT = REQUIRED_FIELDS.reduce((sum, f) => sum + f.weight, 0);
+
+function computeCompletion(data: Record<string, any>): ProfileCompletionStatus {
+  let filledFields = 0;
+  const missing: string[] = [];
+
+  REQUIRED_FIELDS.forEach((field) => {
+    const value = data[field.key];
+    if (value && value !== "") {
+      filledFields += field.weight;
+    } else {
+      missing.push(field.label);
+    }
+  });
+
+  const completionPercentage = Math.round((filledFields / TOTAL_WEIGHT) * 100);
+  return { completionPercentage, missingFields: missing, isComplete: completionPercentage === 100 };
+}
+
 export function useEmployerProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,18 +59,30 @@ export function useEmployerProfileCompletion() {
     company_address: "",
     country: "",
     city: "",
-    profile_image_url: null,
   });
-  
-  // Verification docs can be added later as needed
+
+  // Profile image managed separately so upload doesn't need to go through formData
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [businessLicenseUrl, setBusinessLicenseUrl] = useState<string | null>(null);
 
-  const [completionStatus, setCompletionStatus] =
-    useState<ProfileCompletionStatus>({
-      completionPercentage: 0,
-      missingFields: [],
-      isComplete: false,
+  const [completionStatus, setCompletionStatus] = useState<ProfileCompletionStatus>({
+    completionPercentage: 0,
+    missingFields: [],
+    isComplete: false,
+  });
+
+  // Ref so saveProfile always reads latest image URL without re-creating the callback
+  const profileImageUrlRef = useRef(profileImageUrl);
+  profileImageUrlRef.current = profileImageUrl;
+
+  // ─── Reactive completion ───────────────────────────────────────────────────
+  useEffect(() => {
+    const status = computeCompletion({
+      ...formData,
+      profile_image_url: profileImageUrl,
     });
+    setCompletionStatus(status);
+  }, [formData, profileImageUrl]);
 
   // Fetch existing profile data
   const fetchProfile = useCallback(async () => {
@@ -85,10 +115,10 @@ export function useEmployerProfileCompletion() {
           company_address: data.company_address || "",
           country: data.country || "",
           city: data.city || "",
-          profile_image_url: data.profile_image_url || null,
         });
-        setBusinessLicenseUrl(data.business_license_url);
-        calculateCompletion(data);
+        setProfileImageUrl(data.profile_image_url || null);
+        setBusinessLicenseUrl(data.business_license_url || null);
+        // completion is recalculated by the useEffect above
       }
     } catch (err: any) {
       console.error("Error fetching employer profile:", err);
@@ -98,45 +128,20 @@ export function useEmployerProfileCompletion() {
     }
   }, []);
 
-  // Calculate completion percentage and missing fields
-  const calculateCompletion = (data: any) => {
-    let filledFields = 0;
-    const missing: string[] = [];
-
-    REQUIRED_FIELDS.forEach((field) => {
-      const value = data[field.key];
-      if (value && value !== "") {
-        filledFields += field.weight;
-      } else {
-        missing.push(field.label);
-      }
-    });
-
-    const percentage = Math.round(
-      (filledFields / REQUIRED_FIELDS.reduce((sum, f) => sum + f.weight, 0)) * 100
-    );
-
-    const isComplete = percentage === 100;
-
-    setCompletionStatus({
-      completionPercentage: percentage,
-      missingFields: missing,
-      isComplete,
-    });
-
-    return { percentage, isComplete, missing };
-  };
-
   // Update form field
   const updateField = useCallback(
     (field: keyof EmployerProfileFormData, value: any) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
+      setFormData((prev) => ({ ...prev, [field]: value }));
     },
     []
   );
+
+  // Called by the screen after a successful image upload to sync URL into the hook
+  const setExternalImageUrl = useCallback((url: string | null) => {
+    // Strip cache-bust param so we store the clean URL
+    const clean = url ? url.split("?")[0] : null;
+    setProfileImageUrl(clean);
+  }, []);
 
   // Save profile
   const saveProfile = useCallback(async (): Promise<boolean> => {
@@ -152,18 +157,17 @@ export function useEmployerProfileCompletion() {
         throw new Error("Not authenticated");
       }
 
-      // Prepare data for update
+      const latestStatus = computeCompletion({
+        ...formData,
+        profile_image_url: profileImageUrlRef.current,
+      });
+
       const updateData = {
         ...formData,
-        profile_completed: false, // Will be recalculated
+        profile_image_url: profileImageUrlRef.current,
+        profile_completed: latestStatus.isComplete,
       };
 
-      // Calculate if profile should be marked complete
-      const { isComplete } = calculateCompletion(updateData);
-
-      updateData.profile_completed = isComplete;
-
-      // Update profile
       const { error: updateError } = await supabase
         .from("employer_profiles")
         .update(updateData)
@@ -172,12 +176,12 @@ export function useEmployerProfileCompletion() {
       if (updateError) throw updateError;
 
       toast.success(
-        isComplete
+        latestStatus.isComplete
           ? "Profile completed successfully! 🎉"
           : "Profile updated successfully!"
       );
 
-      // Refresh profile data
+      // Refresh hook data from DB
       await fetchProfile();
 
       return true;
@@ -199,10 +203,12 @@ export function useEmployerProfileCompletion() {
     loading,
     saving,
     formData,
+    profileImageUrl,
     businessLicenseUrl,
     completionStatus,
     updateField,
     saveProfile,
+    setExternalImageUrl,
     refreshProfile: fetchProfile,
   };
 }
