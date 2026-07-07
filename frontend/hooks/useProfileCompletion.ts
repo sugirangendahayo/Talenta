@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 
@@ -38,6 +38,31 @@ const REQUIRED_FIELDS = [
   { key: "profile_image_url", label: "Profile Photo", weight: 10 },
 ];
 
+const TOTAL_WEIGHT = REQUIRED_FIELDS.reduce((sum, f) => sum + f.weight, 0);
+
+function computeCompletion(data: Record<string, any>): ProfileCompletionStatus {
+  let filledFields = 0;
+  const missing: string[] = [];
+
+  REQUIRED_FIELDS.forEach((field) => {
+    const value = data[field.key];
+    if (field.key === "skills") {
+      if (value && Array.isArray(value) && value.length > 0) {
+        filledFields += field.weight;
+      } else {
+        missing.push(field.label);
+      }
+    } else if (value && value !== "") {
+      filledFields += field.weight;
+    } else {
+      missing.push(field.label);
+    }
+  });
+
+  const completionPercentage = Math.round((filledFields / TOTAL_WEIGHT) * 100);
+  return { completionPercentage, missingFields: missing, isComplete: completionPercentage === 100 };
+}
+
 export function useProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -56,12 +81,27 @@ export function useProfileCompletion() {
   });
   const [cvUrl, setCvUrl] = useState<string | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
-  const [completionStatus, setCompletionStatus] =
-    useState<ProfileCompletionStatus>({
-      completionPercentage: 0,
-      missingFields: [],
-      isComplete: false,
+  const [completionStatus, setCompletionStatus] = useState<ProfileCompletionStatus>({
+    completionPercentage: 0,
+    missingFields: [],
+    isComplete: false,
+  });
+
+  // Ref so we always have the latest values for callbacks without re-creating them
+  const cvUrlRef = useRef(cvUrl);
+  const profileImageUrlRef = useRef(profileImageUrl);
+  cvUrlRef.current = cvUrl;
+  profileImageUrlRef.current = profileImageUrl;
+
+  // ─── Reactive completion: recalculate whenever formData, cvUrl, or profileImageUrl changes ───
+  useEffect(() => {
+    const status = computeCompletion({
+      ...formData,
+      cv_document_url: cvUrl,
+      profile_image_url: profileImageUrl,
     });
+    setCompletionStatus(status);
+  }, [formData, cvUrl, profileImageUrl]);
 
   // Fetch existing profile data
   const fetchProfile = useCallback(async () => {
@@ -99,9 +139,9 @@ export function useProfileCompletion() {
           experience_level: data.experience_level || "",
           skills: data.skills || [],
         });
-        setCvUrl(data.cv_document_url);
-        setProfileImageUrl(data.profile_image_url);
-        calculateCompletion(data);
+        setCvUrl(data.cv_document_url || null);
+        setProfileImageUrl(data.profile_image_url || null);
+        // completion is recalculated by the useEffect above
       }
     } catch (err: any) {
       console.error("Error fetching profile:", err);
@@ -111,61 +151,22 @@ export function useProfileCompletion() {
     }
   }, []);
 
-  // Calculate completion percentage and missing fields
-  const calculateCompletion = (data: any) => {
-    let filledFields = 0;
-    const missing: string[] = [];
-
-    REQUIRED_FIELDS.forEach((field) => {
-      const value = data[field.key];
-
-      if (field.key === "skills") {
-        if (value && Array.isArray(value) && value.length > 0) {
-          filledFields += field.weight;
-        } else {
-          missing.push(field.label);
-        }
-      } else if (value && value !== "") {
-        filledFields += field.weight;
-      } else {
-        missing.push(field.label);
-      }
-    });
-
-    const percentage = Math.round(
-      (filledFields / REQUIRED_FIELDS.reduce((sum, f) => sum + f.weight, 0)) *
-        100
-    );
-
-    const isComplete = percentage === 100;
-
-    setCompletionStatus({
-      completionPercentage: percentage,
-      missingFields: missing,
-      isComplete,
-    });
-
-    return { percentage, isComplete, missing };
-  };
-
   // Update form field
-  const updateField = useCallback(
-    (field: keyof ProfileFormData, value: any) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    },
-    []
-  );
+  const updateField = useCallback((field: keyof ProfileFormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  // Called by the screen after a successful image upload to sync URL into the hook
+  const setExternalImageUrl = useCallback((url: string | null) => {
+    // Strip cache-bust param so we store the clean URL
+    const clean = url ? url.split("?")[0] : null;
+    setProfileImageUrl(clean);
+  }, []);
 
   // Add skill
   const addSkill = useCallback((skill: string) => {
     if (skill.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, skill.trim()],
-      }));
+      setFormData((prev) => ({ ...prev, skills: [...prev.skills, skill.trim()] }));
     }
   }, []);
 
@@ -191,23 +192,17 @@ export function useProfileCompletion() {
         throw new Error("Not authenticated");
       }
 
-      // Prepare data for update
-      const updateData = {
+      const latestStatus = computeCompletion({
         ...formData,
-        // Set profile_completed to true only if all fields are filled
-        profile_completed: false, // Will be recalculated
-      };
-
-      // Calculate if profile should be marked complete
-      const { isComplete } = calculateCompletion({
-        ...updateData,
-        cv_document_url: cvUrl,
-        profile_image_url: profileImageUrl,
+        cv_document_url: cvUrlRef.current,
+        profile_image_url: profileImageUrlRef.current,
       });
 
-      updateData.profile_completed = isComplete;
+      const updateData = {
+        ...formData,
+        profile_completed: latestStatus.isComplete,
+      };
 
-      // Update profile
       const { error: updateError } = await supabase
         .from("jobseeker_profiles")
         .update(updateData)
@@ -216,12 +211,12 @@ export function useProfileCompletion() {
       if (updateError) throw updateError;
 
       toast.success(
-        isComplete
+        latestStatus.isComplete
           ? "Profile completed successfully! 🎉"
           : "Profile updated successfully!"
       );
 
-      // Refresh profile data
+      // Refresh hook data from DB
       await fetchProfile();
 
       return true;
@@ -232,28 +227,14 @@ export function useProfileCompletion() {
     } finally {
       setSaving(false);
     }
-  }, [formData, cvUrl, fetchProfile]);
+  }, [formData, fetchProfile]);
 
-  // Upload CV
-  const uploadCV = useCallback(async (fileUri: string): Promise<boolean> => {
+  // Upload CV (placeholder)
+  const uploadCV = useCallback(async (_fileUri: string): Promise<boolean> => {
     try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        throw new Error("Not authenticated");
-      }
-
-      // In a real app, you would upload to Supabase Storage here
-      // For now, we'll just update the URL field
-      // This is a placeholder - you'll need to implement actual file upload
-
       toast.info("CV upload functionality coming soon!");
       return true;
     } catch (err: any) {
-      console.error("Error uploading CV:", err);
       toast.error(err.message || "Failed to upload CV");
       return false;
     }
@@ -269,12 +250,14 @@ export function useProfileCompletion() {
     saving,
     formData,
     cvUrl,
+    profileImageUrl,
     completionStatus,
     updateField,
     addSkill,
     removeSkill,
     saveProfile,
     uploadCV,
+    setExternalImageUrl,
     refreshProfile: fetchProfile,
   };
 }
