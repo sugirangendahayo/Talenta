@@ -17,8 +17,8 @@ import {
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -43,10 +43,39 @@ export default function EmployerProfile() {
   const [applicantsCount, setApplicantsCount] = useState(0);
   const [hiredCount, setHiredCount] = useState(0);
   const [logoutSheetVisible, setLogoutSheetVisible] = useState(false);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
   const lastScrollY = useRef(0);
 
   const employerData =
     role === "employer" && profile ? (profile as EmployerProfileType) : null;
+
+  // Calculate employer profile completion percentage
+  const calculateEmployerCompletion = useCallback(() => {
+    if (!employerData) return;
+    const fields = [
+      employerData.company_name,
+      employerData.email,
+      employerData.phone,
+      employerData.country,
+      employerData.city,
+      employerData.company_address,
+      employerData.company_website,
+      employerData.profile_image_url,
+    ];
+    const filled = fields.filter((f) => f && f !== "").length;
+    setCompletionPercentage(Math.round((filled / fields.length) * 100));
+  }, [employerData]);
+
+  useEffect(() => {
+    calculateEmployerCompletion();
+  }, [calculateEmployerCompletion]);
+
+  // Refresh from DB every time this tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [refreshProfile])
+  );
 
   const { pickAndUpload, uploading: uploadingPhoto } = useProfileImage(
     user?.id ?? "",
@@ -283,7 +312,7 @@ export default function EmployerProfile() {
               <TouchableOpacity
                 onPress={pickAndUpload}
                 disabled={uploadingPhoto}
-                className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full p-1.5 border-2 border-white dark:border-[#0E0E0E] items-center justify-center"
+                className="absolute -bottom-1 -right-1 bg-gray-700 dark:bg-gray-600 rounded-full p-1.5 border-2 border-white dark:border-[#0E0E0E] items-center justify-center"
               >
                 {uploadingPhoto ? (
                   <ActivityIndicator
@@ -357,6 +386,15 @@ export default function EmployerProfile() {
                 {t("stats.hired")}
               </Text>
             </View>
+            <View className="w-px bg-gray-100 dark:bg-[#222]" />
+            <View className="flex-1 items-center">
+              <Text className="text-lg font-quicksandBold text-gray-800 dark:text-gray-200">
+                {completionPercentage}%
+              </Text>
+              <Text className="text-gray-400 font-quicksandMedium text-xs mt-0.5">
+                Profile
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -375,7 +413,11 @@ export default function EmployerProfile() {
           >
             {/* Section header */}
             <View className="flex-row items-center px-6 py-4 border-b border-gray-100 dark:border-[#222]">
-              <Ionicons name={section.icon as any} size={20} color="#0E7490" />
+              {typeof section.icon === "string" ? (
+                <Ionicons name={section.icon as any} size={20} color="#6B7280" />
+              ) : (
+                section.icon
+              )}
               <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 ml-3">
                 {section.title}
               </Text>
@@ -423,7 +465,7 @@ export default function EmployerProfile() {
 
         {/* ── Logout ─────────────────────────────────────────────────── */}
         <TouchableOpacity
-          className="mx-6 mb-8 p-4 flex-row items-center justify-center border "
+          className="mx-6 mb-8 p-4 flex-row items-center justify-center  "
           onPress={handleLogout}
           disabled={isLoggingOut}
         >
