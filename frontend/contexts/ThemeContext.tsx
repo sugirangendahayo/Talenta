@@ -38,6 +38,7 @@ interface ThemeContextValue {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DEFAULT_THEME: ThemeMode = "light";
+const GLOBAL_THEME_KEY = "@app_theme_global";
 const TRANSITION_DURATION = 350;
 
 /** Build a per-user+role storage key so accounts don't bleed into each other */
@@ -60,6 +61,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const [themeMode, setThemeModeState] = useState<ThemeMode>(DEFAULT_THEME);
   const [isReady, setIsReady] = useState(false);
+  const lastAppliedRef = useRef<ThemeMode | null>(null);
 
   // Keep track of which user+role is currently active so we save to the right key
   const currentKeyRef = useRef<string | null>(null);
@@ -75,6 +77,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // ── Apply a mode (sync NativeWind + state) ────────────────────────────────
   const applyMode = useCallback(
     (mode: ThemeMode, animate: boolean) => {
+      if (!animate && lastAppliedRef.current === mode) {
+        return; // Avoid flashing if the mode is already active
+      }
+      
       if (animate) {
         overlayOpacity.value = withTiming(1, {
           duration: TRANSITION_DURATION / 2,
@@ -82,6 +88,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         });
 
         setTimeout(() => {
+          lastAppliedRef.current = mode;
           setThemeModeState(mode);
           setColorScheme(mode === "system" ? "system" : mode);
 
@@ -96,6 +103,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           });
         }, TRANSITION_DURATION / 2);
       } else {
+        lastAppliedRef.current = mode;
         setThemeModeState(mode);
         setColorScheme(mode === "system" ? "system" : mode);
         transitionProgress.value = mode === "dark" ? 1 : 0;
@@ -106,31 +114,53 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // ── Load on cold-start (no user yet – fall back to app default) ───────────
   useEffect(() => {
-    // On first launch with no user, just use DEFAULT_THEME so the app
-    // doesn't flash an unexpected dark mode.
-    applyMode(DEFAULT_THEME, false);
-    setIsReady(true);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    (async () => {
+      const storedGlobal = await AsyncStorage.getItem(GLOBAL_THEME_KEY);
+      const mode: ThemeMode =
+        storedGlobal === "light" || storedGlobal === "dark" || storedGlobal === "system"
+          ? storedGlobal
+          : DEFAULT_THEME;
+      applyMode(mode, false);
+      setIsReady(true);
+    })();
+  }, [applyMode]);
 
   // ── Load theme for a specific user+role (call after sign-in) ─────────────
   const loadThemeForUser = useCallback(
     async (userId: string, role: string) => {
       const key = storageKey(userId, role);
       currentKeyRef.current = key;
+
+      // Priority: user key → global key → DEFAULT_THEME
       const stored = await AsyncStorage.getItem(key);
+      if (stored === "light" || stored === "dark" || stored === "system") {
+        applyMode(stored, false);
+        return;
+      }
+
+      // No user-specific preference — fall back to global key
+      const globalStored = await AsyncStorage.getItem(GLOBAL_THEME_KEY);
       const mode: ThemeMode =
-        stored === "light" || stored === "dark" || stored === "system"
-          ? stored
+        globalStored === "light" || globalStored === "dark" || globalStored === "system"
+          ? globalStored
           : DEFAULT_THEME;
       applyMode(mode, false);
     },
     [applyMode]
   );
 
-  // ── Reset to default on sign-out ──────────────────────────────────────────
+  // ── Reset on sign-out: keep GLOBAL_THEME_KEY so auth screens stay themed ──
   const resetTheme = useCallback(() => {
     currentKeyRef.current = null;
-    applyMode(DEFAULT_THEME, false);
+    // Do NOT apply DEFAULT_THEME — read GLOBAL_THEME_KEY so Login/Signup
+    // remain in whatever theme the user last selected.
+    AsyncStorage.getItem(GLOBAL_THEME_KEY).then((globalStored) => {
+      const mode: ThemeMode =
+        globalStored === "light" || globalStored === "dark" || globalStored === "system"
+          ? globalStored
+          : DEFAULT_THEME;
+      applyMode(mode, false);
+    });
   }, [applyMode]);
 
   // ── Public setThemeMode (persists to the current user's key) ─────────────
@@ -140,10 +170,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
       // Persist after the animation delay so stored value matches visible state
       setTimeout(() => {
+        AsyncStorage.setItem(GLOBAL_THEME_KEY, mode);
         if (currentKeyRef.current) {
           AsyncStorage.setItem(currentKeyRef.current, mode);
         }
-        // Also keep a global fallback (no-user sessions) at the default key
       }, TRANSITION_DURATION / 2);
     },
     [applyMode]
