@@ -1,7 +1,8 @@
 /* eslint-disable import/no-named-as-default-member */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Localization from 'expo-localization';
+
+
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -20,16 +21,13 @@ const userLanguageKey = (userId: string) => `@app_language_${userId}`;
 const supportedLanguages = ['en', 'fr', 'rw'] as const;
 
 /**
- * Get device language safely
+ * Returns the app default language.
+ * English is the hardcoded default — the device locale is intentionally ignored
+ * so fresh installs always start in English regardless of system settings.
+ * A user's explicitly saved preference (GLOBAL_LANGUAGE_KEY or per-user key)
+ * will always override this fallback.
  */
-const getDeviceLanguage = () => {
-  const locales = Localization.getLocales();
-  const deviceLang = locales[0]?.languageCode || 'en';
-
-  return supportedLanguages.includes(deviceLang as any)
-    ? deviceLang
-    : 'en';
-};
+const getDeviceLanguage = () => 'en';
 
 /**
  * Load the device-level fallback language (used on app start before login)
