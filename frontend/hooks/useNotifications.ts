@@ -47,10 +47,18 @@ export function useNotifications() {
       setIsLoading(true);
       setError(null);
 
-      // Load deleted IDs from AsyncStorage to handle DB RLS delete silently failing
+      // Load deleted IDs from AsyncStorage (fast path, cleared on reinstall)
       const storedDeletedIds = await AsyncStorage.getItem(`deleted_notifications_${user.id}`);
       const localDeletedIds = new Set<string>(storedDeletedIds ? JSON.parse(storedDeletedIds) : []);
       setDeletedIds(localDeletedIds);
+
+      // Load the "cleared before" cutoff from Supabase user metadata (survives reinstall)
+      let clearedBeforeTs: Date | null = null;
+      const { data: { user: freshUser } } = await supabase.auth.getUser();
+      const clearedAt = freshUser?.user_metadata?.notifications_cleared_at as string | undefined;
+      if (clearedAt) {
+        clearedBeforeTs = new Date(clearedAt);
+      }
 
       const { data, error: fetchError } = await supabase
         .from("notifications")
@@ -61,8 +69,14 @@ export function useNotifications() {
 
       if (fetchError) throw fetchError;
 
-      // Filter out locally deleted ones
-      const activeNotifications = (data || []).filter(n => !localDeletedIds.has(n.id));
+      // Filter out:
+      // 1. Notifications locally marked as deleted (per-session)
+      // 2. Notifications created before the global "cleared_before" cutoff (cross-install)
+      const activeNotifications = (data || []).filter((n) => {
+        if (localDeletedIds.has(n.id)) return false;
+        if (clearedBeforeTs && new Date(n.created_at) <= clearedBeforeTs) return false;
+        return true;
+      });
 
       setNotifications(activeNotifications);
       setUnreadCount(activeNotifications.filter((n) => !n.is_read).length);
@@ -169,25 +183,37 @@ export function useNotifications() {
     }
   };
 
-  // Clear all notifications locally
+  // Clear all notifications locally + persist cutoff timestamp to Supabase user metadata
   const clearAllNotifications = async () => {
     if (!user) return;
     try {
       const allIds = notifications.map(n => n.id);
-      if (allIds.length === 0) return;
 
-      const newDeletedIds = new Set([...deletedIds, ...allIds]);
-      setDeletedIds(newDeletedIds);
-      await AsyncStorage.setItem(`deleted_notifications_${user.id}`, JSON.stringify([...newDeletedIds]));
-
+      // 1. Update local state immediately
       setNotifications([]);
       setUnreadCount(0);
 
-      // Attempt DB delete silently
-      await supabase
-        .from("notifications")
-        .delete()
-        .in("id", allIds);
+      // 2. Persist deleted IDs to AsyncStorage (fast path, covers this install)
+      const newDeletedIds = new Set([...deletedIds, ...allIds]);
+      setDeletedIds(newDeletedIds);
+      if (allIds.length > 0) {
+        await AsyncStorage.setItem(`deleted_notifications_${user.id}`, JSON.stringify([...newDeletedIds]));
+      }
+
+      // 3. Persist a "cleared_before" timestamp in Supabase user metadata so
+      //    notifications cleared before this moment stay hidden even after reinstall.
+      const clearedAt = new Date().toISOString();
+      await supabase.auth.updateUser({
+        data: { notifications_cleared_at: clearedAt },
+      });
+
+      // 4. Attempt DB delete silently (works if RLS allows it)
+      if (allIds.length > 0) {
+        await supabase
+          .from("notifications")
+          .delete()
+          .in("id", allIds);
+      }
     } catch (err) {
       console.error("Error clearing notifications:", err);
     }
