@@ -23,8 +23,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AdminListSkeleton from "@/components/skeletons/AdminListSkeleton";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Status config ────────────────────────────────────────────────────────────────────
 
 type Filter = "all" | "pending_review" | "approved" | "rejected";
 
@@ -342,12 +343,10 @@ export default function AdminEmployers() {
     return matchesFilter && matchesSearch;
   });
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] items-center justify-center">
-        <ActivityIndicator size="large" color="#0E7490" />
-      </View>
-    );
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
+  if (loading && !refreshing) {
+    return <AdminListSkeleton count={5} showFilterBar={true} />;
   }
 
   const CHIPS: { key: Filter; label: string }[] = [
