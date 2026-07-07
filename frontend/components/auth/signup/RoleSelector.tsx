@@ -14,8 +14,8 @@ export default function RoleSelector({
 
   return (
     <View
+    className="dark:bg-[#141414] bg-gray-100"
       style={{
-        backgroundColor: "#F9FAFB",
         zIndex: 10,
         paddingHorizontal: 24,
         paddingVertical: 8,
