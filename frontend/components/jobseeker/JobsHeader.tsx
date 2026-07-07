@@ -10,7 +10,7 @@ export default function JobsHeader() {
   return (
     <View className="my-2">
       <View className="px-4 mx-4 ">
-        <Text className="font-quicksandBold text-3xl ">{t("jobs:exploreAll")}</Text>
+        <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-200 ">{t("jobs:exploreAll")}</Text>
       </View>
     </View>
   );
