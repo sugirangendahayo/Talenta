@@ -2,11 +2,12 @@
 import InfoAlertModal from "@/components/modal/InfoAlertModal";
 import { useApplyJob } from "@/hooks/useApplyJob";
 import { useJobBookmark } from "@/hooks/useBookmarks";
+import { useSkillMatch } from "@/hooks/useSkillMatch";
 import { supabase } from "@/lib/supabase";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import UserAvatar from "@/components/common/UserAvatar";
 import {
@@ -63,6 +64,14 @@ export default function JobDetailsScreen() {
   const [error, setError]       = useState<string | null>(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [coverLetter, setCoverLetter]       = useState("");
+
+  const { getMatchForJob, hasSkills } = useSkillMatch();
+
+  // Compute skill match — must be before any early return (Rules of Hooks)
+  const skillMatch = useMemo(
+    () => (job && hasSkills ? getMatchForJob(job) : null),
+    [job, hasSkills, getMatchForJob],
+  );
 
   const {
     applying, checkingRequirements, hasApplied,
@@ -192,7 +201,6 @@ export default function JobDetailsScreen() {
     job.employer_profiles?.premium_plan !== "free" &&
     !!job.employer_profiles?.premium_plan;
 
-  // Plain uppercase label — no icon squircle
   const SectionLabel = ({ title }: { title: string }) => (
     <Text className="text-xs font-quicksandBold text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-3">
       {title}
@@ -372,9 +380,118 @@ export default function JobDetailsScreen() {
           )}
         </View>
 
+        {/* ── Your Match ───────────────────────────────────────────────── */}
+        {skillMatch && (
+          <View className="mx-4 mb-4 bg-white dark:bg-[#0e0e0e] rounded-2xl p-4 border border-gray-100 dark:border-[#1f1f1f]">
+            <SectionLabel title={t("jobs:details.yourMatch", { defaultValue: "Your match" })} />
+
+            {/* Score row */}
+            <View className="flex-row items-center mb-4" style={{ gap: 12 }}>
+              {/* Big percentage circle */}
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  borderWidth: 3,
+                  borderColor:
+                    skillMatch.label === "high"
+                      ? "#10B981"
+                      : skillMatch.label === "medium"
+                        ? "#F59E0B"
+                        : skillMatch.label === "low"
+                          ? "#EF4444"
+                          : "#D1D5DB",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Quicksand_700Bold",
+                    fontSize: 16,
+                    color:
+                      skillMatch.label === "high"
+                        ? "#10B981"
+                        : skillMatch.label === "medium"
+                          ? "#F59E0B"
+                          : skillMatch.label === "low"
+                            ? "#EF4444"
+                            : "#9CA3AF",
+                  }}
+                >
+                  {skillMatch.score}%
+                </Text>
+              </View>
+
+              <View className="flex-1">
+                <Text className="font-quicksandBold text-sm text-gray-800 dark:text-gray-200">
+                  {skillMatch.label === "high"
+                    ? t("jobs:details.matchLabels.high", { defaultValue: "Strong match" })
+                    : skillMatch.label === "medium"
+                      ? t("jobs:details.matchLabels.medium", { defaultValue: "Partial match" })
+                      : skillMatch.label === "low"
+                        ? t("jobs:details.matchLabels.low", { defaultValue: "Low match" })
+                        : t("jobs:details.matchLabels.none", { defaultValue: "No match" })}
+                </Text>
+                <Text className="font-quicksandMedium text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-4">
+                  {skillMatch.summary}
+                </Text>
+              </View>
+            </View>
+
+            {/* Matched skills */}
+            {skillMatch.matchedSkills.length > 0 && (
+              <View className="mb-3">
+                <Text className="font-quicksandBold text-[11px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-2">
+                  {t("jobs:details.matchedSkills", { defaultValue: "Matched skills" })}
+                </Text>
+                <View className="flex-row flex-wrap" style={{ gap: 6 }}>
+                  {skillMatch.matchedSkills.map((skill, i) => (
+                    <View
+                      key={i}
+                      className="flex-row items-center bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900 px-3 py-1.5 rounded-full"
+                      style={{ gap: 4 }}
+                    >
+                      <Ionicons name="checkmark-circle" size={11} color="#059669" />
+                      <Text className="font-quicksandMedium text-xs text-emerald-700 dark:text-emerald-300">
+                        {skill}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Missing skills */}
+            {skillMatch.missingSkills.length > 0 && (
+              <View>
+                <Text className="font-quicksandBold text-[11px] text-red-500 dark:text-red-400 uppercase tracking-wide mb-2">
+                  {t("jobs:details.missingSkills", { defaultValue: "Skills to develop" })}
+                </Text>
+                <View className="flex-row flex-wrap" style={{ gap: 6 }}>
+                  {skillMatch.missingSkills.map((skill, i) => (
+                    <View
+                      key={i}
+                      className="flex-row items-center bg-red-50 dark:bg-red-950 border border-red-100 dark:border-red-900 px-3 py-1.5 rounded-full"
+                      style={{ gap: 4 }}
+                    >
+                      <Ionicons name="close-circle" size={11} color="#EF4444" />
+                      <Text className="font-quicksandMedium text-xs text-red-600 dark:text-red-300">
+                        {skill}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* ── Overview table ───────────────────────────────────────────── */}
         <View className="mx-4 mb-4 bg-white dark:bg-[#0e0e0e] rounded-2xl px-4 pt-4 pb-1 border border-gray-100 dark:border-[#1f1f1f]">
           <SectionLabel title={t("jobs:details.overview", { defaultValue: "Overview" })} />
+
           {[
             { label: t("jobs:details.overviewLabels.posted",   { defaultValue: "Posted" }),   value: timeAgo },
             { label: t("jobs:details.overviewLabels.category", { defaultValue: "Category" }), value: categoryDisplay },
