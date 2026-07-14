@@ -11,6 +11,8 @@ export interface ApplicationJobSummary {
   salary_min: number;
   salary_max: number;
   job_type: string;
+  skills_required?: string[] | null;
+  employer_id?: string;
   employer_profiles: {
     company_name: string;
     business_verification_status?: string;
