@@ -2,9 +2,11 @@
 import { CompactJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 import { useAppliedSet, useBookmarksList } from "@/hooks/useBookmarks";
+import { useSkillMatch } from "@/hooks/useSkillMatch";
+import SkillMatchBadge from "@/components/common/SkillMatchBadge";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -27,6 +29,7 @@ export default function SavedJobsScreen() {
   const { bookmarks, loading, refreshing, refresh, removeBookmark } =
     useBookmarksList();
   const { appliedIds } = useAppliedSet();
+  const { getMatchForJob, hasSkills } = useSkillMatch();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   const formatSalary = (min: number, max: number) => {
@@ -90,12 +93,23 @@ export default function SavedJobsScreen() {
     ]);
   };
 
-  const filteredBookmarks = bookmarks.filter((b) => {
-    const isApplied = appliedIds.has(b.job_id);
-    if (activeFilter === "applied") return isApplied;
-    if (activeFilter === "not_applied") return !isApplied;
-    return true;
-  });
+  const filteredBookmarks = useMemo(() => {
+    const filtered = bookmarks.filter((b) => {
+      const isApplied = appliedIds.has(b.job_id);
+      if (activeFilter === "applied") return isApplied;
+      if (activeFilter === "not_applied") return !isApplied;
+      return true;
+    });
+
+    if (!hasSkills) return filtered;
+
+    // Stable sort by descending skill-match score
+    return [...filtered].sort((a, b) => {
+      const scoreA = getMatchForJob({ id: a.job_id, skills_required: a.jobs?.skills_required }).score;
+      const scoreB = getMatchForJob({ id: b.job_id, skills_required: b.jobs?.skills_required }).score;
+      return scoreB - scoreA;
+    });
+  }, [bookmarks, appliedIds, activeFilter, hasSkills, getMatchForJob]);
   const PREVIEW_COUNT = 4;
   // ─── Loading state ────────────────────────────────────────────────────────
   if (loading) {
@@ -380,6 +394,11 @@ export default function SavedJobsScreen() {
                         Saved {savedAgo}
                       </Text>
                     </View>
+
+                    {/* Skill match badge */}
+                    <SkillMatchBadge
+                      match={hasSkills ? getMatchForJob({ id: item.job_id, skills_required: job.skills_required }) : null}
+                    />
                   </View>
 
                   {/* ── Footer: salary + CTA ── */}
