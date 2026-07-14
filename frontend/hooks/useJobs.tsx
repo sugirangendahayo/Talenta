@@ -30,11 +30,6 @@ interface UseJobsOptions {
   category?: string;
   searchQuery?: string;
   pageSize?: number;
-  recommended?: boolean; // NEW: For personalized recommendations
-  userProfile?: {
-    skills?: string[];
-    experience_level?: string;
-  };
   filters?: {
     jobType?: string;
     experienceLevel?: string;
@@ -46,8 +41,6 @@ export function useJobs(options: UseJobsOptions = {}) {
     category = "all",
     searchQuery = "",
     pageSize = 10,
-    recommended = false,
-    userProfile,
     filters,
   } = options;
 
@@ -59,60 +52,6 @@ export function useJobs(options: UseJobsOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [newJobsCount, setNewJobsCount] = useState(0);
   const lastFetchedAt = useRef<string | null>(null);
-
-  // Smart recommendation algorithm
-  const recommendJobs = useCallback(
-    (jobs: Job[], profile: typeof userProfile) => {
-      if (!profile) return jobs;
-
-      const scoredJobs = jobs.map((job) => {
-        let score = 0;
-
-        // Score based on matching skills (highest priority)
-        if (
-          profile.skills &&
-          profile.skills.length > 0 &&
-          job.skills_required
-        ) {
-          const userSkillsLower = profile.skills.map((s) => s.toLowerCase());
-          const jobSkillsLower = job.skills_required.map((s) =>
-            s.toLowerCase(),
-          );
-
-          const matchingSkills = userSkillsLower.filter((skill) =>
-            jobSkillsLower.some((jobSkill) => jobSkill.includes(skill)),
-          );
-
-          score += matchingSkills.length * 10; // 10 points per matching skill
-        }
-
-        // Score based on experience level match
-        if (
-          profile.experience_level &&
-          job.experience_level &&
-          profile.experience_level.toLowerCase() ===
-            job.experience_level.toLowerCase()
-        ) {
-          score += 5; // 5 points for matching experience
-        }
-
-        return { ...job, _score: score };
-      });
-
-      // Sort by score (highest first), then by created_at
-      return scoredJobs
-        .sort((a, b) => {
-          if (b._score !== a._score) {
-            return b._score - a._score;
-          }
-          return (
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-        })
-        .map(({ _score, ...job }) => job); // Remove score from final result
-    },
-    [],
-  );
 
   // Fetch jobs with cursor pagination
   const fetchJobs = useCallback(
@@ -181,11 +120,6 @@ export function useJobs(options: UseJobsOptions = {}) {
 
         let fetchedJobs = data || [];
 
-        // Apply recommendation logic if enabled
-        if (recommended && userProfile && !searchQuery && category === "all") {
-          fetchedJobs = recommendJobs(fetchedJobs, userProfile);
-        }
-
         if (isRefresh) {
           setJobs(fetchedJobs);
           setNewJobsCount(0);
@@ -211,7 +145,7 @@ export function useJobs(options: UseJobsOptions = {}) {
         setLoadingMore(false);
       }
     },
-    [category, searchQuery, pageSize, recommended, userProfile, filters, recommendJobs],
+    [category, searchQuery, pageSize, filters],
   );
 
   // Check for new jobs
