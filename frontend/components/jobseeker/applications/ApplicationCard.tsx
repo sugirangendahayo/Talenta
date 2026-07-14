@@ -11,6 +11,8 @@ import { useRouter } from "expo-router";
 import { formatSalaryRange, getRelativeTimeLabel } from "../../../app/utils/formatters";
 import type { JobApplication } from "@/types/appication";
 import UserAvatar from "@/components/common/UserAvatar";
+import SkillMatchBadge from "@/components/common/SkillMatchBadge";
+import { useSkillMatch } from "@/hooks/useSkillMatch";
 
 interface ApplicationCardProps {
   application: JobApplication;
@@ -25,6 +27,7 @@ function ApplicationCard({
 }: ApplicationCardProps) {
   const { t } = useTranslation("jobs");
   const router = useRouter();
+  const { getMatchForJob, hasSkills } = useSkillMatch();
 
   const status =
     APPLICATION_STATUS_META[application.status] ?? DEFAULT_STATUS_META;
@@ -41,6 +44,12 @@ function ApplicationCard({
     application.jobs.employer_profiles.business_verification_status === "approved" &&
     application.jobs.employer_profiles.premium_plan !== "free" &&
     !!application.jobs.employer_profiles.premium_plan;
+
+  // Compute skill match using the job's skills_required (now included in the query)
+  const match = getMatchForJob({
+    id: application.job_id,
+    skills_required: application.jobs.skills_required,
+  });
 
   return (
     <TouchableOpacity
@@ -124,20 +133,26 @@ function ApplicationCard({
           </View>
         </View>
 
-        {/* Where + what it pays — plain text, no decorative color blocks */}
-        <View className="flex-row items-center mt-3">
-          <Ionicons name="location-outline" size={14} color="#9CA3AF" />
-          <Text
-            className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs ml-1 flex-shrink"
-            numberOfLines={1}
-          >
-            {application.jobs.location}
-          </Text>
-          <Text className="text-gray-300 mx-2">•</Text>
-          <Ionicons name="cash-outline" size={14} color="#9CA3AF" />
-          <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs ml-1">
-            {salaryRange}
-          </Text>
+        {/* Where + what it pays + skill match badge */}
+        <View className="flex-row items-center flex-wrap mt-3" style={{ gap: 6 }}>
+          <View className="flex-row items-center">
+            <Ionicons name="location-outline" size={14} color="#9CA3AF" />
+            <Text
+              className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs ml-1 flex-shrink"
+              numberOfLines={1}
+            >
+              {application.jobs.location}
+            </Text>
+          </View>
+          <Text className="text-gray-300">•</Text>
+          <View className="flex-row items-center">
+            <Ionicons name="cash-outline" size={14} color="#9CA3AF" />
+            <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs ml-1">
+              {salaryRange}
+            </Text>
+          </View>
+          {/* Skill match badge */}
+          <SkillMatchBadge match={hasSkills ? match : null} />
         </View>
 
         {/* Applied date, plus the one action that's actually relevant here */}
