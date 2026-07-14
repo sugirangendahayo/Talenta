@@ -20,6 +20,7 @@ export interface Application {
     salary_max: number;
     job_type: string;
     category: string;
+    skills_required?: string[] | null;
     // Joined employer data
     employer_profiles: {
       company_name: string;
@@ -82,6 +83,7 @@ export function useApplications(options: UseApplicationsOptions = {}) {
               salary_max,
               job_type,
               category,
+              skills_required,
               employer_profiles!inner(
                 company_name,
                 email,
