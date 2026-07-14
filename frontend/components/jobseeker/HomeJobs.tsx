@@ -1,13 +1,14 @@
 // components/jobseeker/HomeJobs.tsx
 import { useJobs } from "@/hooks/useJobs";
+import { useSkillMatch } from "@/hooks/useSkillMatch";
 import { useBookmarkSet, useAppliedSet } from "@/hooks/useBookmarks";
-import { supabase } from "@/lib/supabase";
 import { CompactJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
+import SkillMatchBadge from "@/components/common/SkillMatchBadge";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { toast } from "sonner-native";
 import { useTranslation } from "react-i18next";
@@ -18,58 +19,27 @@ interface HomeJobsProps {
   searchQuery: string;
 }
 
-interface UserProfile {
-  skills?: string[];
-  experience_level?: string;
-}
-
 const PREVIEW_COUNT = 4;
 
 const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) => {
   const router = useRouter();
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
   const { t } = useTranslation(["home", "jobs"]);
+
+  // ─── Skill matching (reads from AuthContext — no extra DB call) ────────────
+  const { getMatchForJob, sortJobsByMatch, hasSkills } = useSkillMatch();
 
   // ─── Bookmark & applied state ─────────────────────────────────────────────
   const { bookmarkedIds, toggleInSet } = useBookmarkSet();
   const { appliedIds } = useAppliedSet();
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from("jobseeker_profiles")
-            .select("skills, experience_level")
-            .eq("id", user.id)
-            .single();
-          if (profile) {
-            setUserProfile({
-              skills: profile.skills || [],
-              experience_level: profile.experience_level || "",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      } finally {
-        setProfileLoading(false);
-      }
-    };
-    fetchUserProfile();
-  }, []);
-
   const { jobs, loading, newJobsCount, loadNewJobs } = useJobs({
     category: selectedCategory,
     searchQuery,
     pageSize: PREVIEW_COUNT,
-    recommended: true,
-    userProfile: userProfile || undefined,
   });
+
+  // Sort jobs by skill-match score (best first). Stable, memoised.
+  const sortedJobs = useMemo(() => sortJobsByMatch(jobs), [jobs, sortJobsByMatch]);
 
   const handleJobPress = (jobId: string) => {
     router.push({ pathname: "/jobseekers/job-details/[id]", params: { id: jobId } });
@@ -94,17 +64,11 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
   };
 
   const isRecommending =
-    userProfile &&
+    hasSkills &&
     !searchQuery &&
-    selectedCategory === "all" &&
-    userProfile.skills &&
-    userProfile.skills.length > 0;
+    selectedCategory === "all";
 
   // ─── Section header ───────────────────────────────────────────────────────
-  // `flex-1` + numberOfLines on the title column lets it truncate instead of
-  // colliding with "View All" once translated strings run longer than English.
-  // `flex-shrink-0` on the link keeps its icon+label glued together instead of
-  // wrapping awkwardly when space gets tight.
   const SectionHeader = () => (
     <View className="flex-row items-start justify-between px-6 mb-4 gap-3">
       <View className="flex-1">
@@ -136,7 +100,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
     </View>
   );
 
-  if (loading || profileLoading) {
+  if (loading) {
     return (
       <View className="mb-6">
         <SectionHeader />
@@ -169,7 +133,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
       )}
 
       {/* Job Cards */}
-      {jobs.length === 0 ? (
+      {sortedJobs.length === 0 ? (
         <View className="items-center py-12 px-8">
           <Ionicons name="search-outline" size={48} color="#D1D5DB" />
           <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm mt-3 text-center">
@@ -178,7 +142,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
         </View>
       ) : (
         <View className="gap-3 px-6">
-          {jobs.slice(0, PREVIEW_COUNT).map((item: any) => {
+          {sortedJobs.slice(0, PREVIEW_COUNT).map((item: any) => {
             const companyName = item.employer_profiles?.company_name || "Company";
             const salary = formatSalary(item.salary_min, item.salary_max);
             const timeAgo = getTimeAgo(item.created_at);
@@ -191,6 +155,9 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
               item.employer_profiles?.business_verification_status === "approved" &&
               item.employer_profiles?.premium_plan !== "free" &&
               !!item.employer_profiles?.premium_plan;
+
+            // Compute match score for this job
+            const match = getMatchForJob(item);
 
             return (
               <TouchableOpacity
@@ -235,11 +202,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                     </View>
                   </TouchableOpacity>
 
-                  {/* ── Bookmark button ──────────────────────────────────────
-                      Fixed 40x40 tap area (was icon + p-2, ~32px — under the
-                      44pt minimum) plus generous hitSlop, so an imprecise tap
-                      reliably lands on the button instead of falling through
-                      to the card's own onPress underneath it. */}
+                  {/* Bookmark button */}
                   <TouchableOpacity
                     onPress={async () => {
                       const wasSaved = bookmarkedIds.has(item.id);
@@ -271,7 +234,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                   </TouchableOpacity>
                 </View>
 
-                {/* Tags row */}
+                {/* Tags row — includes skill match badge */}
                 <View className="flex-row flex-wrap gap-2 mb-3">
                   {jobTypes.slice(0, 2).map((type: string, index: number) => (
                     <View key={index} className="bg-gray-100 dark:bg-[#141414] px-3 py-1 rounded-full">
@@ -281,17 +244,14 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                   <View className="bg-gray-50 dark:bg-[#080A08] px-3 py-1 rounded-full border border-gray-100 dark:border-[#222]">
                     <Text className="text-gray-400 text-xs font-quicksandMedium">{timeAgo}</Text>
                   </View>
+                  {/* Skill match badge */}
+                  <SkillMatchBadge match={hasSkills ? match : null} />
                 </View>
 
                 {/* Footer */}
                 <View className="flex-row items-center justify-between pt-3 border-t border-gray-100 dark:border-[#222]">
                   <Text className="text-cyan-700 text-sm font-quicksandBold">{salary}</Text>
 
-                  {/* ── Applied vs Apply ──────────────────────────────────────
-                      Applied is a plain, non-pressable badge (nothing to
-                      misfire). Apply got the same hitSlop + fixed vertical
-                      padding treatment as the bookmark button, and the
-                      "Applied" label is now translated instead of hardcoded. */}
                   {isApplied ? (
                     <View
                       accessible
@@ -325,7 +285,7 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
       )}
 
       {/* View All */}
-      {jobs.length > 0 && (
+      {sortedJobs.length > 0 && (
         <TouchableOpacity
           onPress={handleViewAll}
           className="mx-6 mt-4 bg-gray-50 dark:bg-[#080A08] rounded-2xl p-4 flex-row items-center justify-center gap-2"
