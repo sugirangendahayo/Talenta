@@ -144,7 +144,7 @@ function RootLayoutNav() {
         {/* if background is black let's use the  the white background image of talenta otherwise we use that android-icon-foreground.png */}
         {APP_BACKGROUND === "#080A08" ? (
           <Image
-            source={require("../assets/images/android-icon-background.png")}
+            source={require("../assets/images/android-icon-foreground-white.png")}
             style={{
               width: 120,
               height: 120,
