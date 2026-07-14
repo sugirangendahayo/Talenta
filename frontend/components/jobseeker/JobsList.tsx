@@ -1,14 +1,15 @@
 // components/jobseeker/JobsList.tsx
 import { useJobs } from "@/hooks/useJobs";
+import { useSkillMatch } from "@/hooks/useSkillMatch";
 import { useBookmarkSet, useAppliedSet } from "@/hooks/useBookmarks";
 import { FullJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
+import SkillMatchBadge from "@/components/common/SkillMatchBadge";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-// import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
 import UserAvatar from "@/components/common/UserAvatar";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -70,9 +71,10 @@ const JobsList: React.FC<JobsListProps> = ({
   const router = useRouter();
   const { t } = useTranslation(["home", "jobs"]);
 
+  // ─── Skill matching ─────────────────────────────────────────────────────────
+  const { getMatchForJob, sortJobsByMatch, hasSkills } = useSkillMatch();
+
   // ─── Shared bookmark & applied state ───────────────────────────────────────
-  // Same hooks HomeJobs.tsx uses, so a bookmark made here, on Home, or on the
-  // job details screen all read from the same source of truth and never drift.
   const { bookmarkedIds, toggleInSet } = useBookmarkSet();
   const { appliedIds } = useAppliedSet();
 
@@ -91,9 +93,11 @@ const JobsList: React.FC<JobsListProps> = ({
     category: selectedCategory,
     searchQuery: searchQuery,
     pageSize: 10,
-    recommended: false,
     filters,
   });
+
+  // Sort jobs by skill-match score (best first). Memoised to avoid re-sort on unrelated renders.
+  const sortedJobs = useMemo(() => sortJobsByMatch(jobs), [jobs, sortJobsByMatch]);
 
   const handleJobPress = (jobId: string) => {
     router.push({
@@ -135,6 +139,9 @@ const JobsList: React.FC<JobsListProps> = ({
       item.employer_profiles?.business_verification_status === "approved" &&
       item.employer_profiles?.premium_plan !== "free" &&
       !!item.employer_profiles?.premium_plan;
+
+    // Compute skill match for this job
+    const match = getMatchForJob(item);
 
     return (
       <TouchableOpacity
@@ -232,6 +239,8 @@ const JobsList: React.FC<JobsListProps> = ({
           <View className="bg-gray-50 dark:bg-[#080A08] px-3 py-1.5 rounded-full border border-gray-100 dark:border-[#222]">
             <Text className="text-gray-400 text-xs font-quicksandMedium">{timeAgo}</Text>
           </View>
+          {/* Skill match badge */}
+          <SkillMatchBadge match={hasSkills ? match : null} />
         </View>
 
         {/* Description preview — separated from the time-ago label instead of
@@ -347,7 +356,7 @@ const JobsList: React.FC<JobsListProps> = ({
   return (
     <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <FlatList
-        data={jobs}
+        data={sortedJobs}
         renderItem={renderJobItem}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
