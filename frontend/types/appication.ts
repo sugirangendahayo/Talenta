@@ -15,6 +15,7 @@ export interface ApplicationJobSummary {
   employer_id?: string;
   employer_profiles: {
     company_name: string;
+    company_username: string;
     business_verification_status?: string;
     premium_plan?: string;
     profile_image_url?: string | null;
