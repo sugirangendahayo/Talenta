@@ -94,7 +94,7 @@ export default function ApplicantCard({
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
 
   const profile       = applicant.jobseeker_profiles;
-  const candidateName = `${profile.first_name} ${profile.last_name}`;
+  const candidateName = profile.full_name || "Unknown";
   const phone         = profile.phone;
   const email         = profile.email;
   const cfg           = STATUS_CONFIG[applicant.status];
@@ -221,6 +221,15 @@ const handleViewDetails = () =>
               >
                 {candidateName}
               </Text>
+              {/* @username */}
+              {profile.username ? (
+                <Text
+                  className="text-xs font-quicksandSemibold text-cyan-600 dark:text-cyan-400 mt-0"
+                  numberOfLines={1}
+                >
+                  @{profile.username}
+                </Text>
+              ) : null}
               <Text
                 className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
                 numberOfLines={1}
