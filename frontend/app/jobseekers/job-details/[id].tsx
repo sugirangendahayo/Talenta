@@ -629,8 +629,13 @@ export default function JobDetailsScreen() {
                   <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 flex-1">
                     {t("jobs:details.applyingAs", { defaultValue: "Applying as" })}{" "}
                     <Text className="font-quicksandBold text-gray-700 dark:text-gray-300">
-                      {profile.first_name} {profile.last_name}
+                      {profile.full_name}
                     </Text>
+                    {(profile as any).username ? (
+                      <Text className="font-quicksandSemibold text-cyan-600 dark:text-cyan-400">
+                        {" "}@{(profile as any).username}
+                      </Text>
+                    ) : null}
                   </Text>
                 </View>
               )}
