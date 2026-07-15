@@ -413,7 +413,7 @@ export default function AdminDashboard() {
             })}
             icon={<Ionicons name="people-outline" size={15} color="#6B7280" />}
             rows={activity!.recentJobseekers.map((js: AdminJobseeker) => ({
-              primary: `${js.first_name} ${js.last_name}`,
+              primary: js.full_name || `${(js as any).first_name || ""} ${(js as any).last_name || ""}`.trim() || "Unknown",
               secondary: js.email,
               date: js.created_at,
               imageUrl: js.profile_image_url,
