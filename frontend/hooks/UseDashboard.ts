@@ -139,8 +139,7 @@ export function useDashboard() {
           status,
           created_at,
           jobseeker_profiles!inner(
-            first_name,
-            last_name,
+            full_name,
             skills,
             experience_level
           ),
@@ -163,9 +162,7 @@ export function useDashboard() {
         const matchScore = calculateMatchScore(app);
         const isNew = new Date().getTime() - new Date(app.created_at).getTime() < 24 * 60 * 60 * 1000; // Last 24 hours
 
-        const firstName = app.jobseeker_profiles?.first_name || "";
-        const lastName = app.jobseeker_profiles?.last_name || "";
-        const fullName = `${firstName} ${lastName}`.trim() || "Unknown";
+        const fullName = app.jobseeker_profiles?.full_name?.trim() || "Unknown";
 
         return {
           id: app.id,
@@ -241,8 +238,7 @@ export function useDashboard() {
           status,
           updated_at,
           jobseeker_profiles!inner(
-            first_name,
-            last_name,
+            full_name,
             phone,
             email,
             profile_image_url
@@ -260,9 +256,7 @@ export function useDashboard() {
       if (fetchError) throw fetchError;
 
       const contacts = (data || []).map((app: any) => {
-        const firstName = app.jobseeker_profiles?.first_name || "";
-        const lastName = app.jobseeker_profiles?.last_name || "";
-        const fullName = `${firstName} ${lastName}`.trim() || "Unknown";
+        const fullName = app.jobseeker_profiles?.full_name?.trim() || "Unknown";
 
         return {
           id: app.id,
