@@ -3,8 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 
 export interface ProfileFormData {
-  first_name: string;
-  last_name: string;
+  full_name: string;
+  username: string;
   email: string;
   phone: string;
   date_of_birth: string; // YYYY-MM-DD format
@@ -23,8 +23,8 @@ export interface ProfileCompletionStatus {
 }
 
 const REQUIRED_FIELDS = [
-  { key: "first_name", label: "First Name", weight: 10 },
-  { key: "last_name", label: "Last Name", weight: 10 },
+  { key: "full_name", label: "Full Name", weight: 10 },
+  { key: "username", label: "Username", weight: 10 },
   { key: "email", label: "Email", weight: 10 },
   { key: "phone", label: "Phone Number", weight: 10 },
   { key: "date_of_birth", label: "Date of Birth", weight: 10 },
@@ -67,8 +67,8 @@ export function useProfileCompletion() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
-    first_name: "",
-    last_name: "",
+    full_name: "",
+    username: "",
     email: "",
     phone: "",
     date_of_birth: "",
@@ -127,8 +127,8 @@ export function useProfileCompletion() {
 
       if (data) {
         setFormData({
-          first_name: data.first_name || "",
-          last_name: data.last_name || "",
+          full_name: data.full_name || "",
+          username: data.username || "",
           email: data.email || "",
           phone: data.phone || "",
           date_of_birth: data.date_of_birth || "",
@@ -200,6 +200,8 @@ export function useProfileCompletion() {
 
       const updateData = {
         ...formData,
+        // Normalise username to lowercase before saving
+        username: formData.username.trim().toLowerCase(),
         profile_completed: latestStatus.isComplete,
       };
 
