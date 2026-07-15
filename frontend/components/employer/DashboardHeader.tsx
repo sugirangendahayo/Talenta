@@ -31,6 +31,11 @@ export default function DashboardHeader() {
       ? (profile as EmployerProfile).company_name || "There"
       : "There";
 
+  const companyUsername =
+    role === "employer" && profile
+      ? (profile as EmployerProfile).company_username
+      : undefined;
+
   const profileImageUrl =
     role === "employer" && profile
       ? (profile as EmployerProfile).profile_image_url
@@ -63,6 +68,12 @@ export default function DashboardHeader() {
                 />
               )}
             </View>
+            {/* @company_username handle */}
+            {companyUsername ? (
+              <Text className="text-xs font-quicksandSemibold text-cyan-600 dark:text-cyan-400">
+                @{companyUsername}
+              </Text>
+            ) : null}
           </View>
         </View>
 
