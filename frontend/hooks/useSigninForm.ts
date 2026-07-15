@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 import { useTranslation } from "react-i18next";
@@ -13,6 +13,15 @@ export default function useSigninForm() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const handleInputChange = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -37,7 +46,6 @@ export default function useSigninForm() {
     // Validate form
     const validation = validateForm();
     if (!validation.valid) {
-      
       toast.error(validation.message);
       return;
     }
@@ -71,23 +79,16 @@ export default function useSigninForm() {
         throw new Error(t("messages.profileNotFound"));
       }
 
-      // 3. Navigate based on role
-      const role = profileData.role;
-
-         toast.success(t("messages.signInSuccess"), {
-               duration: 2000,
-             });
-             
-        // Navigation is handled globally by RootLayoutNav in app/_layout.tsx
-        // when AuthContext updates the user and role.
-  
+      // 3. Navigation happens via RootLayoutNav automatically when AuthContext updates
+      toast.success(t("messages.signInSuccess"), {
+        duration: 2000,
+      });
+      
     } catch (error: any) {
       console.error("Signin error:", error);
-      // ... rest of the error handling
 
       let errorMessage = t("messages.signInError");
 
-      // Handle specific error cases
       if (error.message.includes("Invalid login credentials")) {
         errorMessage = t("messages.invalidCredentials");
       } else if (error.message.includes("Email not confirmed")) {
@@ -96,12 +97,13 @@ export default function useSigninForm() {
         errorMessage = error.message;
       }
 
-      
-        toast.error(errorMessage, {
-          duration: 3000,
-        });
+      toast.error(errorMessage, {
+        duration: 3000,
+      });
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   };
 
