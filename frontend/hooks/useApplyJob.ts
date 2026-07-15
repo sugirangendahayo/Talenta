@@ -5,8 +5,8 @@ import { usePushNotification } from "@/hooks/usePushNotification";
 
 export interface JobseekerProfile {
   id: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
+  username: string;
   email: string;
   phone: string | null;
   date_of_birth: string | null;
@@ -193,9 +193,7 @@ export function useApplyJob() {
             .single();
 
           if (jobData?.employer_id) {
-            const applicantName = profile
-              ? `${profile.first_name} ${profile.last_name}`.trim()
-              : "A candidate";
+            const applicantName = profile?.full_name?.trim() || "A candidate";
 
             await sendPushToUser({
               recipientUserId: jobData.employer_id,
