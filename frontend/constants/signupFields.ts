@@ -4,16 +4,17 @@
 
 export const jobSeekerSignupFields = [
   {
-    key: "firstName",
-    label: "First Name",
-    placeholder: "Enter your first name",
+    key: "fullName",
+    label: "Full Name",
+    placeholder: "Enter your full name",
     icon: "person",
   },
   {
-    key: "lastName",
-    label: "Last Name",
-    placeholder: "Enter your last name",
-    icon: "person",
+    key: "username",
+    label: "Username",
+    placeholder: "username",
+    icon: "at",
+    type: "username",
   },
   {
     key: "email",
@@ -25,12 +26,10 @@ export const jobSeekerSignupFields = [
   {
     key: "password",
     label: "Password",
-    placeholder: "Create a password ",
+    placeholder: "Create a password",
     icon: "lock",
     secureTextEntry: true,
   },
- 
- 
 ];
 
 export const employerSignupFields = [
@@ -39,6 +38,13 @@ export const employerSignupFields = [
     label: "Company Name",
     placeholder: "Enter your company name",
     icon: "business",
+  },
+  {
+    key: "companyUsername",
+    label: "Company Username",
+    placeholder: "companyhandle",
+    icon: "at",
+    type: "username",
   },
   {
     key: "email",
@@ -54,7 +60,6 @@ export const employerSignupFields = [
     icon: "lock",
     secureTextEntry: true,
   },
- 
   {
     key: "website",
     label: "Company Website (Optional)",
@@ -62,7 +67,6 @@ export const employerSignupFields = [
     icon: "language",
     keyboardType: "url",
   },
-
 ];
 
 // =============================================
