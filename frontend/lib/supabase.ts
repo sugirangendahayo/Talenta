@@ -179,8 +179,8 @@ export interface Profile {
 
 export interface JobseekerProfile {
   id: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
+  username: string;
   email: string;
   phone?: string;
   date_of_birth?: string;
@@ -204,6 +204,7 @@ export interface JobseekerProfile {
 export interface EmployerProfile {
   id: string;
   company_name: string;
+  company_username: string;
   email: string;
   phone?: string;
   company_website?: string;
