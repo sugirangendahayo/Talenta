@@ -51,8 +51,8 @@ export default function JobseekerProfile() {
   const calculateCompletion = useCallback(() => {
     if (!jobseekerData) return;
     const fields = [
-      jobseekerData.first_name,
-      jobseekerData.last_name,
+      jobseekerData.full_name,
+      jobseekerData.username,
       jobseekerData.email,
       jobseekerData.phone,
       jobseekerData.date_of_birth,
@@ -283,10 +283,7 @@ export default function JobseekerProfile() {
             <View className="relative">
               <UserAvatar
                 imageUrl={jobseekerData?.profile_image_url}
-                name={
-                  `${jobseekerData?.first_name || ""} ${jobseekerData?.last_name || ""}`.trim() ||
-                  "JS"
-                }
+                name={jobseekerData?.full_name || "JS"}
                 size={56}
               />
               <TouchableOpacity
@@ -306,18 +303,22 @@ export default function JobseekerProfile() {
               </TouchableOpacity>
             </View>
 
-            {/* Name / email / status */}
+            {/* Name / username / email / status */}
             <View className="ml-3 flex-1">
               <View className="flex-row items-center gap-1.5">
                 <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
-                  {jobseekerData?.first_name && jobseekerData?.last_name
-                    ? `${jobseekerData.first_name} ${jobseekerData.last_name}`
-                    : "Your Name"}
+                  {jobseekerData?.full_name || "Your Name"}
                 </Text>
                 {jobseekerData?.premium_plan === "professional" && (
                   <MaterialIcons name="verified" size={14} color="#6B7280" />
                 )}
               </View>
+              {/* @username handle */}
+              {jobseekerData?.username ? (
+                <Text className="text-cyan-600 dark:text-cyan-400 font-quicksandSemibold text-xs mt-0.5">
+                  @{jobseekerData.username}
+                </Text>
+              ) : null}
               <Text
                 className="text-gray-400 font-quicksandMedium text-xs mt-0.5"
                 numberOfLines={1}
