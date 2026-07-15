@@ -25,7 +25,11 @@ export default function Signup() {
     formData,
     isLoading,
     getCurrentStepFields,
+    getUsernameTable,
+    getUsernameColumn,
+    getUsernameFullName,
     handleInputChange,
+    handleUsernameStatusChange,
     handleSignup,
   } = useSignupForm();
 
@@ -48,8 +52,12 @@ export default function Signup() {
           fields={getCurrentStepFields()}
           formData={formData}
           onInputChange={handleInputChange}
-          onToggleSkill={() => {}} // Not needed for signup
-          onFileUpload={() => {}} // Not needed for signup
+          onToggleSkill={() => {}}
+          onFileUpload={() => {}}
+          usernameTable={getUsernameTable()}
+          usernameColumn={getUsernameColumn()}
+          usernameFullName={getUsernameFullName()}
+          onUsernameStatusChange={handleUsernameStatusChange}
         />
 
         {/* Create Account Button */}
