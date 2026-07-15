@@ -59,7 +59,7 @@ function JobseekerCard({ jobseeker }: { jobseeker: AdminJobseeker }) {
           >
             <UserAvatar
               imageUrl={jobseeker.profile_image_url}
-              name={`${jobseeker.first_name} ${jobseeker.last_name}`}
+              name={jobseeker.full_name || "JS"}
               size={40}
               style={{ marginRight: 10, marginTop: 2 }}
             />
@@ -68,8 +68,16 @@ function JobseekerCard({ jobseeker }: { jobseeker: AdminJobseeker }) {
                 className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
                 numberOfLines={1}
               >
-                {jobseeker.first_name} {jobseeker.last_name}
+                {jobseeker.full_name || "Unknown"}
               </Text>
+              {jobseeker.username ? (
+                <Text
+                  className="text-xs font-quicksandSemibold text-cyan-600 dark:text-cyan-400"
+                  numberOfLines={1}
+                >
+                  @{jobseeker.username}
+                </Text>
+              ) : null}
               <Text
                 className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
                 numberOfLines={1}
@@ -288,9 +296,8 @@ export default function AdminJobseekers() {
     const matchesSearch =
       search.trim() === ""
         ? true
-        : `${js.first_name || ""} ${js.last_name || ""}`
-            .toLowerCase()
-            .includes(search.toLowerCase()) ||
+        : (js.full_name || "").toLowerCase().includes(search.toLowerCase()) ||
+          (js.username || "").toLowerCase().includes(search.toLowerCase()) ||
           (js.email || "").toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
