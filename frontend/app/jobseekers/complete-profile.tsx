@@ -22,6 +22,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import { useProfileImage } from "@/hooks/useProfileImage";
 import UserAvatar from "@/components/common/UserAvatar";
+import UsernameInput from "@/components/common/UsernameInput";
+import type { UsernameStatus } from "@/components/common/UsernameInput";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -357,8 +359,8 @@ function ErrorText({ message }: { message?: string }) {
 
 // ─── Required fields definition ───────────────────────────────────────────────
 const FORM_REQUIRED = [
-  "first_name",
-  "last_name",
+  "full_name",
+  "username",
   "phone",
   "date_of_birth",
   "gender",
@@ -388,6 +390,7 @@ export default function CompleteProfileScreen() {
   } = useProfileCompletion();
 
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+  const [usernameStatus, setUsernameStatus] = useState<UsernameStatus>("idle");
 
   // Sync localImageUrl from hook when it changes (initial DB load)
   useEffect(() => {
@@ -426,8 +429,9 @@ export default function CompleteProfileScreen() {
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!formData.first_name.trim()) newErrors.first_name = "First name is required";
-    if (!formData.last_name.trim()) newErrors.last_name = "Last name is required";
+    if (!formData.full_name.trim()) newErrors.full_name = "Full name is required";
+    if (!formData.username.trim()) newErrors.username = "Username is required";
+    if (usernameStatus === "taken" || usernameStatus === "invalid") newErrors.username = "Please choose an available username";
     if (!formData.phone || formData.phone.length < 8) newErrors.phone = "Valid phone number is required";
     if (!formData.date_of_birth) newErrors.date_of_birth = "Date of birth is required";
     if (!formData.gender) newErrors.gender = "Please select your gender";
@@ -529,7 +533,7 @@ export default function CompleteProfileScreen() {
           <View className="relative">
             <UserAvatar
               imageUrl={localImageUrl ?? profileImageUrl}
-              name={`${formData.first_name} ${formData.last_name}`.trim() || "JS"}
+              name={formData.full_name || "JS"}
               size={96}
             />
             <TouchableOpacity
@@ -557,25 +561,30 @@ export default function CompleteProfileScreen() {
             title={t("completeProfile.sections.personal.title")}
           >
             <View className="mb-4">
-              <FieldLabel label={t("completeProfile.sections.personal.firstName")} required />
+              <FieldLabel label="Full Name" required />
               <InputField
-                value={formData.first_name}
-                onChangeText={(v) => { updateField("first_name", v); setErrors((p) => ({ ...p, first_name: undefined })); }}
-                placeholder={t("completeProfile.placeholders.firstName")}
-                hasError={!!errors.first_name}
+                value={formData.full_name}
+                onChangeText={(v) => { updateField("full_name", v); setErrors((p) => ({ ...p, full_name: undefined })); }}
+                placeholder="Your full name (e.g. Salomon Elisha)"
+                hasError={!!errors.full_name}
               />
-              <ErrorText message={errors.first_name} />
+              <ErrorText message={errors.full_name} />
             </View>
 
             <View className="mb-4">
-              <FieldLabel label={t("completeProfile.sections.personal.lastName")} required />
-              <InputField
-                value={formData.last_name}
-                onChangeText={(v) => { updateField("last_name", v); setErrors((p) => ({ ...p, last_name: undefined })); }}
-                placeholder={t("completeProfile.placeholders.lastName")}
-                hasError={!!errors.last_name}
+              <FieldLabel label="Username" required />
+              <UsernameInput
+                value={formData.username}
+                onChangeText={(v) => { updateField("username", v); setErrors((p) => ({ ...p, username: undefined })); }}
+                onStatusChange={setUsernameStatus}
+                fullName={formData.full_name}
+                table="jobseeker_profiles"
+                column="username"
+                excludeId={user?.id}
+                placeholder="username"
+                hasError={!!errors.username}
               />
-              <ErrorText message={errors.last_name} />
+              <ErrorText message={errors.username} />
             </View>
 
             <View className="mb-4">
