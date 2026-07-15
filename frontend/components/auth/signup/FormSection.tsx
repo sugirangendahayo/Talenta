@@ -5,7 +5,9 @@ import FileUploadField from "../fields/FileUploadField";
 import MultiSelectField from "../fields/MultiSelectField";
 import TextField from "../fields/TextField";
 import PasswordField from "../fields/PasswordField";
+import UsernameInput, { type UsernameStatus } from "@/components/common/UsernameInput";
 import { useTranslation } from "react-i18next";
+import type { UsernameTable, UsernameColumn } from "@/utils/username";
 
 interface FieldConfig {
   key: string;
@@ -26,6 +28,12 @@ interface FormSectionProps {
   onFileUpload?: (field: string) => void;
   getDropdownData?: (key: string) => any[];
   skillsList?: string[];
+  /** Props forwarded to UsernameInput fields */
+  usernameTable?: UsernameTable;
+  usernameColumn?: UsernameColumn;
+  usernameFullName?: string;
+  excludeUsernameId?: string;
+  onUsernameStatusChange?: (status: UsernameStatus) => void;
 }
 
 export default function FormSection({
@@ -36,6 +44,11 @@ export default function FormSection({
   onFileUpload,
   getDropdownData,
   skillsList = [],
+  usernameTable,
+  usernameColumn,
+  usernameFullName,
+  excludeUsernameId,
+  onUsernameStatusChange,
 }: FormSectionProps) {
   const { t } = useTranslation("auth");
 
@@ -59,11 +72,32 @@ export default function FormSection({
   };
 
   const renderField = (field: FieldConfig) => {
-    const hasIcon = field.type !== "dropdown" && field.type !== "file";
+    const hasIcon = field.type !== "dropdown" && field.type !== "file" && field.type !== "username";
     const label = getFieldLabel(field);
     const placeholder = getFieldPlaceholder(field);
 
     switch (field.type) {
+      case "username":
+        return (
+          <FieldWrapper
+            label={label}
+            required
+            icon={field.icon}
+            showIconInside={false}
+          >
+            <UsernameInput
+              value={formData[field.key] ?? ""}
+              onChangeText={(val) => onInputChange(field.key, val)}
+              table={usernameTable ?? "jobseeker_profiles"}
+              column={usernameColumn ?? "username"}
+              fullName={usernameFullName}
+              excludeId={excludeUsernameId}
+              placeholder={placeholder}
+              onStatusChange={onUsernameStatusChange}
+            />
+          </FieldWrapper>
+        );
+
       case "dropdown":
         return (
           <FieldWrapper
