@@ -31,8 +31,8 @@ export interface Applicant {
   created_at: string;
   cover_letter?: string;
   jobseeker_profiles: {
-    first_name: string;
-    last_name: string;
+    full_name: string;
+    username: string;
     email: string;
     phone?: string;
     experience_level?: string;
