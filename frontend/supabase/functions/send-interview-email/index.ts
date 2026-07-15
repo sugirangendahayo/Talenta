@@ -487,8 +487,7 @@ serve(async (req) => {
         jobseeker_id,
         job_id,
         jobseeker_profiles(
-          first_name,
-          last_name,
+          full_name,
           email
         ),
         jobs(
@@ -543,7 +542,7 @@ serve(async (req) => {
 
     if (status === 'shortlisted') {
       const emailData = {
-        jobseekerName: `${jobseekerProfile.first_name} ${jobseekerProfile.last_name}`,
+        jobseekerName: jobseekerProfile.full_name || "Candidate",
         jobTitle: job.title,
         companyName: employerProfile.company_name,
         interviewType: interviewDetails!.interviewType,
@@ -557,14 +556,14 @@ serve(async (req) => {
       emailSubject = `Interview Invitation: ${job.title} at ${employerProfile.company_name}`;
     } else if (status === 'rejected') {
       emailHtml = generateRejectionEmail({
-        jobseekerName: `${jobseekerProfile.first_name} ${jobseekerProfile.last_name}`,
+        jobseekerName: jobseekerProfile.full_name || "Candidate",
         jobTitle: job.title,
         companyName: employerProfile.company_name,
       });
       emailSubject = `Application Update: ${job.title} at ${employerProfile.company_name}`;
     } else { // hired
       emailHtml = generateHiredEmail({
-        jobseekerName: `${jobseekerProfile.first_name} ${jobseekerProfile.last_name}`,
+        jobseekerName: jobseekerProfile.full_name || "Candidate",
         jobTitle: job.title,
         companyName: employerProfile.company_name,
       });
