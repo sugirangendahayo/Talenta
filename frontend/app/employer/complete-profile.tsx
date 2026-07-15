@@ -19,6 +19,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import KeyboardWrapper from "@/components/common/KeyboardWrapper";
+import UsernameInput from "@/components/common/UsernameInput";
+import type { UsernameStatus } from "@/components/common/UsernameInput";
 
 // ─── Countries ─────────────────────────────────────────────────────────────────
 
@@ -332,14 +334,19 @@ export default function EmployerCompleteProfileScreen() {
     }
   );
 
-  // ─── Validation ──────────────────────────────────────────────────────────
+  // ─── Validation ────────────────────────────────────────────────
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const [companyUsernameStatus, setCompanyUsernameStatus] = useState<UsernameStatus>("idle");
   const { anim: shakeAnim, shake } = useShake();
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!formData.company_name.trim())
       newErrors.company_name = "Company name is required";
+    if (!formData.company_username.trim())
+      newErrors.company_username = "Company username is required";
+    if (companyUsernameStatus === "taken" || companyUsernameStatus === "invalid")
+      newErrors.company_username = "Please choose an available company username";
     if (!formData.email.trim())
       newErrors.email = "Email is required";
     if (!formData.phone || formData.phone.length < 8)
@@ -475,6 +482,26 @@ export default function EmployerCompleteProfileScreen() {
                 hasError={!!errors.company_name}
               />
               <ErrorText message={errors.company_name} />
+            </View>
+
+            {/* Company Username */}
+            <View className="px-4 py-3 border-b border-gray-100 dark:border-[#1f1f1f]">
+              <FieldLabel label="Company Username" required />
+              <UsernameInput
+                value={formData.company_username}
+                onChangeText={(v) => {
+                  updateField("company_username", v);
+                  setErrors((p) => ({ ...p, company_username: undefined }));
+                }}
+                onStatusChange={setCompanyUsernameStatus}
+                fullName={formData.company_name}
+                table="employer_profiles"
+                column="company_username"
+                excludeId={user?.id}
+                placeholder="companyhandle"
+                hasError={!!errors.company_username}
+              />
+              <ErrorText message={errors.company_username} />
             </View>
 
             {/* Email */}
