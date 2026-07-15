@@ -11,6 +11,7 @@ export interface AdminStats {
 export interface AdminEmployer {
   id: string;
   company_name: string;
+  company_username: string;
   email: string;
   phone?: string;
   country?: string;
@@ -32,8 +33,8 @@ export interface AdminEmployer {
 
 export interface AdminJobseeker {
   id: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
+  username: string;
   email: string;
   phone?: string;
   country?: string;
