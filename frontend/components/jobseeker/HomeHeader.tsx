@@ -35,9 +35,9 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
   const { isDark } = useTheme();
 
   const jobseekerProfile = role === "jobseeker" && profile ? (profile as JobseekerProfile) : null;
-  const firstName = jobseekerProfile?.first_name ?? "Guest";
+  const fullName = jobseekerProfile?.full_name ?? "Guest";
   const profileImageUrl = jobseekerProfile?.profile_image_url ?? null;
-  const avatarName = firstName !== "Guest" ? `${firstName} ${(jobseekerProfile as any)?.last_name ?? ""}`.trim() : "Guest";
+  const avatarName = fullName !== "Guest" ? fullName : "Guest";
 
   const handleNotificationsPress = () => {
     router.push("/jobseekers/notifications");
@@ -112,7 +112,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
               }}
             />
             <Text className="font-quicksandSemibold text-sm text-gray-500 dark:text-gray-400 leading-tight">
-              {t("greeting", { firstName })}
+              {t("greeting", { firstName: fullName })}
             </Text>
           </View>
 
