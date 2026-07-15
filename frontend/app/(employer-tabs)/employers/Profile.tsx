@@ -54,6 +54,7 @@ export default function EmployerProfile() {
     if (!employerData) return;
     const fields = [
       employerData.company_name,
+      employerData.company_username,
       employerData.email,
       employerData.phone,
       employerData.country,
@@ -330,6 +331,12 @@ export default function EmployerProfile() {
               <Text className="text-base font-quicksandBold text-gray-900 dark:text-gray-100 leading-tight">
                 {employerData?.company_name || "Company Name"}
               </Text>
+              {/* @company_username handle */}
+              {employerData?.company_username ? (
+                <Text className="text-cyan-600 dark:text-cyan-400 font-quicksandSemibold text-xs mt-0.5">
+                  @{employerData.company_username}
+                </Text>
+              ) : null}
               <Text
                 className="text-gray-400 font-quicksandMedium text-xs mt-0.5"
                 numberOfLines={1}
