@@ -181,7 +181,10 @@ export default function UserProfileScreen() {
   const isEmployer = profileData.role === "employer";
   const displayName = isEmployer
     ? profileData.company_name || "Employer"
-    : `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim() || "User";
+    : profileData.full_name || "User";
+  const handle = isEmployer
+    ? profileData.company_username
+    : profileData.username;
 
   const isOwnProfile = currentUser?.id === id;
   const isAdmin = currentRole === "admin" || currentProfile?.role === "admin";
@@ -240,6 +243,13 @@ export default function UserProfileScreen() {
           <Text className="text-xl font-quicksandBold text-gray-900 dark:text-gray-100 text-center">
             {displayName}
           </Text>
+
+          {/* @username / @company_username */}
+          {handle ? (
+            <Text className="text-cyan-600 dark:text-cyan-400 font-quicksandSemibold text-sm mt-0.5 text-center">
+              @{handle}
+            </Text>
+          ) : null}
 
           {/* Verified employer badge */}
           {isEmployer &&
