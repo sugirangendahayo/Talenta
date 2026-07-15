@@ -17,22 +17,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import KeyboardWrapper from "@/components/common/KeyboardWrapper";
+import PasswordField from "@/components/auth/fields/PasswordField";
 
 // ─── Password Section ─────────────────────────────────────────────────────────
 
 function ChangePasswordSection({ isDark }: { isDark: boolean }) {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const inputBg = isDark ? "#141414" : "#F9FAFB";
-  const inputBorder = isDark ? "#2a2a2a" : "#E5E7EB";
-  const textColor = isDark ? "#F3F4F6" : "#111827";
-  const placeholderColor = isDark ? "#6B7280" : "#9CA3AF";
 
   const handleSave = async () => {
     if (!newPassword || !confirmPassword) {
@@ -50,10 +44,11 @@ function ChangePasswordSection({ isDark }: { isDark: boolean }) {
 
     setSaving(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       if (error) throw error;
       Alert.alert("Done", "Password updated successfully.");
-      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (e: any) {
@@ -88,34 +83,15 @@ function ChangePasswordSection({ isDark }: { isDark: boolean }) {
           <Text className="text-xs font-quicksandBold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
             New Password
           </Text>
-          <View
-            className="flex-row items-center rounded-xl px-4"
-            style={{
-              backgroundColor: inputBg,
-              borderWidth: 1,
-              borderColor: inputBorder,
-              height: 48,
-            }}
-          >
-            <TextInput
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry={!showNew}
-              placeholder="At least 8 characters"
-              placeholderTextColor={placeholderColor}
-              style={{ flex: 1, color: textColor, fontFamily: "Quicksand_500Medium", fontSize: 14 }}
-            />
-            <TouchableOpacity
-              onPress={() => setShowNew((v) => !v)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons
-                name={showNew ? "eye-off-outline" : "eye-outline"}
-                size={18}
-                color={placeholderColor}
-              />
-            </TouchableOpacity>
-          </View>
+          <PasswordField
+            value={newPassword}
+            onChangeText={setNewPassword}
+            showPassword={showNew}
+            onTogglePassword={() => setShowNew((v) => !v)}
+            placeholder="At least 8 characters"
+            showStrengthIndicator={true}
+            hasIcon={false}
+          />
         </View>
 
         {/* Confirm Password */}
@@ -123,34 +99,14 @@ function ChangePasswordSection({ isDark }: { isDark: boolean }) {
           <Text className="text-xs font-quicksandBold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
             Confirm New Password
           </Text>
-          <View
-            className="flex-row items-center rounded-xl px-4"
-            style={{
-              backgroundColor: inputBg,
-              borderWidth: 1,
-              borderColor: inputBorder,
-              height: 48,
-            }}
-          >
-            <TextInput
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry={!showConfirm}
-              placeholder="Repeat new password"
-              placeholderTextColor={placeholderColor}
-              style={{ flex: 1, color: textColor, fontFamily: "Quicksand_500Medium", fontSize: 14 }}
-            />
-            <TouchableOpacity
-              onPress={() => setShowConfirm((v) => !v)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons
-                name={showConfirm ? "eye-off-outline" : "eye-outline"}
-                size={18}
-                color={placeholderColor}
-              />
-            </TouchableOpacity>
-          </View>
+          <PasswordField
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            showPassword={showConfirm}
+            onTogglePassword={() => setShowConfirm((v) => !v)}
+            placeholder="Repeat new password"
+            hasIcon={false}
+          />
         </View>
 
         {/* Save button */}
@@ -158,7 +114,7 @@ function ChangePasswordSection({ isDark }: { isDark: boolean }) {
           onPress={handleSave}
           disabled={saving}
           activeOpacity={0.85}
-          className="bg-cyan-700 rounded-xl py-3.5 items-center justify-center mt-1"
+          className="bg-cyan-700 rounded-xl py-3.5 items-center justify-center mt-2"
         >
           {saving ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -248,7 +204,7 @@ export default function PrivacySecurityScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
