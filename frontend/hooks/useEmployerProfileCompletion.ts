@@ -4,6 +4,7 @@ import { toast } from "sonner-native";
 
 export interface EmployerProfileFormData {
   company_name: string;
+  company_username: string;
   email: string;
   phone: string;
   company_website: string;
@@ -19,14 +20,15 @@ export interface ProfileCompletionStatus {
 }
 
 const REQUIRED_FIELDS = [
-  { key: "company_name", label: "Company Name", weight: 20 },
-  { key: "email", label: "Email", weight: 10 },
-  { key: "phone", label: "Phone Number", weight: 15 },
-  { key: "country", label: "Country", weight: 10 },
-  { key: "city", label: "City", weight: 10 },
-  { key: "company_address", label: "Company Address", weight: 15 },
-  { key: "company_website", label: "Company Website", weight: 10 },
-  { key: "profile_image_url", label: "Profile Photo", weight: 10 },
+  { key: "company_name",     label: "Company Name",     weight: 15 },
+  { key: "company_username", label: "Company Username", weight: 10 },
+  { key: "email",            label: "Email",            weight: 10 },
+  { key: "phone",            label: "Phone Number",     weight: 15 },
+  { key: "country",          label: "Country",          weight: 10 },
+  { key: "city",             label: "City",             weight: 10 },
+  { key: "company_address",  label: "Company Address",  weight: 15 },
+  { key: "company_website",  label: "Company Website",  weight: 10 },
+  { key: "profile_image_url",label: "Profile Photo",    weight: 5  },
 ];
 
 const TOTAL_WEIGHT = REQUIRED_FIELDS.reduce((sum, f) => sum + f.weight, 0);
@@ -53,6 +55,7 @@ export function useEmployerProfileCompletion() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<EmployerProfileFormData>({
     company_name: "",
+    company_username: "",
     email: "",
     phone: "",
     company_website: "",
@@ -109,6 +112,7 @@ export function useEmployerProfileCompletion() {
       if (data) {
         setFormData({
           company_name: data.company_name || "",
+          company_username: data.company_username || "",
           email: data.email || "",
           phone: data.phone || "",
           company_website: data.company_website || "",
@@ -164,6 +168,8 @@ export function useEmployerProfileCompletion() {
 
       const updateData = {
         ...formData,
+        // Normalise company_username to lowercase before saving
+        company_username: formData.company_username.trim().toLowerCase(),
         profile_image_url: profileImageUrlRef.current,
         profile_completed: latestStatus.isComplete,
       };
