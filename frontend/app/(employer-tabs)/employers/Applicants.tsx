@@ -32,8 +32,8 @@ type RawApplication = {
   created_at: string;
   updated_at: string;
   jobseeker_profiles: {
-    first_name: string;
-    last_name: string;
+    full_name: string;
+    username: string;
     email: string;
     phone?: string;
     experience_level?: string;
@@ -89,7 +89,7 @@ export default function ApplicantsScreen() {
         .select(
           `id, job_id, jobseeker_id, status, cover_letter, created_at, updated_at,
           jobseeker_profiles!job_applications_jobseeker_id_fkey (
-            first_name, last_name, email, phone, experience_level, skills, cv_document_url, profile_image_url
+            full_name, username, email, phone, experience_level, skills, cv_document_url, profile_image_url
           ),
           jobs!job_applications_job_id_fkey (title, employer_id)`,
         )
@@ -133,10 +133,11 @@ export default function ApplicantsScreen() {
     if (search.trim()) {
       const q = search.toLowerCase().trim();
       filtered = filtered.filter((a) => {
-        const name  = `${a.jobseeker_profiles.first_name} ${a.jobseeker_profiles.last_name}`.toLowerCase();
+        const name  = (a.jobseeker_profiles.full_name || "").toLowerCase();
+        const handle = (a.jobseeker_profiles.username || "").toLowerCase();
         const email = a.jobseeker_profiles.email.toLowerCase();
         const phone = a.jobseeker_profiles.phone?.toLowerCase() ?? "";
-        return name.includes(q) || email.includes(q) || phone.includes(q);
+        return name.includes(q) || handle.includes(q) || email.includes(q) || phone.includes(q);
       });
     }
     setFilteredApplicants(filtered);
