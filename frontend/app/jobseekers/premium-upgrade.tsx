@@ -1,6 +1,6 @@
 import { useJobseekerPremiumStatus } from "@/hooks/useJobseekerPremiumStatus";
 import { JobseekerPremiumPlan } from "@/lib/jobseekerPremiumService";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -92,8 +92,8 @@ export default function JobseekerPremiumUpgradeScreen() {
 
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         <View className="mb-8 items-center">
-          <View className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-2xl items-center justify-center mb-4">
-            <Ionicons name="star" size={32} color="#D97706" />
+          <View className="w-16 h-16 bg-amber-50 dark:bg-amber-900/20 rounded-full items-center justify-center mb-4">
+            <MaterialIcons name="verified" size={32} color="#D97706" />
           </View>
           <Text className="text-2xl font-quicksandBold text-gray-900 dark:text-white text-center mb-2">
             Stand out from the crowd
