@@ -9,6 +9,7 @@ import AuthLink from "@/components/auth/shared/AuthLink";
 
 // Signup-Specific Components
 import PrimaryButton from "@/components/auth/shared/PrimaryButton";
+import GoogleAuthButton from "@/components/auth/shared/GoogleAuthButton";
 import FormSection from "@/components/auth/signup/FormSection";
 import RoleSelector from "@/components/auth/signup/RoleSelector";
 
@@ -46,7 +47,7 @@ export default function Signup() {
       <RoleSelector role={role} onRoleChange={setRole} />
 
       {/* Content - Index 2 */}
-      <View className="px-6">
+      <View className="px-6 ">
         {/* Form Fields */}
         <FormSection
           fields={getCurrentStepFields()}
@@ -75,6 +76,16 @@ export default function Signup() {
               )}
             </View>
           </PrimaryButton>
+
+          <View className="flex-row items-center my-6">
+            <View className="flex-1 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+            <Text className="mx-4 text-gray-500 dark:text-gray-400 font-quicksandMedium">
+              {t("common.or", "OR")}
+            </Text>
+            <View className="flex-1 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+          </View>
+
+          <GoogleAuthButton type="signup" />
         </View>
 
         {/* Login Link */}
@@ -83,6 +94,7 @@ export default function Signup() {
           linkText={t("signup.signInLink")}
           onPress={() => router.push("/auth/signin")}
         />
+        <View className="mb-6"></View>
       </View>
     </AuthContainer>
   );
