@@ -9,14 +9,13 @@ import { useTranslation } from "react-i18next";
 import { useRef, useState } from "react";
 import {
   Text,
-  TextInput,
   TouchableOpacity,
   View,
-  Animated,
-  Keyboard,
 } from "react-native";
 import UserAvatar from "@/components/common/UserAvatar";
 import { useTheme } from "@/contexts/ThemeContext";
+import GlobalSearchModal, { HighlightedText } from "../common/GlobalSearchModal";
+import { supabase } from "@/lib/supabase";
 
 interface HomeHeaderProps {
   onSearchChange?: (query: string) => void;
@@ -28,10 +27,6 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
   const { t } = useTranslation("home");
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  // Controls the whole-row crossfade: 0 = default content, 1 = search bar
-  const transition = useRef(new Animated.Value(0)).current;
-  const inputRef = useRef<TextInput>(null);
   const { isDark } = useTheme();
 
   const jobseekerProfile = role === "jobseeker" && profile ? (profile as JobseekerProfile) : null;
@@ -45,63 +40,20 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
 
   const openSearch = () => {
     setSearchOpen(true);
-    Animated.timing(transition, {
-      toValue: 1,
-      duration: 220,
-      useNativeDriver: false,
-    }).start(() => inputRef.current?.focus());
   };
-
-  const closeSearch = () => {
-    Keyboard.dismiss();
-    setSearchQuery("");
-    onSearchChange?.("");
-    Animated.timing(transition, {
-      toValue: 0,
-      duration: 180,
-      useNativeDriver: false,
-    }).start(() => setSearchOpen(false));
-  };
-
-  const handleSearchChange = (text: string) => {
-    setSearchQuery(text);
-    onSearchChange?.(text);
-  };
-
-  // Default content fades out as transition goes 0→1
-  const defaultOpacity = transition.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 0],
-  });
-  // Search row fades in as transition goes 0→1
-  const searchOpacity = transition.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-  // Welcome text slides up and fades out
-  const welcomeOpacity = transition.interpolate({
-    inputRange: [0, 0.5],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-  const welcomeTranslateY = transition.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, -6],
-  });
 
   return (
-    <View className="bg-white dark:bg-[#080A08]">
+    <View className="bg-white dark:bg-[#080A08] ">
       {/* Top row — default content and search bar are stacked, crossfade between them */}
-      <View className="px-5 pt-4 pb-3" style={{ height: 60 }}>
+      <View className="px-5 pt-4 pb-3" style={{ height: 80 }}>
 
-        {/* Default row: avatar + greeting + icons — fades out when search opens */}
-        <Animated.View
-          className="flex-row items-center justify-between absolute left-5 right-5"
-          style={{ opacity: defaultOpacity, top: 16 }}
-          pointerEvents={searchOpen ? "none" : "auto"}
+        {/* Default row: avatar + greeting + icons */}
+        <View
+          className="flex-row items-center justify-between"
+          style={{ paddingTop: 16 }}
         >
           {/* Left: avatar + greeting */}
-          <View className="flex-row items-center gap-3">
+          <View className="flex-row items-center gap-3 ">
             <UserAvatar
               imageUrl={profileImageUrl}
               name={avatarName}
@@ -144,55 +96,73 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
             )}
           </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
 
-        {/* Search row — fades in and fills the whole width when open */}
-        <Animated.View
-          className="flex-row items-center absolute left-5 right-5"
-          style={{ opacity: searchOpacity, top: 12 }}
-          pointerEvents={searchOpen ? "auto" : "none"}
-        >
-          {/* Search input — takes all available space */}
-          <View
-            className="flex-1 flex-row items-center bg-gray-50 dark:bg-[#080A08] rounded-full px-4 py-2.5 border border-gray-200 dark:border-[#2a2a2a] mr-2"
-          >
-            <Ionicons name="search" size={15} color="#9CA3AF" />
-            <TextInput
-              ref={inputRef}
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              placeholder={t("search.placeholder", { defaultValue: "Search jobs..." })}
-              placeholderTextColor="#9CA3AF"
-              className="flex-1 ml-2 text-gray-800 dark:text-gray-200 font-quicksandMedium text-sm"
-              returnKeyType="search"
-              autoCapitalize="none"
-            />
-          </View>
-
-          {/* Cancel button */}
-          <TouchableOpacity
-            onPress={closeSearch}
-            activeOpacity={0.7}
-          >
-            <Text className="text-cyan-700 font-quicksandBold text-sm">
-              {t("search.cancel")}
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
       </View>
 
-      {/* Welcome text — fades + slides up when search opens */}
-      <Animated.View
+      {/* Welcome text */}
+      <View
         className="px-5 pb-4"
-        style={{
-          opacity: welcomeOpacity,
-          transform: [{ translateY: welcomeTranslateY }],
-        }}
       >
         <Text className="font-quicksandBold text-2xl text-gray-900 dark:text-gray-100 leading-tight">
           {t("welcome")}
         </Text>
-      </Animated.View>
+      </View>
+
+      <GlobalSearchModal
+        visible={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        categories={[]} // HomeHeader doesn't render category filters directly
+        onSelectSearch={(query) => {
+          if (onSearchChange) onSearchChange(query);
+          setSearchOpen(false);
+          // E.g., push to jobs tab with the query:
+          router.push("/jobseekers/jobs"); 
+        }}
+        fetchResults={async (query) => {
+          const { data, error } = await supabase
+            .from("jobs")
+            .select(`
+              id, 
+              title, 
+              employer_profiles!inner(company_name)
+            `)
+            .or(`title.ilike.%${query}%,location.ilike.%${query}%`)
+            .eq("status", "active")
+            .limit(10);
+          if (error) {
+            console.error(error);
+            return [];
+          }
+          return data;
+        }}
+        renderResult={(item: any, currentQuery: string) => (
+          <TouchableOpacity
+            className="flex-row items-center px-6 py-4 border-b border-gray-50 dark:border-[#141414]"
+            onPress={() => {
+              setSearchOpen(false);
+              router.push(`/jobseekers/job-details/${item.id}`);
+            }}
+          >
+            <View className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#2a2a2a] items-center justify-center mr-3">
+              <Ionicons name="briefcase-outline" size={18} color="#9CA3AF" />
+            </View>
+            <View className="flex-1">
+              <HighlightedText
+                text={item.title}
+                query={currentQuery}
+                style={{ fontSize: 15, color: isDark ? "#f3f4f6" : "#1f2937", marginBottom: 2 }}
+              />
+              <HighlightedText
+                text={item.employer_profiles?.company_name || ""}
+                query={currentQuery}
+                style={{ fontSize: 13, color: isDark ? "#9ca3af" : "#6b7280" }}
+              />
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 }
