@@ -10,6 +10,7 @@ import AuthContainer from "@/components/auth/shared/AuthContainer";
 import AuthHeader from "@/components/auth/shared/AuthHeader";
 import AuthLink from "@/components/auth/shared/AuthLink";
 import PrimaryButton from "@/components/auth/shared/PrimaryButton";
+import GoogleAuthButton from "@/components/auth/shared/GoogleAuthButton";
 
 // Custom Hook
 import useSigninForm from "@/hooks/useSigninForm";
@@ -71,10 +72,7 @@ export default function Signin() {
           <AuthLink
             linkText={t("signin.forgotPassword")}
             align="right"
-            onPress={() => {
-              // TODO: Implement forgot password
-              // router.push("/auth/forgot-password");
-            }}
+            onPress={() => router.push("/auth/forgot-password")}
           />
         </View>
 
@@ -91,6 +89,16 @@ export default function Signin() {
               )}
             </View>
           </PrimaryButton>
+
+          <View className="flex-row items-center my-6">
+            <View className="flex-1 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+            <Text className="mx-4 text-gray-500 dark:text-gray-400 font-quicksandMedium">
+              {t("common.or", "OR")}
+            </Text>
+            <View className="flex-1 h-[1px] bg-gray-200 dark:bg-zinc-800" />
+          </View>
+
+          <GoogleAuthButton type="signin" />
         </View>
 
         {/* Sign Up Link */}
