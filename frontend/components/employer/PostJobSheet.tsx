@@ -26,6 +26,7 @@ import {
   UIManager,
   View,
 } from "react-native";
+import KeyboardWrapper from "@/components/common/KeyboardWrapper";
 import { toast } from "sonner-native";
 
 // Android needs this opted in explicitly per-app before LayoutAnimation will
@@ -380,61 +381,8 @@ export default function PostJobSheet({
   const [form, setForm] = useState(emptyForm());
   const [submitting, setSubmitting] = useState(false);
 
-  // ── Keyboard handling ──────────────────────────────────────────
-  // KeyboardAvoidingView's "padding" behavior calculates its offset from the
-  // view's measured frame, but inside a Modal (own native window on iOS) that
-  // frame doesn't line up with the actual screen, so the push is wrong or a
-  // no-op. Tracking keyboard height directly and driving layout off that
-  // number sidesteps the bad measurement entirely and works the same on both
-  // platforms, since we're not depending on any RN heuristic for "how much to
-  // push" — just the keyboard's own reported height.
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const scrollRef = useRef<ScrollView>(null);
-
-  useEffect(() => {
-    const showEvt =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvt =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-    const onShow = (e: KeyboardEvent) => {
-      // Configure the transition before the state change that triggers it,
-      // so the sheet height animates in step with the keyboard sliding up
-      // instead of snapping to its new size.
-      LayoutAnimation.configureNext(
-        LayoutAnimation.create(
-          Platform.OS === "ios" ? e.duration || 250 : 220,
-          LayoutAnimation.Types.easeInEaseOut,
-          LayoutAnimation.Properties.opacity,
-        ),
-      );
-      setKeyboardHeight(e.endCoordinates.height);
-    };
-    const onHide = () => {
-      LayoutAnimation.configureNext(
-        LayoutAnimation.create(
-          220,
-          LayoutAnimation.Types.easeInEaseOut,
-          LayoutAnimation.Properties.opacity,
-        ),
-      );
-      setKeyboardHeight(0);
-    };
-
-    const showSub = Keyboard.addListener(showEvt, onShow);
-    const hideSub = Keyboard.addListener(hideEvt, onHide);
-
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  // Reset keyboard tracking whenever the sheet closes so a stale height
-  // doesn't linger and squash the layout the next time it opens.
-  useEffect(() => {
-    if (!visible) setKeyboardHeight(0);
-  }, [visible]);
+  // We use KeyboardWrapper to handle scroll offsets automatically.
+  const scrollRef = useRef<any>(null); // Still need a ref for manual scrolling if needed
 
   // When a field is focused, nudge the ScrollView so the field sits above the
   // keyboard rather than trusting scroll-into-view timing, which is unreliable
@@ -905,21 +853,8 @@ export default function PostJobSheet({
     },
   ];
 
-  // On iOS the keyboard floats over content and the Modal renders in its own
-  // native window, so KeyboardAvoidingView's frame-based "padding" behavior
-  // doesn't compute a sane offset here (this was the original bug). Instead
-  // we shrink the sheet by the keyboard's own reported height, which needs a
-  // real pixel value — percentage height + marginBottom doesn't shrink an
-  // element, it just repositions a fixed-size box and pushes the top edge
-  // off-screen. On Android, adjustResize (the default windowSoftInputMode in
-  // Expo/RN) already shrinks the whole window, so compensating manually
-  // there would squash things twice.
   const windowHeight = Dimensions.get("window").height;
-  const baseSheetHeight = windowHeight * 0.93;
-  const sheetHeight =
-    Platform.OS === "ios" && keyboardHeight > 0
-      ? Math.max(baseSheetHeight - keyboardHeight, windowHeight * 0.5)
-      : baseSheetHeight;
+  const sheetHeight = windowHeight * 0.93;
 
   return (
     <Modal
@@ -982,24 +917,19 @@ export default function PostJobSheet({
             </TouchableOpacity>
           </View>
 
-          {/* Scrollable body — no KeyboardAvoidingView here; keyboardHeight
-              (tracked above) drives the sheet's own size instead, which is
-              the part that actually works reliably inside a Modal. */}
+          {/* Scrollable body using KeyboardWrapper */}
           <View className="flex-1">
-            <ScrollView
-              ref={scrollRef}
-              contentContainerStyle={{
+            <KeyboardWrapper
+              bottomOffset={20}
+              contentStyle={{
                 paddingHorizontal: 24,
                 paddingBottom: 28,
               }}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="interactive"
             >
               {step === 0 && renderStep0()}
               {step === 1 && renderStep1()}
               {step === 2 && renderStep2()}
-            </ScrollView>
+            </KeyboardWrapper>
 
             {/* Footer */}
             <View className="flex-row gap-3 px-6 py-4 border-t border-gray-100 dark:border-[#2a2a2a] bg-white dark:bg-[#0D0F0D]">
