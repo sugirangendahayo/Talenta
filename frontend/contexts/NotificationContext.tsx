@@ -128,12 +128,12 @@ export function NotificationProvider({
       );
 
       if (error) {
-        console.error("[Notifications] Failed to store push token:", error);
+        console.warn("[Notifications] Failed to store push token:", error.message || error);
       } else {
         console.log("[Notifications] Push token registered:", token);
       }
     } catch (err) {
-      console.error("[Notifications] Token registration error:", err);
+      console.warn("[Notifications] Token registration error:", err);
     }
   };
 
