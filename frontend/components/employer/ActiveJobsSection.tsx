@@ -77,7 +77,7 @@ const JobCard = ({ job, onRefresh }: JobCardProps) => {
       className="bg-gray-50 dark:bg-[#080A08] rounded-xl p-3 border border-gray-100 dark:border-[#222] mb-3"
       onPress={() =>
         router.push({
-          pathname: "/(employer-tabs)/employers/job-details/[id]",
+          pathname: "/employer/job-details/[id]",
           params: { id: job.id },
         })
       }
