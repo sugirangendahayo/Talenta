@@ -11,6 +11,9 @@ import {
   View,
   Modal,
 } from "react-native";
+import GlobalSearchModal, { HighlightedText } from "../common/GlobalSearchModal";
+import { supabase } from "@/lib/supabase";
+import { router } from "expo-router";
 
 interface Category {
   id: string;
@@ -115,22 +118,13 @@ const SearchAndSort: React.FC<SearchAndSortProps> = ({
         <View className="flex-row items-center pr-4">
           {/* Search toggle icon */}
           <TouchableOpacity
-            onPress={handleSearchToggle}
+            onPress={() => setSearchOpen(true)}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             accessibilityRole="button"
-            accessibilityLabel={
-              searchOpen
-                ? t("jobs:filters.closeSearch", { defaultValue: "Close search" })
-                : t("jobs:filters.openSearch", { defaultValue: "Search jobs" })
-            }
             className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#1a1a1a] items-center justify-center mr-2"
           >
-            <Ionicons
-              name={searchOpen ? "close" : "search"}
-              size={17}
-              color={iconColor}
-            />
+            <Ionicons name="search" size={17} color={iconColor} />
           </TouchableOpacity>
 
           {/* Filter toggle icon */}
@@ -154,33 +148,63 @@ const SearchAndSort: React.FC<SearchAndSortProps> = ({
         </View>
       </View>
 
-      {/* Expanding search field */}
-      {searchOpen && (
-        <View className="px-4 pb-3">
-          <View className="flex-row items-center bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-3 gap-3">
-            <Ionicons name="search" size={16} color={iconColor} />
-            <TextInput
-              ref={inputRef}
-              value={searchQuery}
-              onChangeText={onSearchChange}
-              placeholder={t("home:search.placeholder", {
-                defaultValue: "Search jobs...",
-              })}
-              placeholderTextColor="#9CA3AF"
-              returnKeyType="search"
-              className="flex-1 font-quicksandMedium text-gray-800 dark:text-gray-200 text-sm"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => onSearchChange("")}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons name="close-circle" size={18} color={iconColor} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      )}
+      <GlobalSearchModal
+        visible={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        initialQuery={searchQuery}
+        categories={categories}
+        onSelectSearch={(query, categoryId) => {
+          onSearchChange(query);
+          if (categoryId) {
+            onCategoryChange(categoryId);
+          }
+        }}
+        fetchResults={async (query) => {
+          const { data, error } = await supabase
+            .from("jobs")
+            .select(`
+              id, 
+              title, 
+              employer_profiles!inner(company_name)
+            `)
+            .or(`title.ilike.%${query}%,location.ilike.%${query}%`)
+            .eq("status", "active")
+            .limit(10);
+          if (error) {
+            console.error(error);
+            return [];
+          }
+          return data;
+        }}
+        renderResult={(item: any, currentQuery: string) => (
+          <TouchableOpacity
+            className="flex-row items-center px-6 py-4 border-b border-gray-50 dark:border-[#141414]"
+            onPress={() => {
+              setSearchOpen(false);
+              router.push(`/jobseekers/job-details/${item.id}`);
+            }}
+          >
+            <View className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#2a2a2a] items-center justify-center mr-3">
+              <Ionicons name="briefcase-outline" size={18} color={iconColor} />
+            </View>
+            <View className="flex-1">
+              <HighlightedText
+                text={item.title}
+                query={currentQuery}
+                style={{ fontSize: 15, color: isDark ? "#f3f4f6" : "#1f2937", marginBottom: 2 }}
+              />
+              <HighlightedText
+                text={item.employer_profiles?.company_name || ""}
+                query={currentQuery}
+                style={{ fontSize: 13, color: isDark ? "#9ca3af" : "#6b7280" }}
+              />
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          </TouchableOpacity>
+        )}
+      />
+
+
 
       {/* Filter Modal */}
       <Modal
