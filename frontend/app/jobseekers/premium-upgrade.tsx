@@ -1,8 +1,8 @@
 import { useJobseekerPremiumStatus } from "@/hooks/useJobseekerPremiumStatus";
 import { JobseekerPremiumPlan } from "@/lib/jobseekerPremiumService";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router, Stack } from "expo-router";
-import React, { useState } from "react";
+import { router, Stack, useFocusEffect } from "expo-router";
+import React, { useState, useCallback } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -52,8 +52,14 @@ export default function JobseekerPremiumUpgradeScreen() {
     activatePlan,
   } = useJobseekerPremiumStatus();
   
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const isProfileComplete = profile?.profile_completed ?? false;
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [refreshProfile])
+  );
 
   const [showSuccess, setShowSuccess] = useState(false);
 
