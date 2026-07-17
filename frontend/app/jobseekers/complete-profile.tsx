@@ -142,8 +142,7 @@ function PhoneInputField({
           hasError
             ? "border-red-500"
             : "border-gray-200 dark:border-[#2a2a2a]"
-        }`}
-        style={{ backgroundColor: "#F8FAFC" }}
+        } bg-gray-50 dark:bg-[#141414]`}
       >
         <TouchableOpacity
           onPress={() => setShowPicker(true)}
@@ -342,10 +341,9 @@ function InputField({
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor="#9CA3AF"
-      className={`rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border ${
+      className={`rounded-2xl px-4 py-3.5 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border ${
         hasError ? "border-red-500" : "border-gray-200 dark:border-[#2a2a2a]"
-      }`}
-      style={{ backgroundColor: "#F8FAFC" }}
+      } bg-gray-50 dark:bg-[#141414]`}
     />
   );
 }
@@ -713,8 +711,7 @@ export default function CompleteProfileScreen() {
                 onChangeText={setNewSkill}
                 placeholder={t("completeProfile.sections.skills.addPlaceholder")}
                 placeholderTextColor="#9CA3AF"
-                className="flex-1 rounded-2xl px-4 py-3 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a]"
-                style={{ backgroundColor: "#F8FAFC" }}
+                className="flex-1 rounded-2xl px-4 py-3.5 font-quicksandMedium text-sm text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#141414]"
                 onSubmitEditing={handleAddSkill}
                 returnKeyType="done"
               />
@@ -733,8 +730,7 @@ export default function CompleteProfileScreen() {
                 {formData.skills.map((skill, index) => (
                   <View
                     key={index}
-                    className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-[#2a2a2a]"
-                    style={{ backgroundColor: "#F8FAFC" }}
+                    className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#141414]"
                   >
                     <Text className="text-gray-700 dark:text-gray-300 font-quicksandSemibold text-xs">
                       {skill}
@@ -758,8 +754,7 @@ export default function CompleteProfileScreen() {
 
         {/* CV note */}
         <View
-          className="mx-6 mt-4 rounded-2xl border border-gray-100 dark:border-[#222] p-4 flex-row items-start gap-3"
-          style={{ backgroundColor: "#F8FAFC" }}
+          className="mx-6 mt-4 rounded-2xl border border-gray-100 dark:border-[#222] p-4 flex-row items-start gap-3 bg-gray-50 dark:bg-[#141414]"
         >
           <Ionicons name="information-circle-outline" size={18} color="#0E7490" />
           <View className="flex-1">
