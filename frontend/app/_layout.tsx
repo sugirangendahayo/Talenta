@@ -51,6 +51,9 @@ function RootLayoutNav() {
       loadThemeForUser(user.id, role).then(() => {
         setAuthThemeReady(true);
       });
+    } else if (user && !role) {
+      // New OAuth user needs to pick a role — no theme to load yet
+      setAuthThemeReady(true);
     } else if (!user && isReady) {
       // Signed out – reset to app default (light)
       resetTheme();
@@ -88,44 +91,52 @@ function RootLayoutNav() {
       return;
     }
 
-    // PRIORITY 3: User is logged in
-    if (user && role) {
-      // Redirect away from auth/welcome screens to role dashboard
-      if (inAuthGroup || inWelcomeGroup) {
-        console.log("→ Redirecting to dashboard (logged in, on auth screen)");
-        if (role === "jobseeker") {
+      // User is logged in but missing a role (e.g., new Google OAuth user)
+      const onOAuthScreens = segments[1] === "complete-oauth-profile";
+      if (user && !role && !onOAuthScreens) {
+        console.log("→ Redirecting to complete-oauth-profile (logged in, missing role)");
+        router.replace("/auth/complete-oauth-profile");
+        return;
+      }
+
+      // Redirect away from auth/welcome screens to role dashboard,
+      // EXCEPT for the reset-password screen which needs to be accessible during recovery.
+      if (user && role) {
+        if ((inAuthGroup && segments[1] !== "reset-password") || inWelcomeGroup) {
+          console.log("→ Redirecting to dashboard (logged in, on auth screen)");
+          if (role === "jobseeker") {
+            router.replace("/(jobseeker-tabs)/jobseekers/Home");
+          } else if (role === "employer") {
+            router.replace("/(employer-tabs)/employers/Dashboard");
+          } else if (role === "admin") {
+            router.replace("/(admin-tabs)/admin/Dashboard");
+          }
+          return;
+        }
+
+        // Block non-admin from admin tabs
+        if (role !== "admin" && inAdminTabs) {
+          console.log("→ Non-admin tried to access admin tabs");
+          if (role === "jobseeker") {
+            router.replace("/(jobseeker-tabs)/jobseekers/Home");
+          } else {
+            router.replace("/(employer-tabs)/employers/Dashboard");
+          }
+          return;
+        }
+
+        // Prevent cross-role access between jobseeker/employer tabs
+        if (role === "jobseeker" && inEmployerTabs) {
+          console.log("→ Jobseeker tried to access employer tabs");
           router.replace("/(jobseeker-tabs)/jobseekers/Home");
-        } else if (role === "employer") {
+        } else if (role === "employer" && inJobseekerTabs) {
+          console.log("→ Employer tried to access jobseeker tabs");
           router.replace("/(employer-tabs)/employers/Dashboard");
-        } else if (role === "admin") {
+        } else if (role === "admin" && (inJobseekerTabs || inEmployerTabs)) {
+          console.log("→ Admin redirected to admin tabs");
           router.replace("/(admin-tabs)/admin/Dashboard");
         }
-        return;
       }
-
-      // Block non-admin from admin tabs
-      if (role !== "admin" && inAdminTabs) {
-        console.log("→ Non-admin tried to access admin tabs");
-        if (role === "jobseeker") {
-          router.replace("/(jobseeker-tabs)/jobseekers/Home");
-        } else {
-          router.replace("/(employer-tabs)/employers/Dashboard");
-        }
-        return;
-      }
-
-      // Prevent cross-role access between jobseeker/employer tabs
-      if (role === "jobseeker" && inEmployerTabs) {
-        console.log("→ Jobseeker tried to access employer tabs");
-        router.replace("/(jobseeker-tabs)/jobseekers/Home");
-      } else if (role === "employer" && inJobseekerTabs) {
-        console.log("→ Employer tried to access jobseeker tabs");
-        router.replace("/(employer-tabs)/employers/Dashboard");
-      } else if (role === "admin" && (inJobseekerTabs || inEmployerTabs)) {
-        console.log("→ Admin redirected to admin tabs");
-        router.replace("/(admin-tabs)/admin/Dashboard");
-      }
-    }
   }, [user, role, authLoading, segments, hasSeenOnboarding, isReady]);
 
   // Show loading screen while checking initial state
@@ -234,6 +245,11 @@ function RootLayoutNav() {
       {/* Auth screens */}
       <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
       <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/verify-email" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/forgot-password" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/reset-password" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
+      <Stack.Screen name="auth/complete-oauth-profile" options={{ headerShown: false }} />
 
       {/* Employer screens */}
       <Stack.Screen name="employer/post-job" options={{ headerShown: false }} />
@@ -248,12 +264,15 @@ function RootLayoutNav() {
       <Stack.Screen name="employer/notifications" options={{ headerShown: false }} />
       <Stack.Screen name="employer/contact" options={{ headerShown: false }} />
       <Stack.Screen name="employer/applications" options={{ headerShown: false }} />
+      <Stack.Screen name="employer/business-verification" options={{ headerShown: false }} />
+
 
       {/* Admin screens */}
       <Stack.Screen name="admin/Users" options={{ headerShown: false }} />
 
       {/* Shared screens (accessible by all roles) */}
       <Stack.Screen name="shared/privacy-security" options={{ headerShown: false }} />
+
     </Stack>
   );
 }
