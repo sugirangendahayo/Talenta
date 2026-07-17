@@ -93,6 +93,9 @@ export default function useSigninForm() {
         errorMessage = t("messages.invalidCredentials");
       } else if (error.message.includes("Email not confirmed")) {
         errorMessage = t("messages.emailNotConfirmed");
+        toast.error(errorMessage, { duration: 3000 });
+        router.replace(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
+        return;
       } else if (error.message) {
         errorMessage = error.message;
       }
