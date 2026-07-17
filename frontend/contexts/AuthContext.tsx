@@ -207,8 +207,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isMounted.current) return;
 
-      
       console.log("Auth state changed:", event);
+
+      // When signing in, hold loading=true so _layout doesn't prematurely
+      // redirect to complete-oauth-profile before the role has been fetched.
+      if (event === "SIGNED_IN") {
+        setLoading(true);
+      }
 
       setSession(newSession);
       setUser(newSession?.user ?? null);
