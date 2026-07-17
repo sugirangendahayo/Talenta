@@ -161,6 +161,7 @@ export default function JobseekerProfile() {
             defaultValue: "Privacy & Security",
           }),
           type: "link",
+          onPress: () => router.push("/shared/privacy-security"),
         },
         {
           icon: "star",
