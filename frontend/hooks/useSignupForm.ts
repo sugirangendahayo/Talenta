@@ -228,6 +228,7 @@ export default function useSignupForm() {
         password: formData.password,
         options: {
           data: { role },
+          emailRedirectTo: "talenta://auth/signin",
         },
       });
 
@@ -266,11 +267,7 @@ export default function useSignupForm() {
       // 3. Success
       toast.success(t("messages.accountCreated"), { duration: 2000 });
 
-      if (role === "jobseeker") {
-        router.replace("/(jobseeker-tabs)/jobseekers/Home");
-      } else {
-        router.replace("/(employer-tabs)/employers/Dashboard");
-      }
+      router.replace(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error: any) {
       console.error("Signup error:", error);
 
