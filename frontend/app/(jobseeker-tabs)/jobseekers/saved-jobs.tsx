@@ -114,12 +114,14 @@ export default function SavedJobsScreen() {
   // ─── Loading state ────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <View className="mb-6">
-        <View className="gap-3 px-6">
-          <SkeletonList
-            count={PREVIEW_COUNT}
-            renderItem={() => <CompactJobCardSkeleton />}
-          />
+      <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
+        <View className="pt-24 mb-6">
+          <View className="gap-3 px-6">
+            <SkeletonList
+              count={PREVIEW_COUNT}
+              renderItem={() => <CompactJobCardSkeleton />}
+            />
+          </View>
         </View>
       </View>
     );
