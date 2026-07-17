@@ -13,7 +13,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { useNotifications, Notification } from "@/hooks/useNotifications";
+import { Notification, useNotifications } from "@/hooks/useNotifications";
+import { NotificationSkeleton } from "@/components/skeletons/NotificationSkeleton";
+import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 
 export default function NotificationsScreen() {
   const {
@@ -301,13 +303,8 @@ export default function NotificationsScreen() {
 
       {/* ── List ─────────────────────────────────────────────────────────── */}
       {isLoading && notifications.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#0E7490" />
-          <Text className="font-quicksandMedium text-sm text-gray-500 dark:text-gray-400 mt-4">
-            {t("common:notificationsScreen.loading", {
-              defaultValue: "Loading notifications…",
-            })}
-          </Text>
+        <View className="flex-1">
+          <SkeletonList count={6} renderItem={() => <NotificationSkeleton />} />
         </View>
       ) : (
         <FlatList
