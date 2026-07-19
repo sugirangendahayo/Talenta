@@ -106,7 +106,7 @@ export default function UploadCVScreen() {
             >
               {/* Status row */}
               <View className="flex-row items-center mb-5">
-                <View className="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 items-center justify-center">
+                <View className="w-12 h-12 rounded-full bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 items-center justify-center">
                   <Ionicons name="document-text-outline" size={22} color="#0E7490" />
                 </View>
                 <View className="flex-1 ml-3">
