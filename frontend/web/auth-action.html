@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Talenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --brand: #0E7490;
+    --brand-dark: #0b5c73;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --bg: #f8fafc;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    font-family: "Quicksand", sans-serif;
+    color: var(--ink);
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  }
+  .icon-wrap {
+    width: 84px;
+    height: 84px;
+    margin: 0 auto 24px;
+    border-radius: 999px;
+    background: rgba(14, 116, 144, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-wrap.error { background: rgba(220, 38, 38, 0.1); }
+  .icon-wrap svg { width: 40px; height: 40px; }
+  h1 {
+    font-weight: 700;
+    font-size: 22px;
+    margin: 0 0 10px;
+    letter-spacing: -0.3px;
+  }
+  p.subtitle {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 28px;
+  }
+  .status-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(14, 116, 144, 0.25);
+    border-top-color: var(--brand);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: 16px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  .btn-primary {
+    background: var(--brand);
+    color: #fff;
+  }
+  .btn-primary:active { background: var(--brand-dark); }
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 16px;
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+  }
+  .store-row {
+    display: flex;
+    gap: 10px;
+  }
+  .store-btn {
+    flex: 1;
+    padding: 12px 10px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    background: #fff;
+  }
+  .brand {
+    margin-top: 28px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #cbd5e1;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div id="icon" class="icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0E7490" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6L9 17l-5-5"></path>
+      </svg>
+    </div>
+
+    <h1 id="title">Success!</h1>
+    <p class="subtitle" id="subtitle">You're all set.</p>
+
+    <div class="status-line" id="statusLine">
+      <span class="spinner"></span>
+      <span>Opening the Talenta app…</span>
+    </div>
+
+    <a class="btn btn-primary" id="openAppBtn" href="#">Open Talenta App</a>
+
+    <div class="divider">Don't have the app?</div>
+    <div class="store-row">
+      <a class="store-btn" id="androidBtn" href="#" target="_blank" rel="noopener">Get it on Google Play</a>
+      <a class="store-btn" id="iosBtn" href="#" target="_blank" rel="noopener" style="display:none;">Download on the App Store</a>
+    </div>
+
+    <div class="brand">Talenta</div>
+  </div>
+
+  <script>
+    // ── Configuration ────────────────────────────────────────────────────────
+    // Update these once the app is published / an iOS bundle id exists.
+    var ANDROID_PACKAGE = "com.salomonlegend.talenta";
+    var ANDROID_STORE_URL = "https://play.google.com/store/apps/details?id=" + ANDROID_PACKAGE;
+    var IOS_STORE_URL = null; // e.g. "https://apps.apple.com/app/idXXXXXXXXX" once published
+
+    // ── Collect params from BOTH the query string and the hash fragment ───────
+    // Supabase Auth redirects can carry data either way depending on the flow
+    // (PKCE uses ?code=..., some legacy/implicit flows use #access_token=...).
+    // We normalize everything into query params, since that's what the app's
+    // deep-link screens (expo-router's useLocalSearchParams) reliably read.
+    function collectParams() {
+      var params = {};
+      var search = window.location.search.replace(/^\?/, "");
+      var hash = window.location.hash.replace(/^#/, "");
+      [search, hash].forEach(function (part) {
+        if (!part) return;
+        part.split("&").forEach(function (pair) {
+          if (!pair) return;
+          var idx = pair.indexOf("=");
+          var key = idx === -1 ? pair : pair.slice(0, idx);
+          var value = idx === -1 ? "" : pair.slice(idx + 1);
+          if (key) params[decodeURIComponent(key)] = value;
+        });
+      });
+      return params;
+    }
+
+    var params = collectParams();
+    var type = params.type || params.token_type || "";
+    var hasError = !!params.error;
+
+    // ── Decide which native screen should receive this link ───────────────────
+    // `auth/reset-password` already knows how to exchange a recovery code for
+    // a session; everything else (signup confirmation, magic link, OAuth,
+    // email change) goes through `auth/callback`, which does the same for
+    // those flows.
+    var nativePath = type === "recovery" ? "auth/reset-password" : "auth/callback";
+    var qs = Object.keys(params)
+      .map(function (k) { return encodeURIComponent(k) + "=" + params[k]; })
+      .join("&");
+    var deepLink = "talenta://" + nativePath + (qs ? "?" + qs : "");
+
+    document.getElementById("openAppBtn").href = deepLink;
+    document.getElementById("androidBtn").href = ANDROID_STORE_URL;
+    if (IOS_STORE_URL) {
+      document.getElementById("iosBtn").href = IOS_STORE_URL;
+      document.getElementById("iosBtn").style.display = "block";
+    }
+
+    // ── Copy per outcome ────────────────────────────────────────────────────
+    var titleEl = document.getElementById("title");
+    var subtitleEl = document.getElementById("subtitle");
+    var iconEl = document.getElementById("icon");
+    var statusLine = document.getElementById("statusLine");
+
+    if (hasError) {
+      iconEl.classList.add("error");
+      iconEl.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '<circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>';
+      titleEl.textContent = "This link no longer works";
+      subtitleEl.textContent = decodeURIComponent(
+        (params.error_description || "It may have expired or already been used. Please try again from the app.").replace(/\+/g, " ")
+      );
+      statusLine.style.display = "none";
+    } else if (type === "recovery") {
+      titleEl.textContent = "Identity verified";
+      subtitleEl.textContent = "You can now set a new password in the Talenta app.";
+    } else if (type === "signup" || type === "email_change") {
+      titleEl.textContent = "Email confirmed!";
+      subtitleEl.textContent = "Your account is verified. Sign in to get started.";
+    } else {
+      titleEl.textContent = "You're verified!";
+      subtitleEl.textContent = "Head back to the Talenta app to continue.";
+    }
+
+    // ── Only attempt the automatic app hand-off on phones ──────────────────────
+    // (Desktop visitors just get the message + store badges — there's nothing
+    // to deep-link into.)
+    var isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+
+    if (!hasError && isMobile) {
+      window.location.href = deepLink;
+      // If the OS doesn't hand off to the app (not installed), this page is
+      // still visible after a moment — swap the status line to a manual nudge.
+      setTimeout(function () {
+        statusLine.innerHTML = "<span>Still here? Tap the button below.</span>";
+      }, 2500);
+    } else {
+      statusLine.style.display = "none";
+    }
+  </script>
+</body>
+</html>
