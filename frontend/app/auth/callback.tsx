@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 
@@ -14,6 +15,7 @@ import { toast } from "sonner-native";
  */
 export default function AuthCallback() {
   const router = useRouter();
+  const { t } = useTranslation("auth");
   const params = useLocalSearchParams<{
     code?: string;
     error?: string;
@@ -26,11 +28,23 @@ export default function AuthCallback() {
 
       if (error) {
         console.warn("OAuth callback error:", error, params.error_description);
-        // Surface the specific reason to the user — e.g. the guard that blocks
-        // linking a Google sign-in to a pre-existing email/password account
-        // returns its message here via `error_description`.
+
+        // The `prevent_cross_provider_auto_link` DB trigger blocks Google
+        // sign-in from silently attaching itself to a pre-existing
+        // email/password account. It successfully aborts the operation (no
+        // account is created/linked), but Supabase Auth does NOT forward our
+        // custom exception message to the client — it always wraps identity
+        // creation failures in a generic "Error creating identity" message.
+        // We detect that specific, known failure and show our real message
+        // instead of the generic one.
+        const description = params.error_description?.toLowerCase() || "";
+        const isBlockedCrossProviderLink =
+          error === "server_error" && description.includes("identity");
+
         toast.error(
-          params.error_description || "Google sign-in failed. Please try again.",
+          isBlockedCrossProviderLink
+            ? t("messages.passwordAccountExists")
+            : params.error_description || t("messages.signInError"),
           { duration: 4000 },
         );
         router.replace("/auth/signin");
