@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner-native";
 import { checkAuthProvider } from "@/utils/authPrecheck";
 import { isEmailRateLimitError } from "@/utils/authErrors";
+import { AUTH_ACTION_URL } from "@/constants/authRedirects";
 
 export default function useSignupForm() {
   const router = useRouter();
@@ -248,7 +249,7 @@ export default function useSignupForm() {
                   company_username: formData.companyUsername.trim().toLowerCase(),
                   website: formData.website || null,
                 },
-          emailRedirectTo: "talenta://auth/signin",
+          emailRedirectTo: AUTH_ACTION_URL,
         },
       });
 
