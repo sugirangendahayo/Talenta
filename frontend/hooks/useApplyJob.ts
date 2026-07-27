@@ -197,7 +197,7 @@ export function useApplyJob() {
 
             await sendPushToUser({
               recipientUserId: jobData.employer_id,
-              title: "New Job Application 📋",
+              title: "New Job Application ",
               body: `${applicantName} has applied for your ${jobData.title} position.`,
               data: {
                 type: "new_application",
