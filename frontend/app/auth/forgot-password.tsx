@@ -5,6 +5,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 import { isEmailRateLimitError } from "@/utils/authErrors";
+import { AUTH_ACTION_RESET_URL } from "@/constants/authRedirects";
 
 import AuthContainer from "@/components/auth/shared/AuthContainer";
 import AuthHeader from "@/components/auth/shared/AuthHeader";
@@ -30,7 +31,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'talenta://auth/reset-password',
+        redirectTo: AUTH_ACTION_RESET_URL,
       });
 
       if (error) throw error;
