@@ -5,6 +5,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 import { isEmailRateLimitError } from "@/utils/authErrors";
+import { AUTH_ACTION_URL } from "@/constants/authRedirects";
 
 import AuthContainer from "@/components/auth/shared/AuthContainer";
 import AuthHeader from "@/components/auth/shared/AuthHeader";
@@ -28,7 +29,7 @@ export default function VerifyEmail() {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: "talenta://auth/signin",
+          emailRedirectTo: AUTH_ACTION_URL,
         },
       });
 
