@@ -15,7 +15,7 @@ jest.mock('@/lib/supabase', () => ({
               then: jest.fn(callback => callback({ data: [], error: null })),
             })),
             then: jest.fn(callback => callback({ data: [], error: null })),
-          })),
+          })),kkkk
         })),
       })),
     })),
