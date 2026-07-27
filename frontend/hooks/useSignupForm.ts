@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner-native";
+import { checkAuthProvider } from "@/utils/authPrecheck";
 
 export default function useSignupForm() {
   const router = useRouter();
@@ -273,7 +274,12 @@ export default function useSignupForm() {
 
       let errorMessage = t("messages.signupError");
       if (error.message?.includes("already registered")) {
-        errorMessage = t("messages.emailAlreadyRegistered");
+        // Give more specific guidance when the existing account is Google-only.
+        const precheck = await checkAuthProvider(formData.email, "password");
+        errorMessage =
+          precheck.status === "google_only"
+            ? t("messages.googleAccountOnly")
+            : t("messages.emailAlreadyRegistered");
       } else if (error.message?.includes("duplicate key")) {
         errorMessage = "That username is already taken. Please choose another.";
       } else if (error.message) {
