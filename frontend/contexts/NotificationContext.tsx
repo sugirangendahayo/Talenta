@@ -71,6 +71,9 @@ export function NotificationProvider({
 
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  // Tracks who was logged in last, so we can clean up their token the moment
+  // they sign out — see the auth-change effect below.
+  const previousUserIdRef = useRef<string | null>(null);
 
   // ── Request permission and get token ───────────────────────────────────────
   const requestPermission = async (): Promise<boolean> => {
@@ -113,6 +116,24 @@ export function NotificationProvider({
       const token = tokenResponse.data;
       setExpoPushToken(token);
 
+      // A physical device's Expo push token can only meaningfully belong to
+      // ONE logged-in user at a time. If a different account previously
+      // registered this exact token on this device (e.g. testing an employer
+      // and a jobseeker account on the same phone/simulator, or a shared
+      // device), remove that stale association first. Without this, BOTH
+      // accounts stay subscribed to the same token forever, and one user's
+      // notification physically arrives on a device the other user is also
+      // signed into — which looks like "both users got notified".
+      const { error: cleanupError } = await supabase
+        .from("push_tokens")
+        .delete()
+        .eq("token", token)
+        .neq("user_id", userId);
+
+      if (cleanupError) {
+        console.warn("[Notifications] Failed to clean up stale token owners:", cleanupError.message);
+      }
+
       // Upsert to Supabase — handles both new and existing tokens/devices
       const { error } = await supabase.from("push_tokens").upsert(
         {
@@ -137,7 +158,7 @@ export function NotificationProvider({
     }
   };
 
-  // ── Remove token on sign-out ───────────────────────────────────────────────
+  // ── Remove token on sign-out ────────────────────────────────────
   const removeToken = async (userId: string) => {
     if (!expoPushToken) return;
     try {
@@ -182,14 +203,20 @@ export function NotificationProvider({
     }
   };
 
-  // ── Auth change effect — register/remove token ─────────────────────────────
+  // ── Auth change effect — register/remove token ────────────────────────
   useEffect(() => {
     if (user) {
       registerToken(user.id);
+    } else if (previousUserIdRef.current) {
+      // Just signed out — remove this device's token from the outgoing
+      // user's row immediately, rather than waiting for whoever logs in
+      // next to (maybe) clean it up. This is the primary defense against a
+      // shared/reused device staying subscribed to a previous account's
+      // notifications. `registerToken`'s own cleanup step is the backstop
+      // for cases where this doesn't get to run (e.g. app killed instantly).
+      removeToken(previousUserIdRef.current);
     }
-    // Note: we don't call removeToken on sign-out here to avoid race conditions;
-    // the token stays in DB but becomes inactive once the user signs in on another account.
-    // A cleanup job can remove stale tokens periodically.
+    previousUserIdRef.current = user?.id ?? null;
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Notification listeners ─────────────────────────────────────────────────

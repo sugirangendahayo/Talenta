@@ -7,7 +7,7 @@ import {
   LayoutAnimation,
 } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 interface PasswordFieldProps extends Omit<TextInputProps, "secureTextEntry"> {
@@ -29,6 +29,9 @@ export default function PasswordField({
   const { t } = useTranslation("auth");
   const [internalShowPassword, setInternalShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  // Collapsed by default — the full checklist is available on demand
+  // instead of always taking up space under the field.
+  const [showAllRequirements, setShowAllRequirements] = useState(false);
 
   // Use external state if provided, otherwise use internal state
   const showPassword =
@@ -72,18 +75,48 @@ export default function PasswordField({
     color = "#10B981"; // green
   }
 
-  // Smooth layout animation when expanding/collapsing criteria
+  // Ordered so the coach line always points at the single most useful next
+  // step, instead of dumping every unmet rule on the user at once.
+  const requirementFlow = useMemo(
+    () => [
+      {
+        key: "length" as const,
+        hint: t("passwordHints.length", { defaultValue: "Use at least 8 characters" }),
+        label: t("passwordRequirements.length", { defaultValue: "8+ characters" }),
+      },
+      {
+        key: "uppercase" as const,
+        hint: t("passwordHints.uppercase", { defaultValue: "Add an uppercase letter (A–Z)" }),
+        label: t("passwordRequirements.uppercase", { defaultValue: "Uppercase letter" }),
+      },
+      {
+        key: "lowercase" as const,
+        hint: t("passwordHints.lowercase", { defaultValue: "Add a lowercase letter (a–z)" }),
+        label: t("passwordRequirements.lowercase", { defaultValue: "Lowercase letter" }),
+      },
+      {
+        key: "number" as const,
+        hint: t("passwordHints.number", { defaultValue: "Add a number (0–9)" }),
+        label: t("passwordRequirements.number", { defaultValue: "Number" }),
+      },
+      {
+        key: "special" as const,
+        hint: t("passwordHints.special", { defaultValue: "Add a symbol (!@#$%^&*)" }),
+        label: t("passwordRequirements.special", { defaultValue: "Special character" }),
+      },
+    ],
+    [t],
+  );
+
+  const nextRequirement = requirementFlow.find((r) => !checks[r.key]);
+
+  // Smooth layout animation when expanding/collapsing criteria, or when the
+  // coach line's message changes as the user satisfies each requirement.
   useEffect(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-  }, [isFocused, hasValue, isStrong]);
+  }, [isFocused, hasValue, isStrong, nextRequirement?.key, showAllRequirements]);
 
-  const RequirementItem = ({
-    met,
-    text,
-  }: {
-    met: boolean;
-    text: string;
-  }) => (
+  const RequirementItem = ({ met, text }: { met: boolean; text: string }) => (
     <View className="flex-row items-center mt-1.5">
       <Ionicons
         name={met ? "checkmark-circle" : "ellipse-outline"}
@@ -142,7 +175,7 @@ export default function PasswordField({
         </TouchableOpacity>
       </View>
 
-      {/* Clean Password Strength UI (Only shown when focused or has value) */}
+      {/* Strength meter + a single contextual coaching line (only shown while typing) */}
       {showStrengthIndicator && (isFocused || hasValue) && (
         <View className="mt-3 px-1">
           {/* Strength Line & Label */}
@@ -166,32 +199,50 @@ export default function PasswordField({
             </Text>
           </View>
 
-          {/* Requirements Checklist — collapses completely when strong to save space, but expands when focused if not strong */}
-          {(!isStrong || isFocused) && (
-            <View className="flex-row flex-wrap mt-1">
+          {/* One line of guidance at a time — tells you the single next thing
+              to fix instead of a checklist of five items. Tap it to see (or
+              hide) the full list if you want it. */}
+          <TouchableOpacity
+            onPress={() => setShowAllRequirements((v) => !v)}
+            activeOpacity={0.7}
+            className="flex-row items-center justify-between"
+          >
+            <View className="flex-row items-center flex-1 pr-2">
+              <Ionicons
+                name={nextRequirement ? "arrow-forward-circle-outline" : "checkmark-circle"}
+                size={14}
+                color={nextRequirement ? "#9CA3AF" : "#10B981"}
+              />
+              <Text
+                className={`ml-1.5 text-xs font-quicksandMedium flex-1 ${
+                  nextRequirement
+                    ? "text-gray-500 dark:text-gray-400"
+                    : "text-emerald-600 dark:text-emerald-500"
+                }`}
+              >
+                {nextRequirement
+                  ? nextRequirement.hint
+                  : t("passwordHints.great", { defaultValue: "Great — that's a strong password" })}
+              </Text>
+            </View>
+            <Ionicons
+              name={showAllRequirements ? "chevron-up" : "chevron-down"}
+              size={14}
+              color="#9CA3AF"
+            />
+          </TouchableOpacity>
+
+          {/* Full checklist — collapsed by default, available on tap */}
+          {showAllRequirements && (
+            <View className="flex-row flex-wrap mt-2 pt-2 border-t border-gray-100 dark:border-[#1e1e1e]">
               <View className="w-1/2">
-                <RequirementItem
-                  met={checks.length}
-                  text={t("passwordRequirements.length", { defaultValue: "8+ characters" })}
-                />
-                <RequirementItem
-                  met={checks.uppercase}
-                  text={t("passwordRequirements.uppercase", { defaultValue: "Uppercase letter" })}
-                />
-                <RequirementItem
-                  met={checks.lowercase}
-                  text={t("passwordRequirements.lowercase", { defaultValue: "Lowercase letter" })}
-                />
+                <RequirementItem met={checks.length} text={requirementFlow[0].label} />
+                <RequirementItem met={checks.uppercase} text={requirementFlow[1].label} />
+                <RequirementItem met={checks.lowercase} text={requirementFlow[2].label} />
               </View>
               <View className="w-1/2">
-                <RequirementItem
-                  met={checks.number}
-                  text={t("passwordRequirements.number", { defaultValue: "Number" })}
-                />
-                <RequirementItem
-                  met={checks.special}
-                  text={t("passwordRequirements.special", { defaultValue: "Special character" })}
-                />
+                <RequirementItem met={checks.number} text={requirementFlow[3].label} />
+                <RequirementItem met={checks.special} text={requirementFlow[4].label} />
               </View>
             </View>
           )}

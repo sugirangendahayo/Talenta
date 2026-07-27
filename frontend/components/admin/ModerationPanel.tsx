@@ -14,6 +14,7 @@ import { getModerationHistory } from "@/lib/adminService";
 import type { ModerationAction } from "@/types/admin.types";
 import { PromptModal } from "@/components/common/PromptModal";
 import { useTranslation } from "react-i18next";
+import { usePushNotification } from "@/hooks/usePushNotification";
 
 interface ModerationPanelProps {
   targetUserId: string;
@@ -78,6 +79,54 @@ type ActionType =
   | "flag_suspicious"
   | "require_verification";
 
+// The affected user must be told about every moderation action that changes
+// their account state or standing — otherwise they just discover they're
+// locked out with no explanation. `flag_suspicious` is intentionally excluded:
+// it's an internal admin marker for investigation, not a user-facing action.
+const MODERATION_NOTIFICATIONS: Partial<
+  Record<ActionType, { type: string; title: string; body: (reason: string) => string }>
+> = {
+  ban: {
+    type: "moderation_banned",
+    title: "Account Banned",
+    body: (reason) =>
+      `Your account has been permanently banned. Reason: ${reason || "Violation of our terms of service."}`,
+  },
+  unban: {
+    type: "moderation_unbanned",
+    title: "Account Restored",
+    body: () => "Your account has been restored and is active again. Welcome back!",
+  },
+  suspend: {
+    type: "moderation_suspension",
+    title: "Account Suspended",
+    body: (reason) =>
+      `Your account has been temporarily suspended. Reason: ${reason || "Violation of our terms of service."}`,
+  },
+  unsuspend: {
+    type: "moderation_unsuspended",
+    title: "Suspension Lifted",
+    body: () => "Your account suspension has been lifted. You can now use Talenta normally.",
+  },
+  under_review: {
+    type: "moderation_under_review",
+    title: "Account Under Review",
+    body: (reason) =>
+      `Your account has been placed under review. Reason: ${reason || "We're reviewing recent activity on your account."}`,
+  },
+  warning: {
+    type: "moderation_warning",
+    title: "Account Warning",
+    body: (reason) => `You've received a warning: ${reason || "Please review our community guidelines."}`,
+  },
+  require_verification: {
+    type: "moderation_verification_revoked",
+    title: "Verification Revoked",
+    body: (reason) =>
+      `Your verification status has been revoked. Reason: ${reason || "Please resubmit your documents."}`,
+  },
+};
+
 export const ModerationPanel: React.FC<ModerationPanelProps> = ({
   targetUserId,
   targetRole,
@@ -86,6 +135,7 @@ export const ModerationPanel: React.FC<ModerationPanelProps> = ({
 }) => {
   const { role } = useAuth();
   const { t } = useTranslation("admin");
+  const { sendPushToUser } = usePushNotification();
   const [isProcessing, setIsProcessing] = useState(false);
   const [history, setHistory] = useState<ModerationAction[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -178,6 +228,31 @@ export const ModerationPanel: React.FC<ModerationPanelProps> = ({
           internal_notes: `Admin initiated ${action} from profile panel.`,
         });
         if (error) throw error;
+      }
+
+      // Tell the affected user what just happened to their account — an
+      // admin action that silently changes account state with no
+      // notification is a support nightmare waiting to happen.
+      const notif = MODERATION_NOTIFICATIONS[action];
+      if (notif) {
+        const body = notif.body(reason);
+        try {
+          await supabase.from("notifications").insert({
+            user_id: targetUserId,
+            type: notif.type,
+            title: notif.title,
+            message: body,
+          });
+          await sendPushToUser({
+            recipientUserId: targetUserId,
+            title: notif.title,
+            body,
+            data: { type: notif.type },
+          });
+        } catch (notifyErr) {
+          // Non-fatal: the moderation action itself already succeeded.
+          console.warn("[ModerationPanel] Failed to notify user of action:", notifyErr);
+        }
       }
 
       const updated = await getModerationHistory(targetUserId);

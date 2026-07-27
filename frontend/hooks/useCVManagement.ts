@@ -4,6 +4,7 @@ import { toast } from "sonner-native";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface CVInfo {
   url: string | null;
@@ -14,6 +15,7 @@ export interface CVInfo {
 
 export function useCVManagement() {
   const { t } = useTranslation("profile");
+  const { refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -154,8 +156,12 @@ export function useCVManagement() {
 
       toast.success("CV uploaded successfully! 🎉");
 
-      // Refresh CV info
+      // Refresh CV info, plus the cached AuthContext profile so completion
+      // status (recomputed server-side by a DB trigger whenever this row
+      // changes) is reflected immediately everywhere in the app — not just
+      // after the user happens to revisit a screen that refetches it.
       await fetchCVInfo();
+      await refreshProfile();
 
       return true;
     } catch (err: any) {
@@ -165,7 +171,7 @@ export function useCVManagement() {
     } finally {
       setUploading(false);
     }
-  }, [cvInfo.url, fetchCVInfo, t]);
+  }, [cvInfo.url, fetchCVInfo, refreshProfile, t]);
 
   // Delete CV
   const deleteCV = useCallback(async (): Promise<boolean> => {
@@ -219,6 +225,9 @@ export function useCVManagement() {
         fileSize: null,
       });
 
+      // Keep the cached AuthContext profile in sync (see uploadCV for why).
+      await refreshProfile();
+
       return true;
     } catch (err: any) {
       console.error("Error deleting CV:", err);
@@ -227,7 +236,7 @@ export function useCVManagement() {
     } finally {
       setDeleting(false);
     }
-  }, [cvInfo.url, t]);
+  }, [cvInfo.url, refreshProfile, t]);
 
   // Download/View CV (opens in browser)
   const viewCV = useCallback(() => {

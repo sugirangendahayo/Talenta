@@ -4,6 +4,8 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { isEmailRateLimitError } from "@/utils/authErrors";
+import { AUTH_ACTION_URL } from "@/constants/authRedirects";
 
 import AuthContainer from "@/components/auth/shared/AuthContainer";
 import AuthHeader from "@/components/auth/shared/AuthHeader";
@@ -27,7 +29,7 @@ export default function VerifyEmail() {
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: "talenta://auth/signin",
+          emailRedirectTo: AUTH_ACTION_URL,
         },
       });
 
@@ -38,9 +40,10 @@ export default function VerifyEmail() {
       });
     } catch (error: any) {
       console.error("Resend error:", error);
-      toast.error(error.message || t("messages.resendError", "Failed to resend email"), {
-        duration: 3000,
-      });
+      const message = isEmailRateLimitError(error)
+        ? t("messages.emailRateLimitExceeded")
+        : error.message || t("messages.resendError", "Failed to resend email");
+      toast.error(message, { duration: 4000 });
     } finally {
       setIsResending(false);
     }

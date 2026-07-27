@@ -4,6 +4,8 @@ import { ActivityIndicator, Text, View } from "react-native";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { isEmailRateLimitError } from "@/utils/authErrors";
+import { AUTH_ACTION_RESET_URL } from "@/constants/authRedirects";
 
 import AuthContainer from "@/components/auth/shared/AuthContainer";
 import AuthHeader from "@/components/auth/shared/AuthHeader";
@@ -20,7 +22,8 @@ export default function ForgotPassword() {
   const [isSent, setIsSent] = useState(false);
 
   const handleResetPassword = async () => {
-    if (!email.trim()) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim() || !emailRegex.test(email.trim())) {
       toast.error(t("validation.invalidEmail", "Please enter a valid email address"));
       return;
     }
@@ -28,7 +31,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'talenta://auth/reset-password',
+        redirectTo: AUTH_ACTION_RESET_URL,
       });
 
       if (error) throw error;
@@ -36,9 +39,10 @@ export default function ForgotPassword() {
       setIsSent(true);
     } catch (error: any) {
       console.error("Forgot password error:", error);
-      toast.error(error.message || t("messages.resetError", "Failed to send reset link"), {
-        duration: 3000,
-      });
+      const message = isEmailRateLimitError(error)
+        ? t("messages.emailRateLimitExceeded")
+        : error.message || t("messages.resetError", "Failed to send reset link");
+      toast.error(message, { duration: 4000 });
     } finally {
       setIsLoading(false);
     }
