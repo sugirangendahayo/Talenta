@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { View, ActivityIndicator, Text, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner-native";
 
 /**
  * Handles the deep-link callback from Google OAuth.
@@ -25,6 +26,13 @@ export default function AuthCallback() {
 
       if (error) {
         console.warn("OAuth callback error:", error, params.error_description);
+        // Surface the specific reason to the user — e.g. the guard that blocks
+        // linking a Google sign-in to a pre-existing email/password account
+        // returns its message here via `error_description`.
+        toast.error(
+          params.error_description || "Google sign-in failed. Please try again.",
+          { duration: 4000 },
+        );
         router.replace("/auth/signin");
         return;
       }

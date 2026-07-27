@@ -164,7 +164,7 @@ export default function GlobalSearchModal<T>({
                 onChangeText={setQuery}
                 placeholder={t("common:search", { defaultValue: "Search for jobs, companies, keywords..." })}
                 placeholderTextColor="#9CA3AF"
-                className="flex-1 font-quicksandMedium text-sm text-gray-800 dark:text-gray-100 p-0 m-0"
+                className="flex-1 font-quicksandMedium text-sm text-gray-800 dark:text-gray-100 py-1 m-0"
                 returnKeyType="search"
                 onSubmitEditing={() => handleSearch(query)}
                 autoCorrect={false}

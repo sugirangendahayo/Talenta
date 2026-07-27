@@ -144,7 +144,7 @@ export const approveBusinessVerification = async (
   await supabase.from("notifications").insert({
     user_id: employerId,
     type: "business_approved",
-    title: "🎉 Business Registration Approved",
+    title: "Business Registration Approved",
     message: "Congratulations! Your business registration has been approved. You may now subscribe to Talenta Premium to receive your Verified Employer badge.",
   });
 };

@@ -14,3 +14,9 @@ entrypoint = "./functions/send-interview-email/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/send-push-notification/index.ts"
+
+[functions.auth-precheck]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/auth-precheck/index.ts"
+# Called anonymously before a user is signed in, so it must not require a JWT.
