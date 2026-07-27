@@ -16,6 +16,7 @@ import { Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner-native";
 import { checkAuthProvider } from "@/utils/authPrecheck";
+import { isEmailRateLimitError } from "@/utils/authErrors";
 
 export default function useSignupForm() {
   const router = useRouter();
@@ -223,12 +224,30 @@ export default function useSignupForm() {
     setIsLoading(true);
 
     try {
-      // 1. Sign up with Supabase Auth
+      // 1. Sign up with Supabase Auth. Role-specific fields travel in
+      //    `options.data` (→ `raw_user_meta_data`) so a database trigger can
+      //    create the matching `jobseeker_profiles` / `employer_profiles` row
+      //    server-side. That trigger runs under Supabase Auth's own
+      //    privileged role and bypasses RLS, so it works whether or not
+      //    "Confirm email" is enabled — unlike inserting from this client,
+      //    which has no session yet when email confirmation is required.
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          data: { role },
+          data:
+            role === "jobseeker"
+              ? {
+                  role,
+                  full_name: formData.fullName.trim(),
+                  username: formData.username.trim().toLowerCase(),
+                }
+              : {
+                  role,
+                  company_name: formData.companyName.trim(),
+                  company_username: formData.companyUsername.trim().toLowerCase(),
+                  website: formData.website || null,
+                },
           emailRedirectTo: "talenta://auth/signin",
         },
       });
@@ -236,44 +255,21 @@ export default function useSignupForm() {
       if (authError) throw authError;
       if (!authData.user) throw new Error(t("messages.userCreationFailed"));
 
-      // 2. Create role-specific profile
-      if (role === "jobseeker") {
-        const { error: profileError } = await supabase
-          .from("jobseeker_profiles")
-          .insert({
-            id: authData.user.id,
-            full_name: formData.fullName.trim(),
-            username: formData.username.trim().toLowerCase(),
-            email: formData.email,
-            profile_completed: false,
-          });
-
-        if (profileError) throw profileError;
-      } else {
-        const { error: profileError } = await supabase
-          .from("employer_profiles")
-          .insert({
-            id: authData.user.id,
-            company_name: formData.companyName.trim(),
-            company_username: formData.companyUsername.trim().toLowerCase(),
-            email: formData.email,
-            company_website: formData.website || null,
-            profile_completed: false,
-            is_verified: false,
-          });
-
-        if (profileError) throw profileError;
-      }
-
-      // 3. Success
-      toast.success(t("messages.accountCreated"), { duration: 2000 });
+      // 2. Success — the role-specific profile row is created by the
+      //    `handle_new_user_role_profile` trigger (with a self-heal fallback
+      //    in AuthContext on first authenticated session, just in case).
+      //    The account isn't usable yet until the email is confirmed, so the
+      //    toast must say that explicitly instead of implying it's all done.
+      toast.success(t("messages.accountCreatedVerifyEmail"), { duration: 3000 });
 
       router.replace(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`);
     } catch (error: any) {
       console.error("Signup error:", error);
 
       let errorMessage = t("messages.signupError");
-      if (error.message?.includes("already registered")) {
+      if (isEmailRateLimitError(error)) {
+        errorMessage = t("messages.emailRateLimitExceeded");
+      } else if (error.message?.includes("already registered")) {
         // Give more specific guidance when the existing account is Google-only.
         const precheck = await checkAuthProvider(formData.email, "password");
         errorMessage =
