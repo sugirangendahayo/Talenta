@@ -82,15 +82,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadOnboardingStatus();
   }, []);
 
+  // Self-heal a missing role-specific profile row.
+  //
+  // The row is normally created server-side by the `handle_new_user_role_profile`
+  // trigger the moment `auth.users` gets a new row, using the signup metadata
+  // passed via `options.data`. This is a defense-in-depth fallback for the
+  // rare case that insert didn't happen (e.g. migration not yet deployed, or
+  // an unexpected trigger failure) — it runs with a real authenticated
+  // session, so RLS (`auth.uid() = id`) is satisfied naturally.
+  const selfHealRoleProfile = useCallback(
+    async (
+      authUser: User,
+      userRole: Role,
+    ): Promise<JobseekerProfile | EmployerProfile | null> => {
+      const meta = authUser.user_metadata || {};
+
+      try {
+        if (userRole === "jobseeker" && meta.username) {
+          const { data, error } = await supabase
+            .from("jobseeker_profiles")
+            .insert({
+              id: authUser.id,
+              full_name: meta.full_name || "",
+              username: meta.username,
+              email: authUser.email || "",
+              profile_completed: false,
+            })
+            .select()
+            .single();
+
+          if (!error) return data;
+          if (error.code !== "23505") throw error; // ignore "already exists" races
+        } else if (userRole === "employer" && meta.company_username) {
+          const { data, error } = await supabase
+            .from("employer_profiles")
+            .insert({
+              id: authUser.id,
+              company_name: meta.company_name || "",
+              company_username: meta.company_username,
+              email: authUser.email || "",
+              company_website: meta.website || null,
+              profile_completed: false,
+              is_verified: false,
+            })
+            .select()
+            .single();
+
+          if (!error) return data;
+          if (error.code !== "23505") throw error;
+        } else {
+          // No signup metadata to self-heal from (e.g. a Google OAuth user who
+          // hasn't finished "complete-oauth-profile" yet) — nothing to do here.
+          return null;
+        }
+      } catch (error) {
+        console.error("Error self-healing role profile:", error);
+        return null;
+      }
+
+      // Row already existed (created concurrently) — fetch it.
+      const table = userRole === "jobseeker" ? "jobseeker_profiles" : "employer_profiles";
+      const { data } = await supabase.from(table).select("*").eq("id", authUser.id).single();
+      return data ?? null;
+    },
+    [],
+  );
+
   // Fetch user profile based on role (memoized)
   const fetchProfile = useCallback(
-    async (userId: string, userRole: Role): Promise<void> => {
+    async (authUser: User, userRole: Role): Promise<void> => {
       // Prevent duplicate fetches
       if (fetchingProfile.current) {
         return;
       }
 
       fetchingProfile.current = true;
+      const userId = authUser.id;
 
       try {
         if (userRole === "jobseeker") {
@@ -101,10 +168,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .single();
 
           if (error) {
-            // Profile might not exist for new users - this is OK
+            // Profile might not exist yet — try to self-heal before giving up.
             if (error.code === "PGRST116") {
-              console.log("Jobseeker profile not found - new user");
-              if (isMounted.current) setProfile(null);
+              console.log("Jobseeker profile not found - attempting self-heal");
+              const healed = await selfHealRoleProfile(authUser, userRole);
+              if (isMounted.current) setProfile(healed);
               return;
             }
             throw error;
@@ -122,8 +190,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (error) {
             if (error.code === "PGRST116") {
-              console.log("Employer profile not found - new user");
-              if (isMounted.current) setProfile(null);
+              console.log("Employer profile not found - attempting self-heal");
+              const healed = await selfHealRoleProfile(authUser, userRole);
+              if (isMounted.current) setProfile(healed);
               return;
             }
             throw error;
@@ -142,7 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchingProfile.current = false;
       }
     },
-    [],
+    [selfHealRoleProfile],
   );
 
   // Refresh profile data (exposed to components).
@@ -151,7 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshProfile = useCallback(async () => {
     if (user && role) {
       fetchingProfile.current = false; // allow the fetch to proceed
-      await fetchProfile(user.id, role);
+      await fetchProfile(user, role);
     }
   }, [user, role, fetchProfile]);
 
@@ -184,7 +253,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (!error && profileData) {
             const userRole = profileData.role as Role;
             setRole(userRole);
-            await fetchProfile(initialSession.user.id, userRole);
+            await fetchProfile(initialSession.user, userRole);
             // Apply this user's saved language preference
             await applyUserLanguage(initialSession.user.id);
           }
@@ -231,7 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!error && profileData) {
           const userRole = profileData.role as Role;
           setRole(userRole);
-          await fetchProfile(newSession.user.id, userRole);
+          await fetchProfile(newSession.user, userRole);
           // Apply this user's saved language preference
           await applyUserLanguage(newSession.user.id);
         }
