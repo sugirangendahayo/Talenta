@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 import { useTranslation } from "react-i18next";
+import { checkAuthProvider } from "@/utils/authPrecheck";
 
 export default function useSigninForm() {
   const router = useRouter();
@@ -53,7 +54,22 @@ export default function useSigninForm() {
     setIsLoading(true);
 
     try {
-      // 1. Sign in with Supabase
+      // 1. Check which auth provider this email is registered with, so we
+      //    can guide Google-only accounts instead of attempting (and failing)
+      //    password verification against an account that has no password set.
+      const precheck = await checkAuthProvider(formData.email, "password");
+
+      if (precheck.status === "google_only") {
+        toast.error(t("messages.googleAccountOnly"), { duration: 4000 });
+        return;
+      }
+
+      if (precheck.status === "not_found") {
+        toast.error(t("messages.accountNotFound"), { duration: 3000 });
+        return;
+      }
+
+      // 2. Sign in with Supabase
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email: formData.email,
@@ -66,7 +82,7 @@ export default function useSigninForm() {
         throw new Error(t("messages.signInFailed"));
       }
 
-      // 2. Get user's role from profiles table
+      // 3. Get user's role from profiles table
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("role")
@@ -79,7 +95,7 @@ export default function useSigninForm() {
         throw new Error(t("messages.profileNotFound"));
       }
 
-      // 3. Navigation happens via RootLayoutNav automatically when AuthContext updates
+      // 4. Navigation happens via RootLayoutNav automatically when AuthContext updates
       toast.success(t("messages.signInSuccess"), {
         duration: 2000,
       });
