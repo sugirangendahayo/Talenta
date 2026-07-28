@@ -168,6 +168,34 @@ export function useApplicationStatus() {
         console.warn("[useApplicationStatus] Push notification failed:", pushErr);
       }
 
+      // 7. Send an email to the jobseeker for the most usability-critical
+      // status changes (shortlisted, hired, rejected). "pending" is skipped
+      // since it's just the application's initial state, not an employer
+      // action worth emailing about.
+      if (
+        newStatus === "shortlisted" ||
+        newStatus === "hired" ||
+        newStatus === "rejected"
+      ) {
+        try {
+          const { error: emailError } = await supabase.functions.invoke(
+            "send-interview-email",
+            {
+              body: {
+                applicationId,
+                status: newStatus,
+              },
+            },
+          );
+          if (emailError) {
+            console.warn("[useApplicationStatus] Status email failed:", emailError);
+          }
+        } catch (emailErr) {
+          // Non-fatal: status update already succeeded
+          console.warn("[useApplicationStatus] Status email failed:", emailErr);
+        }
+      }
+
       return { success: true };
     } catch (err) {
       const errorMessage =
