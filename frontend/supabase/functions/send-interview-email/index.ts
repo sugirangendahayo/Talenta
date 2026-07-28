@@ -208,14 +208,95 @@ function generateInterviewEmail(data: {
           
           <p style="margin-top: 24px;">
             Best regards,<br>
-            <strong>Job Finder Team</strong>
+            <strong>Talenta Team</strong>
           </p>
         </div>
         
         <div class="footer">
-          <p><strong>Job Finder App</strong></p>
+          <p><strong>Talenta App</strong></p>
           <p>This is an automated message. Please do not reply to this email.</p>
           <p>For support, contact us through the app.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function generateShortlistedEmail(data: {
+  jobseekerName: string;
+  jobTitle: string;
+  companyName: string;
+}): string {
+  const { jobseekerName, jobTitle, companyName } = data;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+          line-height: 1.6; 
+          color: #333; 
+          margin: 0;
+          padding: 0;
+          background-color: #f5f5f5;
+        }
+        .container { 
+          max-width: 600px; 
+          margin: 20px auto; 
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header { 
+          background: linear-gradient(135deg, #0E7490 0%, #06b6d4 100%); 
+          color: white; 
+          padding: 40px 30px; 
+          text-align: center;
+        }
+        .content { 
+          padding: 40px 30px;
+        }
+        .footer { 
+          text-align: center; 
+          color: #6b7280; 
+          font-size: 13px; 
+          padding: 30px;
+          background: #f9fafb;
+          border-top: 1px solid #e5e7eb;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Congratulations!</h1>
+          <p style="margin: 10px 0 0 0; font-size: 18px;">You've Been Shortlisted</p>
+        </div>
+        
+        <div class="content">
+          <p>Dear <strong>${jobseekerName}</strong>,</p>
+          
+          <p>Great news! Your application for <strong>${jobTitle}</strong> at <strong>${companyName}</strong> has been shortlisted.</p>
+          
+          <p>The employer will be reaching out to you directly with next steps, which may include an interview or further discussion about the role.</p>
+          
+          <p>In the meantime, you can check the app for any updates or messages from the employer.</p>
+          
+          <p style="margin-top: 24px;">
+            Best regards,<br>
+            <strong>Talenta Team</strong>
+          </p>
+        </div>
+        
+        <div class="footer">
+          <p><strong>Talenta App</strong></p>
+          <p>This is an automated message. Please do not reply to this email.</p>
         </div>
       </div>
     </body>
@@ -291,12 +372,12 @@ function generateRejectionEmail(data: {
           
           <p style="margin-top: 24px;">
             Best regards,<br>
-            <strong>Job Finder Team</strong>
+            <strong>Talenta Team</strong>
           </p>
         </div>
         
         <div class="footer">
-          <p><strong>Job Finder App</strong></p>
+          <p><strong>Talenta App</strong></p>
           <p>This is an automated message. Please do not reply to this email.</p>
         </div>
       </div>
@@ -374,12 +455,12 @@ function generateHiredEmail(data: {
           
           <p style="margin-top: 24px;">
             Best regards,<br>
-            <strong>Job Finder Team</strong>
+            <strong>Talenta Team</strong>
           </p>
         </div>
         
         <div class="footer">
-          <p><strong>Job Finder App</strong></p>
+          <p><strong>Talenta App</strong></p>
           <p>This is an automated message. Please do not reply to this email.</p>
         </div>
       </div>
@@ -434,15 +515,12 @@ serve(async (req) => {
       );
     }
 
-    // ✅ FIX 5: Validate interview details for shortlisted status
-    if (status === 'shortlisted') {
-      if (!interviewDetails) {
-        return new Response(
-          JSON.stringify({ error: "Interview details required for shortlisted status" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
+    // Interview details are OPTIONAL for shortlisted status: if the employer
+    // provided full interview details, we send the rich interview-invite
+    // email. Otherwise we send a simpler "you've been shortlisted" email.
+    // (This lets the basic shortlist/hire/reject flow — which doesn't collect
+    // interview details — still trigger an email.)
+    if (status === 'shortlisted' && interviewDetails) {
       const { interviewType, interviewDate, interviewTime, location, meetingLink } = interviewDetails;
 
       if (!interviewType || !interviewDate || !interviewTime) {
@@ -540,20 +618,27 @@ serve(async (req) => {
     let emailHtml: string;
     let emailSubject: string;
 
-    if (status === 'shortlisted') {
+    if (status === 'shortlisted' && interviewDetails) {
       const emailData = {
         jobseekerName: jobseekerProfile.full_name || "Candidate",
         jobTitle: job.title,
         companyName: employerProfile.company_name,
-        interviewType: interviewDetails!.interviewType,
-        interviewDate: interviewDetails!.interviewDate,
-        interviewTime: interviewDetails!.interviewTime,
-        location: interviewDetails!.location,
-        meetingLink: interviewDetails!.meetingLink,
-        additionalNotes: interviewDetails!.additionalNotes,
+        interviewType: interviewDetails.interviewType,
+        interviewDate: interviewDetails.interviewDate,
+        interviewTime: interviewDetails.interviewTime,
+        location: interviewDetails.location,
+        meetingLink: interviewDetails.meetingLink,
+        additionalNotes: interviewDetails.additionalNotes,
       };
       emailHtml = generateInterviewEmail(emailData);
       emailSubject = `Interview Invitation: ${job.title} at ${employerProfile.company_name}`;
+    } else if (status === 'shortlisted') {
+      emailHtml = generateShortlistedEmail({
+        jobseekerName: jobseekerProfile.full_name || "Candidate",
+        jobTitle: job.title,
+        companyName: employerProfile.company_name,
+      });
+      emailSubject = `You've Been Shortlisted: ${job.title} at ${employerProfile.company_name}`;
     } else if (status === 'rejected') {
       emailHtml = generateRejectionEmail({
         jobseekerName: jobseekerProfile.full_name || "Candidate",
@@ -570,21 +655,25 @@ serve(async (req) => {
       emailSubject = `Congratulations! Job Offer: ${job.title} at ${employerProfile.company_name}`;
     }
 
-    // Send email using Resend API
-    console.log("📧 Sending email to:", "Sugiraelisha@gmal.com");
-    
+    // Send email using Resend API — to the actual applicant, not a test inbox
+    const recipientEmail = jobseekerProfile.email;
+    if (!recipientEmail) {
+      throw new Error("Jobseeker has no email on file");
+    }
+    console.log("📧 Sending email to:", recipientEmail);
+
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-   body: JSON.stringify({
-  from: "Job Finder <onboarding@resend.dev>",
-  to: ["sugiraelisha@gmail.com"],  // Array format + fix typo
-  subject: emailSubject,
-  html: emailHtml,
-}),
+      body: JSON.stringify({
+        from: "Talenta <onboarding@resend.dev>",
+        to: [recipientEmail],
+        subject: emailSubject,
+        html: emailHtml,
+      }),
     });
 
     //  FIX 7: Properly capture Resend errors
@@ -597,8 +686,8 @@ serve(async (req) => {
     const emailResult = await emailResponse.json();
     console.log("✅ Email sent successfully:", emailResult);
 
-    // For shortlisted, update interview record
-    if (status === 'shortlisted') {
+    // For shortlisted (with a real interview scheduled), update interview record
+    if (status === 'shortlisted' && interviewDetails) {
       const { error: updateError } = await supabase
         .from("interviews")
         .update({ email_sent: true })
@@ -615,7 +704,7 @@ serve(async (req) => {
         success: true,
         message: `${status} email sent successfully`,
         emailId: emailResult.id,
-        sentTo: "Sugiraelisha@gmal.com",
+        sentTo: recipientEmail,
       }),
       {
         status: 200,
