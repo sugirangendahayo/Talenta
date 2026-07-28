@@ -1,6 +1,12 @@
 {
   "title": "Ibyinshiheho",
   "subtitle": "Kugena igenamiterere z'konti yawe n'ibyo ushaka",
+  "qrCode": {
+    "title": "Kode yanjye ya QR",
+    "hint": "Umuntu wese uzasoma iyi kode azajya ku murongo wa profil muri Talenta.",
+    "share": "Sangiza Profil",
+    "shareMessage": "Reba profil ya {{name}} kuri Talenta: {{link}}"
+  },
   "stats": {
     "activeJobs": "Akazi akora",
     "applicants": "Abashakwaho", 
