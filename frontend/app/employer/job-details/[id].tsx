@@ -1,11 +1,11 @@
 // app/employer/job-details/[id].tsx
+import JobDetailsSkeleton from "@/components/skeletons/JobDetailsSkeleton";
 import { supabase } from "@/lib/supabase";
 import { Ionicons, Octicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   Text,
@@ -203,14 +203,7 @@ export default function EmployerJobDetailsScreen() {
   // ── Loading ───────────────────────────────────────────────────────────────
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#080A08]">
-        <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-3 text-sm">
-          Loading job details…
-        </Text>
-      </View>
-    );
+    return <JobDetailsSkeleton />;
   }
 
   // ── Error ─────────────────────────────────────────────────────────────────
