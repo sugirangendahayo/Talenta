@@ -221,15 +221,6 @@ export default function AdminProfile() {
                 </Text>
               </View>
             </View>
-
-            {/* QR stub */}
-            <TouchableOpacity
-              className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              onPress={() => {}}
-            >
-              <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
-            </TouchableOpacity>
           </View>
         </View>
 
