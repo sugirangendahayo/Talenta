@@ -4,6 +4,7 @@ import BusinessVerificationBadge from "@/components/employer/BusinessVerificatio
 import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import LogoutSheet from "@/components/modal/LogoutSheet";
+import QRCodeModal from "@/components/modal/QRCodeModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useProfileImage } from "@/hooks/useProfileImage";
@@ -43,6 +44,7 @@ export default function EmployerProfile() {
   const [applicantsCount, setApplicantsCount] = useState(0);
   const [hiredCount, setHiredCount] = useState(0);
   const [logoutSheetVisible, setLogoutSheetVisible] = useState(false);
+  const [qrCodeVisible, setQrCodeVisible] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const lastScrollY = useRef(0);
 
@@ -355,6 +357,7 @@ export default function EmployerProfile() {
             </View>
 
             <TouchableOpacity
+              onPress={() => setQrCodeVisible(true)}
               className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
@@ -512,6 +515,22 @@ export default function EmployerProfile() {
         })}
         confirmLabel={t("logout.button", { defaultValue: "Log Out" })}
       />
+      {user?.id && (
+        <QRCodeModal
+          visible={qrCodeVisible}
+          onClose={() => setQrCodeVisible(false)}
+          userId={user.id}
+          role="employer"
+          displayName={employerData?.company_name || "Company Name"}
+          username={employerData?.company_username}
+          avatarUrl={employerData?.profile_image_url}
+          verified={
+            employerData?.business_verification_status === "approved" &&
+            !!employerData?.premium_plan &&
+            employerData.premium_plan !== "free"
+          }
+        />
+      )}
     </View>
   );
 }
