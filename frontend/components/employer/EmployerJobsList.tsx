@@ -23,6 +23,7 @@ interface EmployerJobsListProps {
   statusFilter: string;
   onRefresh: () => void;
   onScroll?: (event: any) => void;
+  onEditDraft?: (job: any) => void;
 }
 
 // Single source of truth for status presentation — same accent-edge pattern
@@ -46,6 +47,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
   statusFilter,
   onRefresh,
   onScroll,
+  onEditDraft,
 }) => {
   const router = useRouter();
   const { t } = useTranslation("jobs");
@@ -247,7 +249,7 @@ const EmployerJobsList: React.FC<EmployerJobsListProps> = ({
       return (
         <ActionLink
           label={t("actions.edit", { defaultValue: "Edit draft" })}
-          onPress={() => {}}
+          onPress={() => onEditDraft?.(job)}
         />
       );
     }
