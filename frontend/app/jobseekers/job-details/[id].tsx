@@ -1,5 +1,6 @@
 // app/jobseekers/job-details/[id].tsx
 import InfoAlertModal from "@/components/modal/InfoAlertModal";
+import JobDetailsSkeleton from "@/components/skeletons/JobDetailsSkeleton";
 import { useApplyJob } from "@/hooks/useApplyJob";
 import { useJobBookmark } from "@/hooks/useBookmarks";
 import { useSkillMatch } from "@/hooks/useSkillMatch";
@@ -151,14 +152,7 @@ export default function JobDetailsScreen() {
   // ── Loading ───────────────────────────────────────────────────────────────
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-[#080A08]">
-        <ActivityIndicator size="large" color="#0E7490" />
-        <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium mt-3 text-sm">
-          {t("jobs:details.loading", { defaultValue: "Loading job details…" })}
-        </Text>
-      </View>
-    );
+    return <JobDetailsSkeleton />;
   }
 
   // ── Error ─────────────────────────────────────────────────────────────────

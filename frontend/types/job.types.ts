@@ -39,6 +39,7 @@ export interface Applicant {
     skills?: string[];
     cv_document_url?: string;
     profile_image_url?: string | null;
+    premium_plan?: string;
   };
   jobs: {
     title: string;

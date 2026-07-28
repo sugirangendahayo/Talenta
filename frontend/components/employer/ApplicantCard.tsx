@@ -2,7 +2,7 @@
 import { supabase } from "@/lib/supabase";
 import type { Applicant } from "@/types/job.types";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import { useApplicationStatus } from "@/hooks/useApplicationStatus";
@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Linking,
-  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -134,22 +133,24 @@ export default function ApplicantCard({
         t("alerts.noPhone.message", { defaultValue: "This applicant has no phone number." }),
       );
     }
-    const num = phone.replace(/[^0-9+]/g, "");
+    const num = phone.replace(/[^0-9+]/g, "").replace(/^\+/, "");
     const msg = t("messages.whatsapp", {
       candidateName,
       jobTitle: applicant.jobs.title,
       defaultValue: `Hi ${candidateName}, regarding your application for ${applicant.jobs.title}.`,
     });
-    const url = Platform.select({
-      default: `https://wa.me/${num}?text=${encodeURIComponent(msg)}`,
-    })!;
-    Linking.canOpenURL(url).then((ok) =>
-      ok
-        ? Linking.openURL(url)
-        : Alert.alert(
-            t("alerts.whatsapp.title",   { defaultValue: "WhatsApp not found" }),
-            t("alerts.whatsapp.message", { defaultValue: "Please install WhatsApp." }),
-          ),
+    const url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+    // NOTE: We intentionally skip `Linking.canOpenURL` here. On Android 11+
+    // (API 30+) and iOS, `canOpenURL` can report `false` for WhatsApp even
+    // when it's installed, unless the app's manifest/Info.plist explicitly
+    // declares package-visibility/query entries for it. Calling `openURL`
+    // directly (which falls back to the browser for the universal wa.me
+    // link if WhatsApp isn't installed) is far more reliable.
+    Linking.openURL(url).catch(() =>
+      Alert.alert(
+        t("alerts.whatsapp.title",   { defaultValue: "WhatsApp not found" }),
+        t("alerts.whatsapp.message", { defaultValue: "Please install WhatsApp." }),
+      ),
     );
   };
 
@@ -215,12 +216,17 @@ const handleViewDetails = () =>
               size={40} 
             />
             <View className="flex-1 ml-3">
-              <Text
-                className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
-                numberOfLines={1}
-              >
-                {candidateName}
-              </Text>
+              <View className="flex-row items-center" style={{ gap: 4 }}>
+                <Text
+                  className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
+                  numberOfLines={1}
+                >
+                  {candidateName}
+                </Text>
+                {profile.premium_plan === "professional" && (
+                  <MaterialIcons name="verified" size={13} color="#0E7490" />
+                )}
+              </View>
               {/* @username */}
               {profile.username ? (
                 <Text

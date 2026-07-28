@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import {
   Alert,
   Linking,
-  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -34,25 +33,23 @@ const ContactCard = ({ contact }: ContactCardProps) => {
       Alert.alert(t("alerts.noPhone.title"), t("alerts.noPhone.message"));
       return;
     }
-    const phoneNumber = contact.phone.replace(/[^0-9+]/g, "");
+    const phoneNumber = contact.phone.replace(/[^0-9+]/g, "").replace(/^\+/, "");
     const message = t("alerts.whatsapp.message", {
       candidateName: contact.candidate_name,
       jobTitle: contact.job_title,
     });
-    const whatsappURL = Platform.select({
-      ios: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
-      android: `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`,
-      default: `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`,
-    });
-    Linking.canOpenURL(whatsappURL!).then((supported) => {
-      if (supported) {
-        Linking.openURL(whatsappURL!);
-      } else {
-        Alert.alert(
-          t("alerts.whatsapp.notInstalled.title"),
-          t("alerts.whatsapp.notInstalled.message"),
-        );
-      }
+    // Always use the universal https://wa.me link rather than the custom
+    // `whatsapp://` scheme. The custom scheme requires Android 11+ package
+    // visibility <queries> entries and iOS LSApplicationQueriesSchemes to be
+    // declared, otherwise `canOpenURL` incorrectly reports WhatsApp as "not
+    // installed" even when it is. The https link works everywhere and opens
+    // the app directly if installed (falling back to the browser otherwise).
+    const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    Linking.openURL(whatsappURL).catch(() => {
+      Alert.alert(
+        t("alerts.whatsapp.notInstalled.title"),
+        t("alerts.whatsapp.notInstalled.message"),
+      );
     });
   };
 

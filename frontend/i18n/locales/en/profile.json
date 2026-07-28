@@ -1,6 +1,12 @@
 {
   "title": "Profile",
   "subtitle": "Manage your account settings and preferences",
+  "qrCode": {
+    "title": "My QR Code",
+    "hint": "Anyone who scans this code will be taken straight to this profile in Talenta.",
+    "share": "Share Profile",
+    "shareMessage": "Check out {{name}}'s profile on Talenta: {{link}}"
+  },
   "stats": {
     "activeJobs": "Active Jobs",
     "applicants": "Applicants", 

@@ -43,6 +43,7 @@ export interface AdminJobseeker {
   experience_level?: string;
   id_document_url?: string;
   cv_document_url?: string;
+  premium_plan?: PremiumPlan;
   profile_image_url?: string | null;
   profile_completed: boolean;
   created_at: string;

@@ -107,6 +107,9 @@ interface PostJobSheetProps {
   visible: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  /** When set, the sheet edits/resumes this existing job (typically a draft)
+   * instead of creating a new one. Pass `null`/omit to create a new job. */
+  editingJob?: any | null;
 }
 
 const emptyForm = () => ({
@@ -124,6 +127,41 @@ const emptyForm = () => ({
   skills: [] as string[],
   expiresAt: getDefaultExpiry(),
 });
+
+// Converts a DB job row (e.g. a saved draft) back into the sheet's form
+// shape, so "Edit draft" can resume exactly where the employer left off.
+const formFromJob = (job: any) => {
+  const rawTypes: string[] = (job.job_type || "")
+    .split(",")
+    .map((s: string) => s.trim())
+    .filter(Boolean);
+  const typeKeys = rawTypes
+    .map((val) => Object.keys(JOB_TYPE_VALUES).find((k) => JOB_TYPE_VALUES[k] === val))
+    .filter((k): k is string => !!k);
+
+  const experienceLevel =
+    EXPERIENCE_LEVELS.find((e) => e.value === job.experience_level)?.id ?? "";
+
+  const skills: string[] = Array.isArray(job.skills_required)
+    ? job.skills_required
+    : [];
+
+  return {
+    title: job.title || "",
+    location: job.location || "",
+    salaryMin: job.salary_min != null ? String(job.salary_min) : "",
+    salaryMax: job.salary_max != null ? String(job.salary_max) : "",
+    category: job.category || "",
+    typeKeys,
+    description: job.description || "",
+    experienceLevel,
+    noRequirements: false,
+    requirements: [] as string[],
+    noSkills: skills.length === 0,
+    skills,
+    expiresAt: job.expires_at ? new Date(job.expires_at) : getDefaultExpiry(),
+  };
+};
 
 // ─── Small atoms ────────────────────────────────────────────────
 
@@ -369,6 +407,7 @@ export default function PostJobSheet({
   visible,
   onClose,
   onSuccess,
+  editingJob,
 }: PostJobSheetProps) {
   const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
@@ -380,6 +419,17 @@ export default function PostJobSheet({
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(emptyForm());
   const [submitting, setSubmitting] = useState(false);
+
+  // When opened to resume an existing draft, load its saved values into the
+  // form. When opened fresh (no editingJob), make sure we start blank —
+  // this also covers the case where the sheet is reused for a 2nd job right
+  // after editing a draft.
+  useEffect(() => {
+    if (!visible) return;
+    setStep(0);
+    setForm(editingJob ? formFromJob(editingJob) : emptyForm());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, editingJob?.id]);
 
   // We use KeyboardWrapper to handle scroll offsets automatically.
   const scrollRef = useRef<any>(null); // Still need a ref for manual scrolling if needed
@@ -483,6 +533,8 @@ export default function PostJobSheet({
     onClose();
   };
 
+  const isEditing = !!editingJob;
+
   const handleSubmit = async (asDraft = false) => {
     if (!asDraft) {
       const err = validateStep();
@@ -516,7 +568,7 @@ export default function PostJobSheet({
       const experienceValue =
         EXPERIENCE_LEVELS.find((e) => e.id === form.experienceLevel)?.value ??
         "";
-      const { error } = await supabase.from("jobs").insert({
+      const jobPayload = {
         employer_id: user.id,
         title: form.title.trim() || "Untitled",
         location: form.location.trim(),
@@ -529,12 +581,21 @@ export default function PostJobSheet({
         skills_required: form.noSkills ? [] : form.skills,
         status: asDraft ? "draft" : "active",
         expires_at: expiry,
-      });
+      };
+
+      const { error } = isEditing
+        ? await supabase
+            .from("jobs")
+            .update(jobPayload)
+            .eq("id", editingJob.id)
+        : await supabase.from("jobs").insert(jobPayload);
       if (error) throw error;
       toast.success(
         asDraft
           ? t("postJob.draftSaved", { defaultValue: "Draft saved." })
-          : t("postJob.posted", { defaultValue: "Job posted!" }),
+          : isEditing
+            ? t("postJob.published", { defaultValue: "Job published!" })
+            : t("postJob.posted", { defaultValue: "Job posted!" }),
         { duration: 2000 },
       );
       handleClose();
@@ -899,7 +960,14 @@ export default function PostJobSheet({
 
           {/* Sheet header */}
           <View className="flex-row items-center justify-between px-6 pb-4">
-            <View>
+            <View className="flex-1 pr-2">
+              {isEditing && (
+                <View className="flex-row items-center self-start bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 px-2 py-0.5 rounded-full mb-1">
+                  <Text className="text-[10px] font-quicksandBold text-blue-700 dark:text-blue-400">
+                    {t("postJob.editingDraft", { defaultValue: "Editing draft" })}
+                  </Text>
+                </View>
+              )}
               <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100">
                 {STEP_META[step].title}
               </Text>
@@ -907,6 +975,24 @@ export default function PostJobSheet({
                 {STEP_META[step].subtitle}
               </Text>
             </View>
+            {/* Save-draft is also shown inline on step 0's footer, but once the
+                employer has moved past step 0 there's no other way back to it
+                short of tapping Back repeatedly — so surface it here too. */}
+            {step > 0 && (
+              <TouchableOpacity
+                onPress={() => handleSubmit(true)}
+                disabled={submitting}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                className="mr-2 px-2 py-1.5"
+              >
+                <Text className="text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400">
+                  {isEditing
+                    ? t("postJob.updateDraft", { defaultValue: "Update draft" })
+                    : t("postJob.saveDraft", { defaultValue: "Save draft" })}
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={handleClose}
               activeOpacity={0.7}
@@ -942,7 +1028,9 @@ export default function PostJobSheet({
                   className="flex-1 py-3.5 rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
                 >
                   <Text className="text-sm font-quicksandBold text-gray-500 dark:text-gray-400">
-                    {t("postJob.saveDraft", { defaultValue: "Save draft" })}
+                    {isEditing
+                      ? t("postJob.updateDraft", { defaultValue: "Update draft" })
+                      : t("postJob.saveDraft", { defaultValue: "Save draft" })}
                   </Text>
                 </TouchableOpacity>
               ) : (
@@ -979,7 +1067,9 @@ export default function PostJobSheet({
                   <>
                     <Ionicons name="checkmark-circle" size={16} color="#fff" />
                     <Text className="text-sm font-quicksandBold text-white">
-                      {t("postJob.publish", { defaultValue: "Post job" })}
+                      {isEditing
+                        ? t("postJob.publishDraft", { defaultValue: "Publish job" })
+                        : t("postJob.publish", { defaultValue: "Post job" })}
                     </Text>
                   </>
                 )}

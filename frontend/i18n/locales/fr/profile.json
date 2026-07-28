@@ -1,6 +1,12 @@
 {
   "title": "Profil",
   "subtitle": "Gérez les paramètres et préférences de votre compte",
+  "qrCode": {
+    "title": "Mon code QR",
+    "hint": "Toute personne qui scanne ce code sera directement redirigée vers ce profil sur Talenta.",
+    "share": "Partager le profil",
+    "shareMessage": "Découvrez le profil de {{name}} sur Talenta : {{link}}"
+  },
   "stats": {
     "activeJobs": "Emplois actifs",
     "applicants": "Candidats", 

@@ -3,7 +3,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { getJobseekers } from "@/lib/adminService";
 import type { AdminJobseeker } from "@/types/admin.types";
 import UserAvatar from "@/components/common/UserAvatar";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -64,12 +64,17 @@ function JobseekerCard({ jobseeker }: { jobseeker: AdminJobseeker }) {
               style={{ marginRight: 10, marginTop: 2 }}
             />
             <View className="flex-1 mr-2">
-              <Text
-                className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
-                numberOfLines={1}
-              >
-                {jobseeker.full_name || "Unknown"}
-              </Text>
+              <View className="flex-row items-center" style={{ gap: 4 }}>
+                <Text
+                  className="text-base font-quicksandBold text-gray-800 dark:text-gray-100"
+                  numberOfLines={1}
+                >
+                  {jobseeker.full_name || "Unknown"}
+                </Text>
+                {jobseeker.premium_plan === "professional" && (
+                  <MaterialIcons name="verified" size={14} color="#0E7490" />
+                )}
+              </View>
               {jobseeker.username ? (
                 <Text
                   className="text-xs font-quicksandSemibold text-cyan-600 dark:text-cyan-400"

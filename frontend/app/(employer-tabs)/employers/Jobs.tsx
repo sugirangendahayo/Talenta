@@ -54,6 +54,7 @@ export default function Jobs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [editingJob, setEditingJob] = useState<any | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -98,7 +99,18 @@ export default function Jobs() {
       return;
     }
 
+    setEditingJob(null);
     setSheetVisible(true);
+  };
+
+  const handleEditDraft = (job: any) => {
+    setEditingJob(job);
+    setSheetVisible(true);
+  };
+
+  const handleSheetClose = () => {
+    setSheetVisible(false);
+    setEditingJob(null);
   };
 
   useEffect(() => {
@@ -181,14 +193,15 @@ export default function Jobs() {
         </View>
         <PostJobSheet
           visible={sheetVisible}
-          onClose={() => setSheetVisible(false)}
+          onClose={handleSheetClose}
           onSuccess={fetchJobs}
+          editingJob={editingJob}
         />
       </SafeAreaView>
     );
   }
 
-  // ─── Loaded state ───────────────────────────────────────────────────────
+  // ─── Loaded state ──────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       <EmployerJobsHeader onPostJob={handlePostJobPress} />
@@ -210,12 +223,14 @@ export default function Jobs() {
         statusFilter={selectedStatus}
         onRefresh={fetchJobs}
         onScroll={handleScroll}
+        onEditDraft={handleEditDraft}
       />
 
       <PostJobSheet
         visible={sheetVisible}
-        onClose={() => setSheetVisible(false)}
+        onClose={handleSheetClose}
         onSuccess={fetchJobs}
+        editingJob={editingJob}
       />
     </SafeAreaView>
   );

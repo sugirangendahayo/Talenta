@@ -40,6 +40,7 @@ type RawApplication = {
     skills?: string[];
     cv_document_url?: string;
     profile_image_url?: string | null;
+    premium_plan?: string;
   };
   jobs: {
     title: string;
@@ -89,7 +90,7 @@ export default function ApplicantsScreen() {
         .select(
           `id, job_id, jobseeker_id, status, cover_letter, created_at, updated_at,
           jobseeker_profiles!job_applications_jobseeker_id_fkey (
-            full_name, username, email, phone, experience_level, skills, cv_document_url, profile_image_url
+            full_name, username, email, phone, experience_level, skills, cv_document_url, profile_image_url, premium_plan
           ),
           jobs!job_applications_job_id_fkey (title, employer_id)`,
         )

@@ -264,6 +264,16 @@ export default function UserProfileScreen() {
               </View>
             )}
 
+          {/* Verified jobseeker badge (premium/professional plan) */}
+          {!isEmployer && profileData.premium_plan === "professional" && (
+            <View className="flex-row items-center gap-1.5 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 px-3 py-1.5 rounded-full mt-2">
+              <MaterialIcons name="verified" size={13} color="#0E7490" />
+              <Text className="text-cyan-700 dark:text-cyan-400 font-quicksandBold text-xs">
+                Verified
+              </Text>
+            </View>
+          )}
+
           {/* Location */}
           {(profileData.city || profileData.country) && (
             <View className="flex-row items-center gap-1 mt-2.5">

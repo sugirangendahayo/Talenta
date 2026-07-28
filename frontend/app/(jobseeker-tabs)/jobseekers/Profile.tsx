@@ -1,6 +1,7 @@
 import UserAvatar from "@/components/common/UserAvatar";
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import LogoutSheet from "@/components/modal/LogoutSheet";
+import QRCodeModal from "@/components/modal/QRCodeModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useProfileImage } from "@/hooks/useProfileImage";
@@ -33,6 +34,7 @@ export default function JobseekerProfile() {
   const [applicationCount, setApplicationCount] = useState(0);
   const [languageSelectorVisible, setLanguageSelectorVisible] = useState(false);
   const [logoutSheetVisible, setLogoutSheetVisible] = useState(false);
+  const [qrCodeVisible, setQrCodeVisible] = useState(false);
 
   const lastScrollY = useRef(0);
 
@@ -344,7 +346,10 @@ export default function JobseekerProfile() {
             </View>
 
             {/* QR */}
-            <TouchableOpacity className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center">
+            <TouchableOpacity
+              onPress={() => setQrCodeVisible(true)}
+              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#141414] items-center justify-center"
+            >
               <Ionicons name="qr-code-outline" size={17} color="#6B7280" />
             </TouchableOpacity>
           </View>
@@ -469,6 +474,18 @@ export default function JobseekerProfile() {
         })}
         confirmLabel={t("logout.button", { defaultValue: "Log Out" })}
       />
+      {user?.id && (
+        <QRCodeModal
+          visible={qrCodeVisible}
+          onClose={() => setQrCodeVisible(false)}
+          userId={user.id}
+          role="jobseeker"
+          displayName={jobseekerData?.full_name || "Your Name"}
+          username={jobseekerData?.username}
+          avatarUrl={jobseekerData?.profile_image_url}
+          verified={jobseekerData?.premium_plan === "professional"}
+        />
+      )}
     </View>
   );
 }

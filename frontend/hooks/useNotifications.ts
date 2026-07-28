@@ -1,5 +1,5 @@
 // hooks/useNotifications.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { RealtimeChannel } from "@supabase/supabase-js";
@@ -34,10 +34,22 @@ export interface Notification {
 export function useNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  // This hook is mounted concurrently in several places at once (e.g. a
+  // header badge AND the notifications screen for the same user). Supabase's
+  // realtime client reuses an existing channel if one with the same topic
+  // name is already subscribed, so giving every mount the exact same channel
+  // name causes "cannot add postgres_changes callbacks after subscribe()"
+  // once a 2nd instance tries to attach its own listeners. A per-instance id
+  // (generated once, not on every effect run) keeps channel names unique per
+  // mounted instance while still being stable across re-renders/token
+  // refreshes of that same instance.
+  const instanceIdRef = useRef(
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -78,8 +90,14 @@ export function useNotifications() {
         return true;
       });
 
-      setNotifications(activeNotifications);
-      setUnreadCount(activeNotifications.filter((n) => !n.is_read).length);
+      // De-duplicate defensively in case of any backend/race duplicates
+      const dedupedMap = new Map<string, Notification>();
+      for (const n of activeNotifications) {
+        if (!dedupedMap.has(n.id)) dedupedMap.set(n.id, n);
+      }
+      const dedupedNotifications = Array.from(dedupedMap.values());
+
+      setNotifications(dedupedNotifications);
     } catch (err) {
       console.error("Error fetching notifications:", err);
       setError(
@@ -111,7 +129,6 @@ export function useNotifications() {
             : n,
         ),
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
       console.error("Error marking notification as read:", err);
     }
@@ -146,7 +163,6 @@ export function useNotifications() {
           read_at: n.read_at || new Date().toISOString(),
         })),
       );
-      setUnreadCount(0);
     } catch (err) {
       console.error("Error marking all as read:", err);
     }
@@ -154,8 +170,6 @@ export function useNotifications() {
 
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
-    const notification = notifications.find((n) => n.id === notificationId);
-
     try {
       // Optimistically hide locally via AsyncStorage in case DB delete is blocked by RLS
       const newDeletedIds = new Set(deletedIds);
@@ -165,9 +179,6 @@ export function useNotifications() {
 
       // Update local state immediately
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-      if (notification && !notification.is_read) {
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      }
 
       // Try database delete, but don't fail if it doesn't work (silent RLS rejection)
       const { error: deleteError } = await supabase
@@ -191,7 +202,6 @@ export function useNotifications() {
 
       // 1. Update local state immediately
       setNotifications([]);
-      setUnreadCount(0);
 
       // 2. Persist deleted IDs to AsyncStorage (fast path, covers this install)
       const newDeletedIds = new Set([...deletedIds, ...allIds]);
@@ -226,7 +236,7 @@ export function useNotifications() {
     fetchNotifications();
 
     // Subscribe to real-time changes
-    const channelId = `notifications:${user.id}:${Date.now()}`;
+    const channelId = `notifications:${user.id}:${instanceIdRef.current}`;
     const channel: RealtimeChannel = supabase
       .channel(channelId)
       .on(
@@ -241,9 +251,13 @@ export function useNotifications() {
           console.log("New notification received:", payload);
           const newNotification = payload.new as Notification;
 
-          // Add to beginning of list
-          setNotifications((prev) => [newNotification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
+          // Avoid duplicates: skip if we already have this notification
+          // (can happen if a refetch races with the realtime event, or if
+          // the subscription briefly overlaps during a token refresh).
+          setNotifications((prev) => {
+            if (prev.some((n) => n.id === newNotification.id)) return prev;
+            return [newNotification, ...prev];
+          });
 
           // Optional: Show local notification/alert
           // You can integrate react-native-push-notification here
@@ -285,7 +299,19 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+    // Depend only on the user id (not the full user object) since Supabase
+    // creates a new `user` object reference on every token refresh, which
+    // would otherwise tear down and re-create this subscription repeatedly
+    // and could momentarily double-subscribe, causing duplicate notifications.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  // Derive unread count directly from the (deduped) notifications list so it
+  // can never drift out of sync from manual increment/decrement bookkeeping.
+  const unreadCount = notifications.reduce(
+    (count, n) => (n.is_read ? count : count + 1),
+    0,
+  );
 
   return {
     notifications,

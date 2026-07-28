@@ -13,7 +13,7 @@ import type {
   AdminStats,
   RecentActivity,
 } from "@/types/admin.types";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,7 +43,7 @@ function RecentCard({
 }: {
   title: string;
   icon: React.ReactNode;
-  rows: { primary: string; secondary: string; date: string; imageUrl?: string | null }[];
+  rows: { primary: string; secondary: string; date: string; imageUrl?: string | null; verified?: boolean }[];
 }) {
   return (
     <View className="px-6 pt-5">
@@ -76,12 +76,17 @@ function RecentCard({
                 />
               </View>
               <View className="flex-1">
-                <Text
-                  className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
-                  numberOfLines={1}
-                >
-                  {row.primary}
-                </Text>
+                <View className="flex-row items-center" style={{ gap: 4 }}>
+                  <Text
+                    className="text-sm font-quicksandBold text-gray-800 dark:text-gray-100"
+                    numberOfLines={1}
+                  >
+                    {row.primary}
+                  </Text>
+                  {row.verified && (
+                    <MaterialIcons name="verified" size={12} color="#0E7490" />
+                  )}
+                </View>
                 <Text
                   className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5"
                   numberOfLines={1}
@@ -401,6 +406,10 @@ export default function AdminDashboard() {
               secondary: e.email,
               date: e.created_at,
               imageUrl: e.profile_image_url,
+              verified:
+                e.business_verification_status === "approved" &&
+                !!e.premium_plan &&
+                e.premium_plan !== "free",
             }))}
           />
         )}
@@ -417,6 +426,7 @@ export default function AdminDashboard() {
               secondary: js.email,
               date: js.created_at,
               imageUrl: js.profile_image_url,
+              verified: js.premium_plan === "professional",
             }))}
           />
         )}
