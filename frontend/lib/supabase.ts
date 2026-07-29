@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
+import { AppState } from "react-native";
 import "react-native-url-polyfill/auto";
 import { BusinessVerificationStatus, PremiumPlan } from "@/types/verification.types";
 
@@ -165,6 +166,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
     flowType: "pkce",
   },
+});
+
+// Per Supabase's React Native guidance: token auto-refresh should only run
+// while the app is in the foreground. Without this, the refresh timer can
+// keep firing (or stall) while backgrounded, which is a common cause of
+// apps getting stuck right after a `TOKEN_REFRESHED` event when resumed.
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
 });
 
 // Type definitions

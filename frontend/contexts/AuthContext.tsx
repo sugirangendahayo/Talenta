@@ -15,6 +15,14 @@ import {
 import { Session, User } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { applyUserLanguage, resetToDeviceLanguage } from "@/i18n/config";
+import { withTimeout } from "@/utils/withTimeout";
+
+// Safety cap for the auth bootstrap network calls (getSession, role/profile
+// lookups). Without this, a stalled connection right as the app launches or
+// resumes from background can leave `loading` stuck at `true` forever,
+// which shows as the app being stuck on the splash screen until force-closed
+// and reopened.
+const AUTH_TIMEOUT_MS = 12000;
 
 interface AuthContextType {
   session: Session | null;
@@ -233,7 +241,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Get initial session
         const {
           data: { session: initialSession },
-        } = await supabase.auth.getSession();
+        } = await withTimeout(
+          supabase.auth.getSession(),
+          AUTH_TIMEOUT_MS,
+          "getSession()",
+        );
 
         if (!isMounted.current) return;
 
@@ -242,23 +254,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (initialSession?.user) {
           // Fetch role from profiles table
-          const { data: profileData, error } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("id", initialSession.user.id)
-            .single();
+          const { data: profileData, error } = await withTimeout(
+            supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", initialSession.user.id)
+              .single(),
+            AUTH_TIMEOUT_MS,
+            "profile role lookup",
+          );
 
           if (!isMounted.current) return;
 
           if (!error && profileData) {
             const userRole = profileData.role as Role;
             setRole(userRole);
-            await fetchProfile(initialSession.user, userRole);
-            // Apply this user's saved language preference
+            await withTimeout(
+              fetchProfile(initialSession.user, userRole),
+              AUTH_TIMEOUT_MS,
+              "fetchProfile",
+            );
+            // Apply this user's saved language preference (local-only, no network)
             await applyUserLanguage(initialSession.user.id);
           }
         }
       } catch (error) {
+        // Includes timeouts from withTimeout() above — we don't want a stalled
+        // network call to leave the splash screen up forever, so we log and
+        // fall through to releasing `loading` in the finally block below.
         console.error("Error initializing auth:", error);
       } finally {
         if (isMounted.current) {
@@ -287,26 +310,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
-      if (newSession?.user) {
-        // Fetch role and profile
-        const { data: profileData, error } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", newSession.user.id)
-          .single();
+      try {
+        if (newSession?.user) {
+          // Fetch role and profile — guarded with a timeout so a stalled
+          // connection (e.g. right after a TOKEN_REFRESHED on app resume)
+          // can't leave `loading` stuck at `true` forever.
+          const { data: profileData, error } = await withTimeout(
+            supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", newSession.user.id)
+              .single(),
+            AUTH_TIMEOUT_MS,
+            "profile role lookup",
+          );
 
-        if (!isMounted.current) return;
+          if (!isMounted.current) return;
 
-        if (!error && profileData) {
-          const userRole = profileData.role as Role;
-          setRole(userRole);
-          await fetchProfile(newSession.user, userRole);
-          // Apply this user's saved language preference
-          await applyUserLanguage(newSession.user.id);
+          if (!error && profileData) {
+            const userRole = profileData.role as Role;
+            setRole(userRole);
+            await withTimeout(
+              fetchProfile(newSession.user, userRole),
+              AUTH_TIMEOUT_MS,
+              "fetchProfile",
+            );
+            // Apply this user's saved language preference (local-only, no network)
+            await applyUserLanguage(newSession.user.id);
+          }
+        } else {
+          setRole(null);
+          setProfile(null);
         }
-      } else {
-        setRole(null);
-        setProfile(null);
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
       }
 
       if (isMounted.current) {

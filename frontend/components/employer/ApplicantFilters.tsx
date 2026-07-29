@@ -1,12 +1,12 @@
 // components/employer/ApplicantFilters.tsx
 import { useTheme } from "@/contexts/ThemeContext";
+import GlobalSearchModal from "@/components/common/GlobalSearchModal";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -45,16 +45,14 @@ export default function ApplicantFilters({
   const { t } = useTranslation("applicants");
   const { isDark } = useTheme();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
-  const [searchOpen, setSearchOpen] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
 
-  const handleSearchToggle = () => {
-    if (searchOpen) {
+  const handleSelectSearch = (query: string, categoryId?: string) => {
+    if (categoryId) {
+      onStatusChange(categoryId as FilterStatus);
       onSearchChange("");
-      setSearchOpen(false);
     } else {
-      setSearchOpen(true);
-      setTimeout(() => inputRef.current?.focus(), 80);
+      onSearchChange(query);
     }
   };
 
@@ -126,53 +124,54 @@ export default function ApplicantFilters({
 
         {/* Search toggle — mirrors the pattern in EmployerJobFilters */}
         <TouchableOpacity
-          onPress={handleSearchToggle}
+          onPress={() => setSearchModalVisible(true)}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
-          accessibilityLabel={
-            searchOpen
-              ? t("filters.closeSearch", { defaultValue: "Close search" })
-              : t("filters.openSearch", { defaultValue: "Search applicants" })
-          }
+          accessibilityLabel={t("filters.openSearch", { defaultValue: "Search applicants" })}
           className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center mr-4"
         >
-          <Ionicons
-            name={searchOpen ? "close" : "search"}
-            size={17}
-            color={iconColor}
-          />
+          <Ionicons name="search" size={17} color={iconColor} />
         </TouchableOpacity>
       </View>
 
-      {/* Expanding search field */}
-      {searchOpen && (
-        <View className="px-4 pb-3">
-          <View className="flex-row items-center bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-3 gap-3">
-            <Ionicons name="search" size={16} color="#9CA3AF" />
-            <TextInput
-              ref={inputRef}
-              value={searchQuery}
-              onChangeText={onSearchChange}
-              placeholder={t("filters.searchPlaceholder", {
-                defaultValue: "Search applicants…",
+      {/* ── Active search indicator ── */}
+      {searchQuery.length > 0 && (
+        <View className="flex-row items-center px-4 pb-3">
+          <View className="flex-row items-center flex-1 px-4 py-2.5 bg-cyan-50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-900/30">
+            <Ionicons name="search" size={13} color="#0E7490" />
+            <Text
+              className="ml-2 flex-1 text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400"
+              numberOfLines={1}
+            >
+              {t("filters.searchResultsFor", {
+                query: searchQuery,
+                defaultValue: `Results for "${searchQuery}"`,
               })}
-              placeholderTextColor="#9CA3AF"
-              returnKeyType="search"
-              className="flex-1 font-quicksandMedium text-gray-800 dark:text-gray-100 text-sm"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => onSearchChange("")}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                activeOpacity={0.6}
-              >
-                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-              </TouchableOpacity>
-            )}
+            </Text>
+            <TouchableOpacity onPress={() => onSearchChange("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close-circle" size={16} color="#0E7490" />
+            </TouchableOpacity>
           </View>
         </View>
       )}
+
+      <GlobalSearchModal
+        visible={searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        onSelectSearch={handleSelectSearch}
+        initialQuery={searchQuery}
+        storageKey="@recent_employer_applicant_searches"
+        placeholder={t("filters.searchPlaceholder", {
+          defaultValue: "Search applicants…",
+        })}
+        searchForLabel={(q) => `Search applicants for "${q}"`}
+        categoriesLabel={t("filters.filterByStatus", { defaultValue: "Filter by status" })}
+        categories={STATUS_FILTERS.filter((f) => f.id !== "all").map((f) => ({
+          id: f.id,
+          name: t(f.labelKey, { defaultValue: f.id }),
+        }))}
+      />
     </View>
   );
 }

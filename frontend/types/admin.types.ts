@@ -81,8 +81,15 @@ export interface AdminUser {
   role: UserRole;
   created_at: string;
   updated_at: string;
+  account_status?: "active" | "suspended" | "banned" | "under_review";
   // Joined from auth.users via RPC or profiles
   email?: string;
+  // Enriched client-side in getAdminUsers() from the role-specific profile
+  // tables (jobseeker_profiles / employer_profiles), since the base
+  // `profiles` row itself has no display name.
+  display_name?: string;
+  username?: string;
+  profile_image_url?: string | null;
 }
 
 export interface AdminAnalytics {

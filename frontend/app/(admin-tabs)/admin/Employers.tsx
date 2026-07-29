@@ -3,6 +3,13 @@ import UserAvatar from "@/components/common/UserAvatar";
 import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
+  bulkBanUsers,
+  bulkRejectEmployers,
+  bulkSetUnderReview,
+  bulkSuspendUsers,
+  bulkUnbanUsers,
+  bulkUnsuspendUsers,
+  bulkVerifyEmployers,
   getEmployers,
   rejectEmployerWithReason,
   verifyEmployer,
@@ -11,23 +18,36 @@ import { AdminEmployer } from "@/types/admin.types";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Alert,
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import AdminListSkeleton from "@/components/skeletons/AdminListSkeleton";
+import GlobalSearchModal from "@/components/common/GlobalSearchModal";
+import SelectionToolbar from "@/components/admin/SelectionToolbar";
+import BulkActionSheet, { type BulkAction } from "@/components/admin/BulkActionSheet";
+import { useMultiSelect } from "@/hooks/useMultiSelect";
+import { toast } from "sonner-native";
 
 // ─── Status config ────────────────────────────────────────────────────────────────────
 
 type Filter = "all" | "pending_review" | "approved" | "rejected";
+
+const BULK_ACTIONS: BulkAction[] = [
+  { id: "verify", label: "Approve verification", icon: "checkmark-done-outline" },
+  { id: "reject", label: "Reject verification", icon: "close-circle-outline", style: "destructive", requiresReason: true },
+  { id: "suspend", label: "Suspend", icon: "time-outline", requiresReason: true, requiresDuration: true },
+  { id: "unsuspend", label: "Unsuspend", icon: "play-circle-outline", requiresReason: true },
+  { id: "review", label: "Put under review", icon: "eye-outline", requiresReason: true },
+  { id: "ban", label: "Ban", icon: "ban-outline", style: "destructive", requiresReason: true },
+  { id: "unban", label: "Unban", icon: "checkmark-circle-outline", requiresReason: true },
+];
 
 // ─── Employer Card ────────────────────────────────────────────────────────────
 
@@ -36,18 +56,29 @@ function EmployerCard({
   onVerify,
   onReject,
   isDark,
+  selected,
+  selectionMode,
+  onSelect,
+  onLongPress,
 }: {
   employer: AdminEmployer;
   onVerify: (id: string) => void;
   onReject: (id: string, reason: string) => void;
   isDark: boolean;
+  selected: boolean;
+  selectionMode: boolean;
+  onSelect: () => void;
+  onLongPress: () => void;
 }) {
-  const { t } = useTranslation("admin");
   const router = useRouter();
 
   return (
-    <View
-      className="bg-white dark:bg-[#0E0E0E] rounded-2xl border border-gray-100 dark:border-[#2a2a2a] mb-3 flex-row overflow-hidden"
+    <TouchableOpacity
+      className={`bg-white dark:bg-[#0E0E0E] rounded-2xl border mb-3 flex-row overflow-hidden ${selected ? "border-cyan-600 dark:border-cyan-500" : "border-gray-100 dark:border-[#2a2a2a]"}`}
+      onPress={selectionMode ? onSelect : undefined}
+      onLongPress={onLongPress}
+      delayLongPress={350}
+      activeOpacity={0.85}
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
@@ -56,6 +87,11 @@ function EmployerCard({
         elevation: 2,
       }}
     >
+      {selectionMode && (
+        <View className="absolute top-3 right-3 z-10">
+          <Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={24} color={selected ? "#0E7490" : "#9CA3AF"} />
+        </View>
+      )}
       {/* Content */}
       <View className="flex-1 p-4">
         {/* Header row */}
@@ -188,7 +224,7 @@ function EmployerCard({
                       {
                         text: "Reject",
                         style: "destructive",
-                        onPress: (reason) => {
+                        onPress: (reason?: string) => {
                           if (reason) onReject(employer.id, reason);
                         },
                       },
@@ -205,7 +241,7 @@ function EmployerCard({
           )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -219,9 +255,10 @@ export default function AdminEmployers() {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
-  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const searchRef = useRef<TextInput>(null);
+  const select = useMultiSelect();
+  const [actionsVisible, setActionsVisible] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -250,13 +287,12 @@ export default function AdminEmployers() {
     load();
   };
 
-  const toggleSearch = () => {
-    if (searchExpanded) {
+  const handleSelectSearch = (query: string, categoryId?: string) => {
+    if (categoryId) {
+      setFilter(categoryId as Filter);
       setSearch("");
-      setSearchExpanded(false);
     } else {
-      setSearchExpanded(true);
-      setTimeout(() => searchRef.current?.focus(), 50);
+      setSearch(query);
     }
   };
 
@@ -342,6 +378,28 @@ export default function AdminEmployers() {
           e.email.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+  const selectableIds = filtered.map((employer) => employer.id);
+  const allSelected = selectableIds.length > 0 && selectableIds.every(select.isSelected);
+
+  const runBulkAction = async (action: string, reason = "", duration?: number) => {
+    try {
+      const ids = select.selectedList;
+      const result = action === "verify" ? await bulkVerifyEmployers(ids)
+        : action === "reject" ? await bulkRejectEmployers(ids, reason)
+        : action === "suspend" ? await bulkSuspendUsers(ids, reason, duration ?? 24)
+        : action === "unsuspend" ? await bulkUnsuspendUsers(ids, reason)
+        : action === "review" ? await bulkSetUnderReview(ids, reason)
+        : action === "ban" ? await bulkBanUsers(ids, reason)
+        : await bulkUnbanUsers(ids, reason);
+      const message = `${result.succeeded.length} succeeded, ${result.failed.length} failed`;
+      if (result.failed.length) toast.error(message);
+      else toast.success(message);
+      select.exitSelectionMode();
+      await load();
+    } catch (error: any) {
+      toast.error(error?.message ?? "Bulk action failed");
+    }
+  };
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -368,6 +426,9 @@ export default function AdminEmployers() {
   return (
     <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
       {/* ── Header ── */}
+      {select.selectionMode ? (
+        <SelectionToolbar count={select.count} allSelected={allSelected} onToggleAll={() => allSelected ? select.deselectAll() : select.selectAll(selectableIds)} onClose={select.exitSelectionMode} />
+      ) : (
       <View className="bg-white dark:bg-[#080A08] px-6 pt-16 pb-5 flex-row items-start justify-between">
         <View>
           <Text className="text-3xl font-quicksandBold text-gray-800 dark:text-gray-100">
@@ -385,77 +446,67 @@ export default function AdminEmployers() {
         </View>
         <TouchableOpacity
           className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
-          onPress={toggleSearch}
+          onPress={() => setSearchModalVisible(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons
-            name={searchExpanded ? "close" : "search-outline"}
-            size={18}
-            color={isDark ? "#9CA3AF" : "#6B7280"}
-          />
+          <Ionicons name="search-outline" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
         </TouchableOpacity>
       </View>
+      )}
 
-      {/* ── Filter / Search bar ── */}
-      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
-        {searchExpanded ? (
-          <View className="px-6 py-3">
-            <View className="flex-row items-center bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-2.5">
-              <Ionicons name="search-outline" size={16} color="#9CA3AF" />
-              <TextInput
-                ref={searchRef}
-                className="flex-1 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100 ml-2"
-                placeholder={t("employers.searchPlaceholder", {
-                  defaultValue: "Search company or email…",
-                })}
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
-                value={search}
-                onChangeText={setSearch}
-              />
-              {search.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setSearch("")}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="close-circle" size={16} color="#9CA3AF" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              gap: 8,
-            }}
+      {/* ── Active search indicator ── */}
+      {!select.selectionMode && search.length > 0 && (
+        <View className="flex-row items-center px-6 py-2.5 bg-cyan-50 dark:bg-cyan-900/10 border-b border-cyan-100 dark:border-cyan-900/30">
+          <Ionicons name="search" size={13} color="#0E7490" />
+          <Text
+            className="ml-2 flex-1 text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400"
+            numberOfLines={1}
           >
-            {CHIPS.map((chip) => (
-              <TouchableOpacity
-                key={chip.key}
-                className={`px-4 py-2 rounded-full border ${
+            {t("common:searchResultsFor", {
+              query: search,
+              defaultValue: `Results for "${search}"`,
+            })}
+          </Text>
+          <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close-circle" size={16} color="#0E7490" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ── Filter chips ── */}
+      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            gap: 8,
+          }}
+        >
+          {CHIPS.map((chip) => (
+            <TouchableOpacity
+              key={chip.key}
+              className={`px-4 py-2 rounded-full border ${
+                filter === chip.key
+                  ? "bg-cyan-700 border-cyan-700"
+                  : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+              }`}
+              onPress={() => setFilter(chip.key)}
+              activeOpacity={0.8}
+            >
+              <Text
+                className={`text-xs font-quicksandBold ${
                   filter === chip.key
-                    ? "bg-cyan-700 border-cyan-700"
-                    : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+                    ? "text-white"
+                    : "text-gray-600 dark:text-gray-300"
                 }`}
-                onPress={() => setFilter(chip.key)}
-                activeOpacity={0.8}
               >
-                <Text
-                  className={`text-xs font-quicksandBold ${
-                    filter === chip.key
-                      ? "text-white"
-                      : "text-gray-600 dark:text-gray-300"
-                  }`}
-                >
-                  {chip.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+                {chip.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* ── List ── */}
@@ -501,11 +552,41 @@ export default function AdminEmployers() {
                 onVerify={handleVerify}
                 onReject={handleReject}
                 isDark={isDark}
+                selected={select.isSelected(employer.id)}
+                selectionMode={select.selectionMode}
+                onSelect={() => select.toggle(employer.id)}
+                onLongPress={() => select.enterSelectionMode(employer.id)}
               />
             </View>
           ))
         )}
       </ScrollView>
+
+      {select.count > 0 && (
+        <TouchableOpacity onPress={() => setActionsVisible(true)} className="absolute bottom-6 right-6 bg-cyan-700 px-5 py-3.5 rounded-full flex-row items-center" style={{ elevation: 5 }}>
+          <Ionicons name="flash-outline" size={18} color="#fff" />
+          <Text className="ml-2 text-white font-quicksandBold">Actions</Text>
+        </TouchableOpacity>
+      )}
+
+      <BulkActionSheet visible={actionsVisible} count={select.count} actions={BULK_ACTIONS} onClose={() => setActionsVisible(false)} onAction={runBulkAction} />
+
+      <GlobalSearchModal
+        visible={!select.selectionMode && searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        onSelectSearch={handleSelectSearch}
+        initialQuery={search}
+        storageKey="@recent_admin_employer_searches"
+        placeholder={t("employers.searchPlaceholder", {
+          defaultValue: "Search company or email…",
+        })}
+        searchForLabel={(q) => `Search employers for "${q}"`}
+        categoriesLabel={t("employers.filterByStatus", { defaultValue: "Filter by status" })}
+        categories={CHIPS.filter((c) => c.key !== "all").map((c) => ({
+          id: c.key,
+          name: c.label,
+        }))}
+      />
     </View>
   );
 }

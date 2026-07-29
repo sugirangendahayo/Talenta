@@ -44,22 +44,39 @@ interface GlobalSearchModalProps<T> {
   visible: boolean;
   onClose: () => void;
   onSelectSearch: (query: string, categoryId?: string) => void;
-  categories: Category[];
+  categories?: Category[];
   initialQuery?: string;
   fetchResults?: (query: string) => Promise<T[]>;
   renderResult?: (item: T, query: string) => React.ReactNode;
+  /** AsyncStorage key used to persist recent searches for this modal instance.
+   * Give each distinct search context (jobs, admin employers, admin jobseekers,
+   * etc.) its own key so their "recent searches" histories don't mix. */
+  storageKey?: string;
+  /** Overridable copy — defaults keep the original job-search wording so
+   * existing callers don't need to change anything. */
+  placeholder?: string;
+  searchForLabel?: (query: string) => string;
+  noMatchesLabel?: string;
+  recentLabel?: string;
+  categoriesLabel?: string;
 }
 
-const RECENT_SEARCHES_KEY = "@recent_job_searches";
+const DEFAULT_RECENT_SEARCHES_KEY = "@recent_job_searches";
 
 export default function GlobalSearchModal<T>({
   visible,
   onClose,
   onSelectSearch,
-  categories,
+  categories = [],
   initialQuery = "",
   fetchResults,
   renderResult,
+  storageKey = DEFAULT_RECENT_SEARCHES_KEY,
+  placeholder,
+  searchForLabel,
+  noMatchesLabel,
+  recentLabel,
+  categoriesLabel,
 }: GlobalSearchModalProps<T>) {
   const { t } = useTranslation(["home", "common", "jobs"]);
   const { isDark } = useTheme();
@@ -100,7 +117,7 @@ export default function GlobalSearchModal<T>({
 
   const loadRecentSearches = async () => {
     try {
-      const stored = await AsyncStorage.getItem(RECENT_SEARCHES_KEY);
+      const stored = await AsyncStorage.getItem(storageKey);
       if (stored) {
         setRecentSearches(JSON.parse(stored));
       }
@@ -115,7 +132,7 @@ export default function GlobalSearchModal<T>({
       let updated = [searchQuery.trim(), ...recentSearches.filter((s) => s.toLowerCase() !== searchQuery.trim().toLowerCase())];
       updated = updated.slice(0, 10); // Keep max 10
       setRecentSearches(updated);
-      await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      await AsyncStorage.setItem(storageKey, JSON.stringify(updated));
     } catch (e) {
       console.error("Failed to save recent search", e);
     }
@@ -125,7 +142,7 @@ export default function GlobalSearchModal<T>({
     try {
       const updated = recentSearches.filter((s) => s !== searchQuery);
       setRecentSearches(updated);
-      await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      await AsyncStorage.setItem(storageKey, JSON.stringify(updated));
     } catch (e) {
       console.error("Failed to remove recent search", e);
     }
@@ -162,7 +179,10 @@ export default function GlobalSearchModal<T>({
                 ref={inputRef}
                 value={query}
                 onChangeText={setQuery}
-                placeholder={t("common:search", { defaultValue: "Search for jobs, companies, keywords..." })}
+                placeholder={
+                  placeholder ??
+                  t("common:search", { defaultValue: "Search for jobs, companies, keywords..." })
+                }
                 placeholderTextColor="#9CA3AF"
                 className="flex-1 font-quicksandMedium text-sm text-gray-800 dark:text-gray-100 py-1 m-0"
                 returnKeyType="search"
@@ -188,7 +208,7 @@ export default function GlobalSearchModal<T>({
                      <Ionicons name="search" size={18} color="#0E7490" />
                    </View>
                    <Text className="flex-1 font-quicksandBold text-base text-gray-800 dark:text-gray-100">
-                     Search for "{query}"
+                     {searchForLabel ? searchForLabel(query) : `Search for "${query}"`}
                    </Text>
                    <Ionicons name="arrow-forward" size={16} color="#9CA3AF" />
                  </TouchableOpacity>
@@ -208,7 +228,8 @@ export default function GlobalSearchModal<T>({
                  ) : fetchResults && query.trim().length > 1 ? (
                    <View className="py-6 items-center">
                      <Text className="text-gray-500 font-quicksandMedium text-sm">
-                       {t("jobs:search.noMatches", { defaultValue: "No direct matches found" })}
+                       {noMatchesLabel ??
+                         t("jobs:search.noMatches", { defaultValue: "No direct matches found" })}
                      </Text>
                    </View>
                  ) : null}
@@ -220,7 +241,7 @@ export default function GlobalSearchModal<T>({
                   <View className="mb-6">
                     <View className="flex-row items-center justify-between px-6 mb-3">
                       <Text className="font-quicksandBold text-sm text-gray-900 dark:text-white">
-                        {t("jobs:search.recent", { defaultValue: "Recent Searches" })}
+                        {recentLabel ?? t("jobs:search.recent", { defaultValue: "Recent Searches" })}
                       </Text>
                     </View>
                     {recentSearches.map((s, index) => (
@@ -242,10 +263,12 @@ export default function GlobalSearchModal<T>({
                   </View>
                 )}
 
-                {/* Categories */}
+                {/* Categories — omitted entirely when the caller has no natural
+                    category/filter concept for this search context. */}
+                {categories.length > 0 && (
                 <View className="px-6">
                   <Text className="font-quicksandBold text-sm text-gray-900 dark:text-white mb-3">
-                    {t("jobs:search.browseCategories", { defaultValue: "Browse Categories" })}
+                    {categoriesLabel ?? t("jobs:search.browseCategories", { defaultValue: "Browse Categories" })}
                   </Text>
                   <View className="flex-row flex-wrap gap-2">
                     {categories.map((cat) => (
@@ -261,6 +284,7 @@ export default function GlobalSearchModal<T>({
                     ))}
                   </View>
                 </View>
+                )}
               </View>
             )}
           </View>

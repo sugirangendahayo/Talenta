@@ -18,14 +18,13 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
+import { AdminDashboardSkeleton } from "@/components/skeletons/AdminDashboardSkeleton";
 import UserAvatar from "@/components/common/UserAvatar";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -154,11 +153,7 @@ export default function AdminDashboard() {
   };
 
   if (loading && !refreshing) {
-    return (
-      <View className="flex-1 bg-gray-50 dark:bg-[#080A08] pt-12">
-        <DashboardSkeleton />
-      </View>
-    );
+    return <AdminDashboardSkeleton />;
   }
 
   // Stat items — all Ionicons names, no JSX passed as icon value
