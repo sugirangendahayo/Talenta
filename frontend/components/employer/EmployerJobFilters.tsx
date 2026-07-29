@@ -1,13 +1,13 @@
 // components/employer/EmployerJobFilters.tsx
 import { useTheme } from "@/contexts/ThemeContext";
+import GlobalSearchModal from "@/components/common/GlobalSearchModal";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Animated,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -59,19 +59,15 @@ export default function EmployerJobFilters({
   const { t } = useTranslation("jobs");
   const { isDark } = useTheme();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
-  const [searchOpen, setSearchOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
-  const inputRef = useRef<TextInput>(null);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
 
-  const handleSearchToggle = () => {
-    if (searchOpen) {
-      // Close: clear & collapse
+  const handleSelectSearch = (query: string, categoryId?: string) => {
+    if (categoryId) {
+      onCategoryChange(categoryId);
       onSearchChange("");
-      setSearchOpen(false);
     } else {
-      setSearchOpen(true);
-      // Let the layout settle before focusing
-      setTimeout(() => inputRef.current?.focus(), 80);
+      onSearchChange(query);
     }
   };
 
@@ -112,45 +108,36 @@ export default function EmployerJobFilters({
           })}
         </ScrollView>
 
-        {/* Search toggle — icon collapses into an expanding input */}
+        {/* Search toggle — opens the full-screen search modal */}
         <TouchableOpacity
-          onPress={handleSearchToggle}
+          onPress={() => setSearchModalVisible(true)}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
-          accessibilityLabel={searchOpen ? t("filters.closeSearch", { defaultValue: "Close search" }) : t("filters.openSearch", { defaultValue: "Search jobs" })}
+          accessibilityLabel={t("filters.openSearch", { defaultValue: "Search jobs" })}
           className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#1a1a1a] items-center justify-center mr-4"
         >
-          <Ionicons
-            name={searchOpen ? "close" : "search"}
-            size={17}
-            color={iconColor}
-          />
+          <Ionicons name="search" size={17} color={iconColor} />
         </TouchableOpacity>
       </View>
 
-      {/* Expanding search field */}
-      {searchOpen && (
+      {/* ── Active search indicator ── */}
+      {searchQuery.length > 0 && (
         <View className="px-4 pb-3">
-          <View className="flex-row items-center bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-3 gap-3">
-            <Ionicons name="search" size={16} color={iconColor} />
-            <TextInput
-              ref={inputRef}
-              value={searchQuery}
-              onChangeText={onSearchChange}
-              placeholder={t("filters.searchPlaceholder")}
-              placeholderTextColor="#9CA3AF"
-              returnKeyType="search"
-              className="flex-1 font-quicksandMedium text-gray-800 dark:text-gray-200 text-sm"
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => onSearchChange("")}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Ionicons name="close-circle" size={18} color={iconColor} />
-              </TouchableOpacity>
-            )}
+          <View className="flex-row items-center px-4 py-2.5 bg-cyan-50 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-900/30">
+            <Ionicons name="search" size={13} color="#0E7490" />
+            <Text
+              className="ml-2 flex-1 text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400"
+              numberOfLines={1}
+            >
+              {t("filters.searchResultsFor", {
+                query: searchQuery,
+                defaultValue: `Results for "${searchQuery}"`,
+              })}
+            </Text>
+            <TouchableOpacity onPress={() => onSearchChange("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close-circle" size={16} color="#0E7490" />
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -206,6 +193,18 @@ export default function EmployerJobFilters({
           })}
         </View>
       )}
+
+      <GlobalSearchModal
+        visible={searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        onSelectSearch={handleSelectSearch}
+        initialQuery={searchQuery}
+        storageKey="@recent_employer_job_searches"
+        placeholder={t("filters.searchPlaceholder")}
+        searchForLabel={(q) => `Search jobs for "${q}"`}
+        categoriesLabel={t("filters.category", { defaultValue: "Category" })}
+        categories={categories}
+      />
     </View>
   );
 }
