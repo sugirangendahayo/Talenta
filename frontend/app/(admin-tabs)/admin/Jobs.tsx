@@ -3,7 +3,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { getAdminJobs, updateJobStatus } from "@/lib/adminService";
 import type { AdminJob, JobStatus } from "@/types/admin.types";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -11,11 +11,11 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import AdminListSkeleton from "@/components/skeletons/AdminListSkeleton";
+import GlobalSearchModal from "@/components/common/GlobalSearchModal";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
@@ -250,9 +250,8 @@ export default function AdminJobs() {
   const [refreshing, setRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<JobStatus | "all">("all");
   const [search, setSearch] = useState("");
-  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const searchRef = useRef<TextInput>(null);
 
   const load = useCallback(async () => {
     try {
@@ -278,13 +277,12 @@ export default function AdminJobs() {
     load();
   };
 
-  const toggleSearch = () => {
-    if (searchExpanded) {
+  const handleSelectSearch = (query: string, categoryId?: string) => {
+    if (categoryId) {
+      setStatusFilter(categoryId as JobStatus | "all");
       setSearch("");
-      setSearchExpanded(false);
     } else {
-      setSearchExpanded(true);
-      setTimeout(() => searchRef.current?.focus(), 50);
+      setSearch(query);
     }
   };
 
@@ -373,82 +371,71 @@ export default function AdminJobs() {
         </View>
         <TouchableOpacity
           className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
-          onPress={toggleSearch}
+          onPress={() => setSearchModalVisible(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons
-            name={searchExpanded ? "close" : "search-outline"}
-            size={18}
-            color={isDark ? "#9CA3AF" : "#6B7280"}
-          />
+          <Ionicons name="search-outline" size={18} color={isDark ? "#9CA3AF" : "#6B7280"} />
         </TouchableOpacity>
       </View>
 
-      {/* ── Filter / Search bar ── */}
-      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
-        {searchExpanded ? (
-          <View className="px-6 py-3">
-            <View className="flex-row items-center bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-2.5">
-              <Ionicons name="search-outline" size={16} color="#9CA3AF" />
-              <TextInput
-                ref={searchRef}
-                className="flex-1 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100 ml-2"
-                placeholder={t("jobs.searchPlaceholder", {
-                  defaultValue: "Search job or company…",
-                })}
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
-                value={search}
-                onChangeText={setSearch}
-              />
-              {search.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setSearch("")}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="close-circle" size={16} color="#9CA3AF" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-              gap: 8,
-            }}
+      {/* ── Active search indicator ── */}
+      {search.length > 0 && (
+        <View className="flex-row items-center px-6 py-2.5 bg-cyan-50 dark:bg-cyan-900/10 border-b border-cyan-100 dark:border-cyan-900/30">
+          <Ionicons name="search" size={13} color="#0E7490" />
+          <Text
+            className="ml-2 flex-1 text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400"
+            numberOfLines={1}
           >
-            {ALL_STATUSES.map((s) => (
-              <TouchableOpacity
-                key={s}
-                className={`px-4 py-2 rounded-full border ${
+            {t("common:searchResultsFor", {
+              query: search,
+              defaultValue: `Results for "${search}"`,
+            })}
+          </Text>
+          <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close-circle" size={16} color="#0E7490" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ── Filter chips ── */}
+      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            gap: 8,
+          }}
+        >
+          {ALL_STATUSES.map((s) => (
+            <TouchableOpacity
+              key={s}
+              className={`px-4 py-2 rounded-full border ${
+                statusFilter === s
+                  ? "bg-cyan-700 border-cyan-700"
+                  : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+              }`}
+              onPress={() => setStatusFilter(s)}
+              activeOpacity={0.8}
+            >
+              <Text
+                className={`text-xs font-quicksandBold ${
                   statusFilter === s
-                    ? "bg-cyan-700 border-cyan-700"
-                    : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+                    ? "text-white"
+                    : "text-gray-600 dark:text-gray-300"
                 }`}
-                onPress={() => setStatusFilter(s)}
-                activeOpacity={0.8}
               >
-                <Text
-                  className={`text-xs font-quicksandBold ${
-                    statusFilter === s
-                      ? "text-white"
-                      : "text-gray-600 dark:text-gray-300"
-                  }`}
-                >
-                  {s === "all"
-                    ? t("filters.all", { defaultValue: "All" })
-                    : t(STATUS_CONFIG[s as JobStatus].labelKey, {
-                        defaultValue:
-                          s.charAt(0).toUpperCase() + s.slice(1),
-                      })}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+                {s === "all"
+                  ? t("filters.all", { defaultValue: "All" })
+                  : t(STATUS_CONFIG[s as JobStatus].labelKey, {
+                      defaultValue:
+                        s.charAt(0).toUpperCase() + s.slice(1),
+                    })}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* ── List ── */}
@@ -492,6 +479,28 @@ export default function AdminJobs() {
           ))
         )}
       </ScrollView>
+
+      <GlobalSearchModal
+        visible={searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        onSelectSearch={handleSelectSearch}
+        initialQuery={search}
+        storageKey="@recent_admin_job_searches"
+        placeholder={t("jobs.searchPlaceholder", {
+          defaultValue: "Search job or company…",
+        })}
+        searchForLabel={(q) => `Search jobs for "${q}"`}
+        categoriesLabel={t("jobs.filterByStatus", { defaultValue: "Filter by status" })}
+        categories={ALL_STATUSES.filter((s) => s !== "all").map((s) => {
+          const status = s as JobStatus;
+          return {
+            id: status,
+            name: t(STATUS_CONFIG[status].labelKey, {
+              defaultValue: status.charAt(0).toUpperCase() + status.slice(1),
+            }),
+          };
+        })}
+      />
     </View>
   );
 }
