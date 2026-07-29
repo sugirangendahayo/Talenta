@@ -78,8 +78,7 @@ export default function AuthCallback() {
     <View style={styles.container}>
       <View style={styles.card}>
         <ActivityIndicator size="large" color="#0E7490" />
-        <Text style={styles.title}>Signing you in</Text>
-        <Text style={styles.subtitle}>Please wait a moment…</Text>
+        <Text style={styles.subtitle}>Hey, wait a moment…</Text>
       </View>
     </View>
   );
@@ -95,14 +94,8 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#ffffff",
-    borderRadius: 24,
-    paddingVertical: 48,
-    paddingHorizontal: 40,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
+    justifyContent: "center",
     elevation: 8,
     width: "100%",
     maxWidth: 340,
