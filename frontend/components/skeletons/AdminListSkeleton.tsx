@@ -78,7 +78,7 @@ export const AdminListSkeleton: React.FC<AdminListSkeletonProps> = ({
 }) => {
   const C = useSkeletonColorMode();
   return (
-    <View style={{ flex: 1 }}>
+    <View className="flex-1 bg-gray-50 dark:bg-[#080A08]" style={{ flex: 1 }}>
       {/* Screen header skeleton */}
       <MotiView
         from={{ opacity: 0 }}
