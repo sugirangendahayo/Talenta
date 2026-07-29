@@ -3,7 +3,7 @@ import { getReports, updateReportStatus } from "@/lib/adminService";
 import type { AdminReport, ReportStatus } from "@/types/admin.types";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -11,12 +11,12 @@ import {
   RefreshControl,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { PromptModal } from "@/components/common/PromptModal";
 import AdminListSkeleton from "@/components/skeletons/AdminListSkeleton";
+import GlobalSearchModal from "@/components/common/GlobalSearchModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,8 +200,7 @@ export default function AdminReports() {
   const [refreshing, setRefreshing]         = useState(false);
   const [filter, setFilter]                 = useState<StatusFilter>("pending");
   const [search, setSearch]                 = useState("");
-  const [searchExpanded, setSearchExpanded] = useState(false);
-  const searchRef = useRef<TextInput>(null);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
 
   const [promptConfig, setPromptConfig] = useState<{
     visible:      boolean;
@@ -246,13 +245,12 @@ export default function AdminReports() {
     load();
   };
 
-  const toggleSearch = () => {
-    if (searchExpanded) {
+  const handleSelectSearch = (query: string, categoryId?: string) => {
+    if (categoryId) {
+      setFilter(categoryId as StatusFilter);
       setSearch("");
-      setSearchExpanded(false);
     } else {
-      setSearchExpanded(true);
-      setTimeout(() => searchRef.current?.focus(), 80);
+      setSearch(query);
     }
   };
 
@@ -379,81 +377,70 @@ export default function AdminReports() {
           </Text>
         </View>
         <TouchableOpacity
-          onPress={toggleSearch}
+          onPress={() => setSearchModalVisible(true)}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           className="w-10 h-10 rounded-full bg-gray-100 dark:bg-[#1e1e1e] items-center justify-center"
         >
-          <Ionicons
-            name={searchExpanded ? "close" : "search"}
-            size={18}
-            color="#6B7280"
-          />
+          <Ionicons name="search-outline" size={18} color="#6B7280" />
         </TouchableOpacity>
       </View>
 
-      {/* ── Filter chips / search ────────────────────────────────────────── */}
-      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
-        {searchExpanded ? (
-          <View className="px-6 py-3">
-            <View className="flex-row items-center bg-gray-50 dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-2xl px-4 py-3 gap-3">
-              <Ionicons name="search" size={16} color="#9CA3AF" />
-              <TextInput
-                ref={searchRef}
-                className="flex-1 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100"
-                placeholder={t("admin:reports.searchPlaceholder", {
-                  defaultValue: "Search reason or details…",
-                })}
-                placeholderTextColor="#9CA3AF"
-                value={search}
-                onChangeText={setSearch}
-              />
-              {search.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setSearch("")}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="close-circle" size={18} color="#9CA3AF" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 24,
-              paddingVertical:   12,
-              gap:               8,
-            }}
+      {/* ── Active search indicator ── */}
+      {search.length > 0 && (
+        <View className="flex-row items-center px-6 py-2.5 bg-cyan-50 dark:bg-cyan-900/10 border-b border-cyan-100 dark:border-cyan-900/30">
+          <Ionicons name="search" size={13} color="#0E7490" />
+          <Text
+            className="ml-2 flex-1 text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400"
+            numberOfLines={1}
           >
-            {CHIPS.map((chip) => (
-              <TouchableOpacity
-                key={chip.key}
-                onPress={() => setFilter(chip.key)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityState={{ selected: filter === chip.key }}
-                className={`px-4 py-2 rounded-full border ${
+            {t("common:searchResultsFor", {
+              query: search,
+              defaultValue: `Results for "${search}"`,
+            })}
+          </Text>
+          <TouchableOpacity onPress={() => setSearch("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close-circle" size={16} color="#0E7490" />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ── Filter chips ─────────────────────────────────────────────────── */}
+      <View className="bg-white dark:bg-[#080A08] border-b border-gray-100 dark:border-[#2a2a2a]">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingVertical:   12,
+            gap:               8,
+          }}
+        >
+          {CHIPS.map((chip) => (
+            <TouchableOpacity
+              key={chip.key}
+              onPress={() => setFilter(chip.key)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityState={{ selected: filter === chip.key }}
+              className={`px-4 py-2 rounded-full border ${
+                filter === chip.key
+                  ? "bg-cyan-700 border-cyan-700"
+                  : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+              }`}
+            >
+              <Text
+                className={`text-sm font-quicksandMedium ${
                   filter === chip.key
-                    ? "bg-cyan-700 border-cyan-700"
-                    : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+                    ? "text-white"
+                    : "text-gray-600 dark:text-gray-300"
                 }`}
               >
-                <Text
-                  className={`text-sm font-quicksandMedium ${
-                    filter === chip.key
-                      ? "text-white"
-                      : "text-gray-600 dark:text-gray-300"
-                  }`}
-                >
-                  {chip.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+                {chip.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       {/* ── Report list ──────────────────────────────────────────────────── */}
@@ -498,6 +485,23 @@ export default function AdminReports() {
           ))
         )}
       </ScrollView>
+
+      <GlobalSearchModal
+        visible={searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        onSelectSearch={handleSelectSearch}
+        initialQuery={search}
+        storageKey="@recent_admin_report_searches"
+        placeholder={t("admin:reports.searchPlaceholder", {
+          defaultValue: "Search reason or details…",
+        })}
+        searchForLabel={(q) => `Search reports for "${q}"`}
+        categoriesLabel={t("admin:reports.filterByStatus", { defaultValue: "Filter by status" })}
+        categories={CHIPS.filter((c) => c.key !== "all").map((c) => ({
+          id: c.key,
+          name: c.label,
+        }))}
+      />
     </View>
   );
 }
