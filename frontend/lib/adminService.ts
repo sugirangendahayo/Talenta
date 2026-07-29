@@ -140,7 +140,195 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return (data as AdminUser[]) ?? [];
+  const profiles = (data as AdminUser[]) ?? [];
+
+  // `profiles` only carries `id`/`role`/`account_status` — the display name
+  // and email live in the role-specific tables. Fetch both in parallel and
+  // merge them in so the Users Overview screen can show real names instead
+  // of raw UUIDs.
+  const [{ data: jobseekers }, { data: employers }] = await Promise.all([
+    supabase
+      .from("jobseeker_profiles")
+      .select("id, full_name, username, email, profile_image_url"),
+    supabase
+      .from("employer_profiles")
+      .select("id, company_name, company_username, email, profile_image_url"),
+  ]);
+
+  const jobseekerMap = new Map((jobseekers ?? []).map((j) => [j.id, j]));
+  const employerMap = new Map((employers ?? []).map((e) => [e.id, e]));
+
+  return profiles.map((p) => {
+    if (p.role === "jobseeker") {
+      const js = jobseekerMap.get(p.id);
+      return {
+        ...p,
+        display_name: js?.full_name || "Unnamed jobseeker",
+        username: js?.username,
+        email: js?.email ?? p.email,
+        profile_image_url: js?.profile_image_url ?? null,
+      };
+    }
+    if (p.role === "employer") {
+      const emp = employerMap.get(p.id);
+      return {
+        ...p,
+        display_name: emp?.company_name || "Unnamed employer",
+        username: emp?.company_username,
+        email: emp?.email ?? p.email,
+        profile_image_url: emp?.profile_image_url ?? null,
+      };
+    }
+    return { ...p, display_name: "Admin" };
+  });
+}
+
+// ─── Bulk moderation ───────────────────────────────────────────────────────
+// Thin wrappers that fan a single-user moderation RPC out across many users,
+// used by the multi-select bulk-action sheets (Users Overview, Employers,
+// Jobseekers). Every call is isolated so one failure doesn't abort the rest
+// — the caller gets back per-user success/failure so it can report exactly
+// what happened (e.g. "8 of 10 suspended, 2 failed").
+
+export interface BulkActionResult {
+  succeeded: string[];
+  failed: { id: string; error: string }[];
+}
+
+async function runBulk(
+  ids: string[],
+  fn: (id: string) => PromiseLike<{ error: { message: string } | null }>,
+): Promise<BulkActionResult> {
+  const results = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const { error } = await fn(id);
+        if (error) return { id, error: error.message };
+        return { id, error: null };
+      } catch (err) {
+        return {
+          id,
+          error: err instanceof Error ? err.message : "Unknown error",
+        };
+      }
+    }),
+  );
+
+  return {
+    succeeded: results.filter((r) => !r.error).map((r) => r.id),
+    failed: results
+      .filter((r): r is { id: string; error: string } => !!r.error)
+      .map((r) => ({ id: r.id, error: r.error })),
+  };
+}
+
+export async function bulkSuspendUsers(
+  ids: string[],
+  reason: string,
+  hours: number,
+): Promise<BulkActionResult> {
+  return runBulk(ids, (id) =>
+    supabase.rpc("admin_suspend_user", {
+      target_user_id: id,
+      suspend_reason: reason,
+      hours,
+    }),
+  );
+}
+
+export async function bulkUnsuspendUsers(
+  ids: string[],
+  reason: string,
+): Promise<BulkActionResult> {
+  return runBulk(ids, (id) =>
+    supabase.rpc("admin_unsuspend_user", {
+      target_user_id: id,
+      unsuspend_reason: reason,
+    }),
+  );
+}
+
+export async function bulkBanUsers(
+  ids: string[],
+  reason: string,
+): Promise<BulkActionResult> {
+  return runBulk(ids, (id) =>
+    supabase.rpc("admin_ban_user", {
+      target_user_id: id,
+      ban_reason: reason,
+    }),
+  );
+}
+
+export async function bulkUnbanUsers(
+  ids: string[],
+  reason: string,
+): Promise<BulkActionResult> {
+  return runBulk(ids, (id) =>
+    supabase.rpc("admin_unban_user", {
+      target_user_id: id,
+      unban_reason: reason,
+    }),
+  );
+}
+
+export async function bulkSetUnderReview(
+  ids: string[],
+  reason: string,
+): Promise<BulkActionResult> {
+  return runBulk(ids, (id) =>
+    supabase.rpc("admin_set_under_review", {
+      target_user_id: id,
+      review_reason: reason,
+    }),
+  );
+}
+
+export async function bulkVerifyEmployers(ids: string[]): Promise<BulkActionResult> {
+  const results = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        await approveBusinessVerification(id);
+        return { id, error: null as string | null };
+      } catch (err) {
+        return {
+          id,
+          error: err instanceof Error ? err.message : "Unknown error",
+        };
+      }
+    }),
+  );
+  return {
+    succeeded: results.filter((r) => !r.error).map((r) => r.id),
+    failed: results
+      .filter((r): r is { id: string; error: string } => !!r.error)
+      .map((r) => ({ id: r.id, error: r.error })),
+  };
+}
+
+export async function bulkRejectEmployers(
+  ids: string[],
+  reason: string,
+): Promise<BulkActionResult> {
+  const results = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        await rejectBusinessVerification(id, reason);
+        return { id, error: null as string | null };
+      } catch (err) {
+        return {
+          id,
+          error: err instanceof Error ? err.message : "Unknown error",
+        };
+      }
+    }),
+  );
+  return {
+    succeeded: results.filter((r) => !r.error).map((r) => r.id),
+    failed: results
+      .filter((r): r is { id: string; error: string } => !!r.error)
+      .map((r) => ({ id: r.id, error: r.error })),
+  };
 }
 
 // ─── Analytics ───────────────────────────────────────────────────────────────
