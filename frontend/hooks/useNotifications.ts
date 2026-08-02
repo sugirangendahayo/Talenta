@@ -4,6 +4,9 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface Notification {
   id: string;
@@ -50,10 +53,21 @@ export function useNotifications() {
   const instanceIdRef = useRef(
     `${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   // Fetch notifications
   const fetchNotifications = async () => {
     if (!user) return;
+
+    // Offline: keep whatever notifications are already loaded (realtime
+    // updates simply won't arrive until we're back online, at which point
+    // `useRefetchOnReconnect` below re-syncs anything that was missed).
+    if (!isOnline) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -98,6 +112,7 @@ export function useNotifications() {
       const dedupedNotifications = Array.from(dedupedMap.values());
 
       setNotifications(dedupedNotifications);
+      hasLoadedOnceRef.current = true;
     } catch (err) {
       console.error("Error fetching notifications:", err);
       setError(
@@ -110,6 +125,7 @@ export function useNotifications() {
 
   // Mark notification as read
   const markAsRead = async (notificationId: string) => {
+    if (!requireOnline("You're offline. This will sync once you're back online.")) return;
     try {
       const { error: updateError } = await supabase
         .from("notifications")
@@ -137,6 +153,7 @@ export function useNotifications() {
   // Mark all as read
   const markAllAsRead = async () => {
     if (!user) return;
+    if (!requireOnline("You're offline. This will sync once you're back online.")) return;
 
     try {
       const unreadIds = notifications
@@ -170,6 +187,7 @@ export function useNotifications() {
 
   // Delete notification
   const deleteNotification = async (notificationId: string) => {
+    if (!requireOnline("You're offline. Reconnect to delete this notification.")) return;
     try {
       // Optimistically hide locally via AsyncStorage in case DB delete is blocked by RLS
       const newDeletedIds = new Set(deletedIds);
@@ -197,6 +215,7 @@ export function useNotifications() {
   // Clear all notifications locally + persist cutoff timestamp to Supabase user metadata
   const clearAllNotifications = async () => {
     if (!user) return;
+    if (!requireOnline("You're offline. Reconnect to clear your notifications.")) return;
     try {
       const allIds = notifications.map(n => n.id);
 
@@ -305,6 +324,13 @@ export function useNotifications() {
     // and could momentarily double-subscribe, causing duplicate notifications.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // Realtime updates simply don't arrive while offline, so once connectivity
+  // returns we do one lightweight refetch to reconcile anything that was
+  // missed (new/updated/deleted notifications during the outage).
+  useRefetchOnReconnect(fetchNotifications, {
+    enabled: hasLoadedOnceRef.current,
+  });
 
   // Derive unread count directly from the (deduped) notifications list so it
   // can never drift out of sync from manual increment/decrement bookkeeping.
