@@ -5,6 +5,9 @@ import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface CVInfo {
   url: string | null;
@@ -16,6 +19,8 @@ export interface CVInfo {
 export function useCVManagement() {
   const { t } = useTranslation("profile");
   const { refreshProfile } = useAuth();
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -28,6 +33,11 @@ export function useCVManagement() {
 
   // Fetch current CV info
   const fetchCVInfo = useCallback(async () => {
+    if (!isOnline) {
+      setLoading(false);
+      return; // keep whatever CV info is already cached in memory
+    }
+
     try {
       setLoading(true);
 
@@ -73,10 +83,12 @@ export function useCVManagement() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, isOnline]);
 
   // Pick and upload CV
   const uploadCV = useCallback(async (): Promise<boolean> => {
+    if (!requireOnline("You're offline. Reconnect to upload your CV.")) return false;
+
     try {
       setUploading(true);
 
@@ -171,10 +183,12 @@ export function useCVManagement() {
     } finally {
       setUploading(false);
     }
-  }, [cvInfo.url, fetchCVInfo, refreshProfile, t]);
+  }, [cvInfo.url, fetchCVInfo, refreshProfile, t, requireOnline]);
 
   // Delete CV
   const deleteCV = useCallback(async (): Promise<boolean> => {
+    if (!requireOnline("You're offline. Reconnect to delete your CV.")) return false;
+
     try {
       setDeleting(true);
 
@@ -236,7 +250,7 @@ export function useCVManagement() {
     } finally {
       setDeleting(false);
     }
-  }, [cvInfo.url, refreshProfile, t]);
+  }, [cvInfo.url, refreshProfile, t, requireOnline]);
 
   // Download/View CV (opens in browser)
   const viewCV = useCallback(() => {
@@ -257,6 +271,10 @@ export function useCVManagement() {
   useEffect(() => {
     fetchCVInfo();
   }, [fetchCVInfo]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh CV info
+  // if this screen is focused.
+  useRefetchOnReconnect(() => fetchCVInfo());
 
   return {
     loading,
