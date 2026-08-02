@@ -109,7 +109,7 @@ export default function HeroBanner() {
     <View className="mx-6 mb-2">
       <TouchableOpacity
         activeOpacity={0.95}
-        onPress={() => router.push(activeSlide.route as any)}
+        onPress={() => router.push("/(jobseeker-tabs)/jobseekers/Jobs")}
         style={{ borderRadius: 24, overflow: "hidden", height: BANNER_HEIGHT }}
       >
         {/* All slides are permanently mounted; only their opacity animates */}

@@ -1,18 +1,31 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
 import { supabase } from "@/lib/supabase";
-import { getJobseekerPremiumStatus, simulateJobseekerPaymentAndActivate, JobseekerPremiumPlan, JobseekerCertificate } from "@/lib/jobseekerPremiumService";
+import {
+  getJobseekerPremiumStatus,
+  createJobseekerCheckoutSession,
+  confirmJobseekerCheckoutSession,
+  JobseekerPremiumPlan,
+  JobseekerCertificate,
+} from "@/lib/jobseekerPremiumService";
 import { toast } from "sonner-native";
 import { useNetwork } from "@/contexts/NetworkContext";
 import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
 import { useRequireOnline } from "@/hooks/useRequireOnline";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useJobseekerPremiumStatus() {
   const { isOnline } = useNetwork();
   const { requireOnline } = useRequireOnline();
+  const { refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activating, setActivating] = useState(false);
   const [plan, setPlan] = useState<JobseekerPremiumPlan>("free");
   const [certificate, setCertificate] = useState<JobseekerCertificate | null>(null);
+  // Defense-in-depth against double taps launching two Checkout sessions
+  // before `activating` state has re-rendered the disabled button.
+  const activatingRef = useRef(false);
 
   const fetchStatus = useCallback(async () => {
     if (!isOnline) {
@@ -42,27 +55,62 @@ export function useJobseekerPremiumStatus() {
 
   const activatePlan = useCallback(
     async (selectedPlan: JobseekerPremiumPlan) => {
+      if (selectedPlan === "free") return false;
+      if (activatingRef.current) return false; // already mid-checkout
       if (!requireOnline("You're offline. Reconnect to activate your plan.")) return false;
 
+      activatingRef.current = true;
+      setActivating(true);
       try {
-        setActivating(true);
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
+        // Same deep-link pattern already used for Google Sign-In
+        // (see components/auth/shared/GoogleAuthButton.tsx) — works in both
+        // Expo Go (exp://) and standalone builds (talenta://).
+        const redirectUrl = Linking.createURL("/payment/callback");
 
-        await simulateJobseekerPaymentAndActivate(user.id, selectedPlan);
-        await fetchStatus();
-        return true;
+        const { url, sessionId } = await createJobseekerCheckoutSession(selectedPlan, redirectUrl);
+
+        const result = await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+
+        // IMPORTANT: never trust `result.type` or the redirect URL's own
+        // `status` param as the source of truth. Many mobile browsers block
+        // automatic redirects to custom URL schemes (talenta://...) unless
+        // the user taps a link, which makes this browser session resolve as
+        // "cancel"/"dismiss" even when the payment already succeeded on
+        // Stripe's side (the webhook has likely already activated the plan
+        // by this point). Always ask the server — which verifies directly
+        // with Stripe — regardless of how this browser session ended.
+        const confirmation = await confirmJobseekerCheckoutSession(sessionId);
+
+        if (confirmation.status === "completed") {
+          await Promise.all([fetchStatus(), refreshProfile()]);
+          return true;
+        }
+
+        if (confirmation.status === "expired") {
+          toast.error("Your checkout session expired. Please try again.");
+          return false;
+        }
+
+        // Server confirms it's genuinely still unpaid — now it's safe to use
+        // the browser's own signal purely for friendlier wording.
+        if (result.type === "cancel" || result.type === "dismiss") {
+          toast.info("Payment cancelled");
+        } else {
+          toast.error(
+            "We couldn't confirm your payment yet. If you completed checkout, this will update automatically shortly.",
+          );
+        }
+        return false;
       } catch (error: any) {
         console.error("Activation error:", error);
         toast.error(error.message || "Failed to activate plan");
         return false;
       } finally {
+        activatingRef.current = false;
         setActivating(false);
       }
     },
-    [fetchStatus, requireOnline]
+    [fetchStatus, refreshProfile, requireOnline],
   );
 
   useEffect(() => {

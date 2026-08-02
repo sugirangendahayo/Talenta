@@ -8,6 +8,7 @@ import { router, Stack } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Linking,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -30,7 +31,7 @@ const PLANS = [
   {
     id: "professional" as PremiumPlan,
     name: "Professional",
-    price: "25,000 RWF",
+    price: "$19",
     period: "/month",
     description: "Ideal for growing teams.",
     features: [
@@ -44,7 +45,7 @@ const PLANS = [
   {
     id: "business" as PremiumPlan,
     name: "Business",
-    price: "50,000 RWF",
+    price: "$39",
     period: "/month",
     description: "For established companies.",
     features: [
@@ -88,6 +89,12 @@ export default function PremiumVerificationScreen() {
   }
 
   const handleSubscribe = async (planId: PremiumPlan) => {
+    if (planId === "enterprise") {
+      Linking.openURL(
+        "mailto:support@talenta.app?subject=Enterprise%20Plan%20Inquiry",
+      );
+      return;
+    }
     const success = await activatePlan(planId);
     if (success) setShowSuccess(true);
   };
@@ -164,8 +171,14 @@ export default function PremiumVerificationScreen() {
           <View className="mt-6" style={{ gap: 16 }}>
             {PLANS.map((plan) => {
               const isCurrent = currentPlan === plan.id;
+              const isEnterprise = plan.id === "enterprise";
+              // Enterprise has no self-serve Stripe price (custom pricing) —
+              // its button always routes to "Contact Sales" instead of Checkout,
+              // so it isn't gated behind business verification like real
+              // purchasable plans are.
               const canSubscribe =
-                bizStatus === "approved" && plan.id !== "free" && !isCurrent;
+                isEnterprise ||
+                (bizStatus === "approved" && plan.id !== "free" && !isCurrent);
 
               return (
                 <View
@@ -277,9 +290,11 @@ export default function PremiumVerificationScreen() {
                               : "text-gray-400 dark:text-gray-500"
                           }`}
                         >
-                          {bizStatus !== "approved"
-                            ? "Verification Required"
-                            : "Subscribe Now"}
+                          {isEnterprise
+                            ? "Contact Sales"
+                            : bizStatus !== "approved"
+                              ? "Verification Required"
+                              : "Subscribe Now"}
                         </Text>
                       )}
                     </TouchableOpacity>
