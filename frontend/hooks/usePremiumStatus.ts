@@ -3,14 +3,24 @@ import { supabase } from "@/lib/supabase";
 import { getEmployerPremiumStatus, simulatePaymentAndActivate } from "@/lib/premiumService";
 import { EmployerCertificate, PremiumPlan } from "@/types/verification.types";
 import { toast } from "sonner-native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export function usePremiumStatus() {
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
   const [loading, setLoading] = useState(true);
   const [activating, setActivating] = useState(false);
   const [plan, setPlan] = useState<PremiumPlan>("free");
   const [certificate, setCertificate] = useState<EmployerCertificate | null>(null);
 
   const fetchStatus = useCallback(async () => {
+    if (!isOnline) {
+      setLoading(false);
+      return; // keep whatever premium status is already cached in memory
+    }
+
     try {
       setLoading(true);
       const {
@@ -29,10 +39,12 @@ export function usePremiumStatus() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   const activatePlan = useCallback(
     async (selectedPlan: PremiumPlan) => {
+      if (!requireOnline("You're offline. Reconnect to activate your plan.")) return false;
+
       try {
         setActivating(true);
         const {
@@ -51,12 +63,16 @@ export function usePremiumStatus() {
         setActivating(false);
       }
     },
-    [fetchStatus]
+    [fetchStatus, requireOnline]
   );
 
   useEffect(() => {
     fetchStatus();
   }, [fetchStatus]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh premium
+  // status if this screen is focused.
+  useRefetchOnReconnect(() => fetchStatus());
 
   return {
     loading,
