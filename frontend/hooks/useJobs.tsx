@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useFocusEffect } from "@react-navigation/native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface Job {
   id: string;
@@ -52,10 +55,32 @@ export function useJobs(options: UseJobsOptions = {}) {
   const [error, setError] = useState<string | null>(null);
   const [newJobsCount, setNewJobsCount] = useState(0);
   const lastFetchedAt = useRef<string | null>(null);
+  const jobsCountRef = useRef(0);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+
+  useEffect(() => {
+    jobsCountRef.current = jobs.length;
+  }, [jobs.length]);
 
   // Fetch jobs with cursor pagination
   const fetchJobs = useCallback(
     async (cursor?: string, isRefresh = false) => {
+      // Offline: don't attempt a request that would just fail/hang. Keep
+      // whatever is already in memory (previously loaded content) visible
+      // instead of flashing a skeleton or an error.
+      if (!isOnline) {
+        if (isRefresh) setRefreshing(false);
+        else if (cursor) setLoadingMore(false);
+        else {
+          setLoading(false);
+          if (jobsCountRef.current === 0) {
+            setError("You're offline. Connect to the internet to load jobs.");
+          }
+        }
+        return;
+      }
+
       try {
         if (isRefresh) {
           setRefreshing(true);
@@ -145,7 +170,7 @@ export function useJobs(options: UseJobsOptions = {}) {
         setLoadingMore(false);
       }
     },
-    [category, searchQuery, pageSize, filters],
+    [category, searchQuery, pageSize, filters, isOnline],
   );
 
   // Check for new jobs
@@ -178,27 +203,37 @@ export function useJobs(options: UseJobsOptions = {}) {
   // Load more
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore || jobs.length === 0) return;
+    if (!requireOnline("You're offline. Reconnect to load more jobs.")) return;
 
     const lastJob = jobs[jobs.length - 1];
     fetchJobs(lastJob.created_at);
-  }, [jobs, loadingMore, hasMore, fetchJobs]);
+  }, [jobs, loadingMore, hasMore, fetchJobs, requireOnline]);
 
   // Refresh
   const refresh = useCallback(() => {
+    if (!requireOnline("You're offline. Reconnect to refresh jobs.")) return;
     setNewJobsCount(0);
     fetchJobs(undefined, true);
-  }, [fetchJobs]);
+  }, [fetchJobs, requireOnline]);
 
   // Load new jobs
   const loadNewJobs = useCallback(() => {
+    if (!requireOnline("You're offline. Reconnect to load new jobs.")) return;
     setNewJobsCount(0);
     fetchJobs(undefined, true);
-  }, [fetchJobs]);
+  }, [fetchJobs, requireOnline]);
 
   // Initial fetch
   useEffect(() => {
     fetchJobs();
   }, [category, searchQuery, filters]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data — gated internally on the screen being focused, so
+  // backgrounded tabs don't all refetch at once when connectivity returns.
+  // Always enabled (not just when `jobs.length > 0`) so a cold app launch
+  // while offline still recovers automatically once back online.
+  useRefetchOnReconnect(() => fetchJobs(undefined, true));
 
   // Check for new jobs when screen comes into focus
   useFocusEffect(
