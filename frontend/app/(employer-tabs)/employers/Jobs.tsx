@@ -6,6 +6,9 @@ import PostJobSheet from "@/components/employer/PostJobSheet";
 import { EmployerJobsSkeleton } from "@/components/skeletons/EmployerJobsSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useRef, useState } from "react";
@@ -60,6 +63,9 @@ export default function Jobs() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   const employerProfile = profile as EmployerProfile | null;
 
@@ -123,6 +129,17 @@ export default function Jobs() {
       setLoading(false);
       return;
     }
+
+    // Offline: don't attempt a request that would just fail/hang. Keep
+    // whatever jobs are already loaded visible instead of clearing them.
+    if (!isOnline) {
+      setLoading(false);
+      if (!hasLoadedOnceRef.current) {
+        setError(t("errors.offline", { defaultValue: "You're offline. Connect to the internet to load your jobs." }));
+      }
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -133,12 +150,23 @@ export default function Jobs() {
         .order("created_at", { ascending: false });
       if (fetchError) throw fetchError;
       setJobs(data || []);
+      hasLoadedOnceRef.current = true;
     } catch (err: any) {
       console.error("Error fetching jobs:", err);
       setError(err.message || t("errors.fetchFailed"));
     } finally {
       setLoading(false);
     }
+  };
+
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's active.
+  useRefetchOnReconnect(() => fetchJobs());
+
+  // Manual pull-to-refresh — shows a toast if attempted while offline.
+  const handleRefresh = () => {
+    if (!requireOnline("You're offline. Reconnect to refresh your jobs.")) return;
+    fetchJobs();
   };
 
   const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
@@ -221,7 +249,7 @@ export default function Jobs() {
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
         statusFilter={selectedStatus}
-        onRefresh={fetchJobs}
+        onRefresh={handleRefresh}
         onScroll={handleScroll}
         onEditDraft={handleEditDraft}
       />
