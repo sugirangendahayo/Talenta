@@ -1,5 +1,8 @@
 // app/(admin-tabs)/admin/Jobs.tsx
 import { useTheme } from "@/contexts/ThemeContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { getAdminJobs, updateJobStatus } from "@/lib/adminService";
 import type { AdminJob, JobStatus } from "@/types/admin.types";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -252,8 +255,18 @@ export default function AdminJobs() {
   const [search, setSearch] = useState("");
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
 
   const load = useCallback(async () => {
+    // Offline: skip the request and keep whatever jobs are already loaded
+    // (previously loaded content) visible instead of clearing them.
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       const data = await getAdminJobs();
       setJobs(data);
@@ -266,13 +279,18 @@ export default function AdminJobs() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's the active tab.
+  useRefetchOnReconnect(() => load());
+
   const onRefresh = () => {
+    if (!requireOnline("You're offline. Reconnect to refresh jobs.")) return;
     setRefreshing(true);
     load();
   };
@@ -287,6 +305,7 @@ export default function AdminJobs() {
   };
 
   const handleChangeStatus = (jobId: string, newStatus: JobStatus) => {
+    if (!requireOnline()) return;
     const cfg = STATUS_CONFIG[newStatus];
     const currentJob = jobs.find((j) => j.id === jobId);
 
