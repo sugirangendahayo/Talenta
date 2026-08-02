@@ -5,6 +5,7 @@ import TalentaVerifiedBadge from "@/components/employer/TalentaVerifiedBadge";
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import LogoutSheet from "@/components/modal/LogoutSheet";
 import QRCodeModal from "@/components/modal/QRCodeModal";
+import { LINKS } from "@/constants/links";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useProfileImage } from "@/hooks/useProfileImage";
@@ -12,6 +13,7 @@ import {
   EmployerProfile as EmployerProfileType,
   supabase,
 } from "@/lib/supabase";
+import { openWebPage } from "@/utils/openWebPage";
 import {
   Feather,
   FontAwesome,
@@ -242,26 +244,39 @@ export default function EmployerProfile() {
 
     // ── Support ───────────────────────────────────────────────────────────────
     {
-      title: t("sections.support.title"),
+      title: t("sections.support.title", { defaultValue: "Help & Legal" }),
       icon: "help-outline",
+      isExternal: true,
       items: [
         {
           icon: "support-agent",
           label: t("sections.support.contactSupport"),
+          value: undefined,
           type: "link",
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.support),
+        },
+        {
+          icon: "shield",
+          label: t("sections.support.privacy"),
+          value: undefined,
+          type: "link",
+          onPress: () => openWebPage(LINKS.privacy),
         },
         {
           icon: "description",
           label: t("sections.support.terms"),
+          value: undefined,
           type: "link",
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.terms),
         },
         {
-          icon: "privacy-tip",
-          label: t("sections.support.privacy"),
+          icon: "info-outline",
+          label: t("sections.support.about", {
+            defaultValue: "About Talenta",
+          }),
+          value: undefined,
           type: "link",
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.about),
         },
       ],
     },
@@ -447,6 +462,9 @@ export default function EmployerProfile() {
                 }
                 disabled={item.type !== "link"}
                 activeOpacity={0.7}
+                accessibilityRole={section.isExternal ? "link" : "button"}
+                accessibilityLabel={item.label}
+                accessibilityHint={section.isExternal ? "Opens in your browser" : undefined}
               >
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons
@@ -458,9 +476,9 @@ export default function EmployerProfile() {
                     <Text className="text-gray-800 dark:text-gray-200 font-quicksandMedium">
                       {item.label}
                     </Text>
-                    {item.value && typeof item.value === "string" && (
+                    {typeof (item as { value?: string }).value === "string" && (
                       <Text className="text-gray-500 dark:text-gray-400 text-sm font-quicksandMedium mt-0.5">
-                        {item.value}
+                        {(item as { value?: string }).value}
                       </Text>
                     )}
                   </View>

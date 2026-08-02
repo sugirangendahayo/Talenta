@@ -57,11 +57,12 @@
       "portfolio": "Portfolio"
     },
     "support": {
-      "title": "Support",
+      "title": "Aide et mentions légales",
       "contactSupport": "Contacter le support",
       "resources": "Ressources",
       "terms": "Conditions d'utilisation",
       "privacy": "Politique de confidentialité",
+      "about": "À propos de Talenta",
       "jobSearchTips": "Conseils de recherche d'emploi"
     }
   },

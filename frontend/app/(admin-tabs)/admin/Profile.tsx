@@ -1,10 +1,12 @@
 // app/(admin-tabs)/admin/Profile.tsx
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import LogoutSheet from "@/components/modal/LogoutSheet";
+import { LINKS } from "@/constants/links";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { openWebPage } from "@/utils/openWebPage";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -120,8 +122,9 @@ export default function AdminProfile() {
       ],
     },
     {
-      title: t("sections.support.title", { defaultValue: "Support" }),
+      title: t("sections.support.title", { defaultValue: "Help & Legal" }),
       icon: "help-outline" as const,
+      isExternal: true,
       items: [
         {
           icon: "support-agent" as const,
@@ -129,7 +132,15 @@ export default function AdminProfile() {
             defaultValue: "Contact Support",
           }),
           value: undefined,
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.support),
+        },
+        {
+          icon: "shield" as const,
+          label: t("sections.support.privacy", {
+            defaultValue: "Privacy Policy",
+          }),
+          value: undefined,
+          onPress: () => openWebPage(LINKS.privacy),
         },
         {
           icon: "description" as const,
@@ -137,15 +148,15 @@ export default function AdminProfile() {
             defaultValue: "Terms of Service",
           }),
           value: undefined,
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.terms),
         },
         {
-          icon: "privacy-tip" as const,
-          label: t("sections.support.privacy", {
-            defaultValue: "Privacy Policy",
+          icon: "info-outline" as const,
+          label: t("sections.support.about", {
+            defaultValue: "About Talenta",
           }),
           value: undefined,
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.about),
         },
       ],
     },
@@ -259,6 +270,9 @@ export default function AdminProfile() {
                 disabled={!item.onPress}
                 activeOpacity={0.7}
                 hitSlop={{ top: 4, bottom: 4, left: 0, right: 0 }}
+                accessibilityRole={section.isExternal ? "link" : "button"}
+                accessibilityLabel={item.label}
+                accessibilityHint={section.isExternal ? "Opens in your browser" : undefined}
               >
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons name={item.icon} size={20} color="#6B7280" />
@@ -273,9 +287,7 @@ export default function AdminProfile() {
                     )}
                   </View>
                 </View>
-                {item.onPress && (
-                  <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
-                )}
+                <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
               </TouchableOpacity>
             ))}
           </View>

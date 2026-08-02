@@ -6,6 +6,10 @@ import PostJobSheet from "@/components/employer/PostJobSheet";
 import { EmployerJobsSkeleton } from "@/components/skeletons/EmployerJobsSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
+import { useJobsRefresh } from "@/contexts/JobsRefreshContext";
 import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useRef, useState } from "react";
@@ -60,6 +64,9 @@ export default function Jobs() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const { setIsVisible } = useTabBarVisibility();
   const lastScrollY = useRef(0);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   const employerProfile = profile as EmployerProfile | null;
 
@@ -113,18 +120,45 @@ export default function Jobs() {
     setEditingJob(null);
   };
 
+  // Refresh this list AND let other screens (e.g. the Dashboard) know a job
+  // changed, without dropping back to the full-page skeleton.
+  const handleJobPostSuccess = () => {
+    fetchJobs(true);
+    notifyJobPosted();
+  };
+
   useEffect(() => {
     fetchJobs();
   }, [user]);
 
-  const fetchJobs = async () => {
+  // `isRefresh` keeps a pull-to-refresh (or a silent background refresh
+  // triggered after posting a job) from swapping the whole screen back to
+  // the full skeleton — only the initial load should do that. Without this
+  // distinction, every refresh briefly unmounted the header/filters/list and
+  // remounted them, which is what caused the new job card to flash in the
+  // wrong place until a full app restart cleaned up the layout.
+  const fetchJobs = async (isRefresh = false) => {
     if (!user) {
       setError(t("errors.loginRequired"));
       setLoading(false);
       return;
     }
+
+    // Offline: don't attempt a request that would just fail/hang. Keep
+    // whatever jobs are already loaded visible instead of clearing them.
+    if (!isOnline) {
+      if (!isRefresh) setLoading(false);
+      if (!hasLoadedOnceRef.current) {
+        setError(t("errors.offline", { defaultValue: "You're offline. Connect to the internet to load your jobs." }));
+      }
+      return;
+    }
+
     try {
-      setLoading(true);
+      // Only the very first load shows the full-page skeleton. Refreshes
+      // (pull-to-refresh, reconnect, or a job posted elsewhere) update the
+      // list in place so the header/filters/list never unmount.
+      if (!isRefresh) setLoading(true);
       setError(null);
       const { data, error: fetchError } = await supabase
         .from("jobs")
@@ -133,12 +167,40 @@ export default function Jobs() {
         .order("created_at", { ascending: false });
       if (fetchError) throw fetchError;
       setJobs(data || []);
+      hasLoadedOnceRef.current = true;
     } catch (err: any) {
       console.error("Error fetching jobs:", err);
       setError(err.message || t("errors.fetchFailed"));
     } finally {
       setLoading(false);
     }
+  };
+
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's active.
+  useRefetchOnReconnect(() => fetchJobs(true));
+
+  // Silently refetch the moment a job is posted/edited anywhere in the app
+  // (e.g. via the tab bar's "+" button while on another tab), so a freshly
+  // posted job appears here automatically instead of requiring a manual
+  // pull-to-refresh. See `JobsRefreshContext` for details.
+  const { refreshKey, notifyJobPosted } = useJobsRefresh();
+  const isFirstRefreshKeyRef = useRef(true);
+  useEffect(() => {
+    if (isFirstRefreshKeyRef.current) {
+      isFirstRefreshKeyRef.current = false;
+      return;
+    }
+    fetchJobs(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
+
+  // Manual pull-to-refresh — shows a toast if attempted while offline. Returns
+  // the in-flight promise so the FlatList's RefreshControl spinner stays up
+  // for the actual duration of the fetch instead of disappearing instantly.
+  const handleRefresh = async () => {
+    if (!requireOnline("You're offline. Reconnect to refresh your jobs.")) return;
+    await fetchJobs(true);
   };
 
   const uniqueCategories = [...new Set(jobs.map((job) => job.category))].sort();
@@ -194,7 +256,7 @@ export default function Jobs() {
         <PostJobSheet
           visible={sheetVisible}
           onClose={handleSheetClose}
-          onSuccess={fetchJobs}
+          onSuccess={handleJobPostSuccess}
           editingJob={editingJob}
         />
       </SafeAreaView>
@@ -221,7 +283,7 @@ export default function Jobs() {
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
         statusFilter={selectedStatus}
-        onRefresh={fetchJobs}
+        onRefresh={handleRefresh}
         onScroll={handleScroll}
         onEditDraft={handleEditDraft}
       />
@@ -229,7 +291,7 @@ export default function Jobs() {
       <PostJobSheet
         visible={sheetVisible}
         onClose={handleSheetClose}
-        onSuccess={fetchJobs}
+        onSuccess={handleJobPostSuccess}
         editingJob={editingJob}
       />
     </SafeAreaView>

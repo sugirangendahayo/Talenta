@@ -104,19 +104,33 @@ export default function Dashboard() {
       >
         <DashboardHeader />
 
-        <StatCards stats={stats} />
+        {/* Keyed on which sections are present. On Android, RefreshControl +
+            a ScrollView whose child count/shape changes mid-refresh can leave
+            a stale native layout behind — a newly-appearing section (e.g. the
+            first active job right after posting) ends up rendered on top of
+            the stats cards instead of below them, and it stays broken until
+            the app is fully restarted. Changing this key when the visible
+            section "shape" changes forces React to tear down and rebuild this
+            whole block with a fresh native view tree instead of trying to
+            patch the existing (corrupted) one in place. */}
+        <View
+          key={`${highPriorityApplicants.length > 0}-${activeJobs.length > 0}-${recentContacts.length > 0}`}
+          collapsable={false}
+        >
+          <StatCards stats={stats} />
 
-        {highPriorityApplicants.length > 0 && (
-          <AttentionSection applicants={highPriorityApplicants} />
-        )}
+          {highPriorityApplicants.length > 0 && (
+            <AttentionSection applicants={highPriorityApplicants} />
+          )}
 
-        {activeJobs.length > 0 && (
-          <ActiveJobsSection jobs={activeJobs} onRefresh={refresh} />
-        )}
+          {activeJobs.length > 0 && (
+            <ActiveJobsSection jobs={activeJobs} onRefresh={refresh} />
+          )}
 
-        {recentContacts.length > 0 && (
-          <RecentContactsSection contacts={recentContacts} />
-        )}
+          {recentContacts.length > 0 && (
+            <RecentContactsSection contacts={recentContacts} />
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

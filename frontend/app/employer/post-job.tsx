@@ -5,6 +5,7 @@ import JobTypeSelector from "@/components/employer/JobTypeSelector";
 import PostJobHeader from "@/components/employer/PostJobHeader";
 import SkillsInput from "@/components/employer/SkillsInput";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -25,6 +26,7 @@ export default function PostJob() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useTranslation("jobs");
+  const { requireOnline } = useRequireOnline();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Default expiry date: 30 days from now
@@ -115,6 +117,8 @@ export default function PostJob() {
 
   // Handle form submission
   const handleSubmit = async () => {
+    if (!requireOnline()) return;
+
     const error = validateForm();
     if (error) {
       Alert.alert(t("messages.validationError"), error);
@@ -190,6 +194,8 @@ export default function PostJob() {
 
   // Save as draft
   const handleSaveDraft = async () => {
+    if (!requireOnline()) return;
+
     if (!user) {
       Alert.alert(t("messages.error"), t("messages.loginRequiredDraft"));
       return;

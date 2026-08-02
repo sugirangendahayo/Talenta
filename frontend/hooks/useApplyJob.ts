@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
 import { usePushNotification } from "@/hooks/usePushNotification";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface JobseekerProfile {
   id: string;
@@ -39,6 +40,7 @@ export function useApplyJob() {
   const [hasApplied, setHasApplied] = useState(false);
   const [profile, setProfile] = useState<JobseekerProfile | null>(null);
   const { sendPushToUser } = usePushNotification();
+  const { requireOnline } = useRequireOnline();
 
   // Check if user meets requirements to apply
   const checkRequirements = useCallback(
@@ -134,6 +136,10 @@ export function useApplyJob() {
   // Apply for a job
   const applyForJob = useCallback(
     async ({ jobId, coverLetter }: ApplyJobParams): Promise<boolean> => {
+      if (!requireOnline("You're offline. Reconnect to submit your application.")) {
+        return false;
+      }
+
       setApplying(true);
 
       try {
@@ -236,7 +242,7 @@ export function useApplyJob() {
         setApplying(false);
       }
     },
-    [checkRequirements]
+    [checkRequirements, requireOnline]
   );
 
   // Reset state (useful when navigating away)

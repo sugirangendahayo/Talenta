@@ -4,11 +4,14 @@ import ApplicantFilters from "@/components/employer/ApplicantFilters";
 import { ApplicationCardSkeleton } from "@/components/skeletons/ApplicationCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { supabase } from "@/lib/supabase";
 import { Applicant } from "@/types/job.types";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
@@ -63,6 +66,9 @@ export default function ApplicantsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>("all");
   const [jobTitle, setJobTitle] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   // ── Data helpers (untouched) ─────────────────────────────────────────────
   const transformApplications = (rawApps: RawApplication[]): Applicant[] =>
@@ -81,6 +87,19 @@ export default function ApplicantsScreen() {
 
   const fetchApplicants = async () => {
     if (!user) return;
+
+    // Offline: don't attempt a request that would just fail/hang. Keep
+    // whatever applicants are already loaded visible instead of clearing them.
+    if (!isOnline) {
+      setIsLoading(false);
+      if (!hasLoadedOnceRef.current) {
+        setError(
+          t("errors.offline", { defaultValue: "You're offline. Connect to the internet to load applicants." })
+        );
+      }
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -115,6 +134,7 @@ export default function ApplicantsScreen() {
       );
       setApplicants(transformed);
       applyFilter(transformed, selectedFilter);
+      hasLoadedOnceRef.current = true;
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.loadFailed", { defaultValue: "Failed to load applicants." }));
     } finally {
@@ -155,6 +175,7 @@ export default function ApplicantsScreen() {
   };
 
   const onRefresh = async () => {
+    if (!requireOnline("You're offline. Reconnect to refresh applicants.")) return;
     setRefreshing(true);
     await fetchApplicants();
     setRefreshing(false);
@@ -169,6 +190,10 @@ export default function ApplicantsScreen() {
   });
 
   useEffect(() => { fetchApplicants(); }, [user, jobId]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's active.
+  useRefetchOnReconnect(() => fetchApplicants());
 
   // ── Empty state ──────────────────────────────────────────────────────────
   const renderEmptyState = () => (

@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useFocusEffect } from "@react-navigation/native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface Application {
   id: string;
@@ -45,10 +48,24 @@ export function useApplications(options: UseApplicationsOptions = {}) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   // Fetch applications
   const fetchApplications = useCallback(
     async (isRefresh = false) => {
+      // Offline: keep showing previously loaded applications instead of
+      // clearing them or spinning forever.
+      if (!isOnline) {
+        setLoading(false);
+        setRefreshing(false);
+        if (!hasLoadedOnceRef.current) {
+          setError("You're offline. Connect to the internet to load your applications.");
+        }
+        return;
+      }
+
       try {
         if (isRefresh) {
           setRefreshing(true);
@@ -107,6 +124,7 @@ export function useApplications(options: UseApplicationsOptions = {}) {
         if (fetchError) throw fetchError;
 
         setApplications(data || []);
+        hasLoadedOnceRef.current = true;
       } catch (err: any) {
         console.error("Error fetching applications:", err);
         setError(err.message || "Failed to load applications");
@@ -115,16 +133,19 @@ export function useApplications(options: UseApplicationsOptions = {}) {
         setRefreshing(false);
       }
     },
-    [status],
+    [status, isOnline],
   );
 
   // Refresh (pull-to-refresh)
   const refresh = useCallback(() => {
+    if (!requireOnline("You're offline. Reconnect to refresh your applications.")) return;
     fetchApplications(true);
-  }, [fetchApplications]);
+  }, [fetchApplications, requireOnline]);
 
   // Withdraw application
   const withdrawApplication = useCallback(async (applicationId: string) => {
+    if (!requireOnline("You're offline. Reconnect to withdraw this application.")) return false;
+
     try {
       const { error } = await supabase
         .from("job_applications")
@@ -141,19 +162,26 @@ export function useApplications(options: UseApplicationsOptions = {}) {
       console.error("Error withdrawing application:", err);
       return false;
     }
-  }, []);
+  }, [requireOnline]);
 
   // Initial fetch
   useEffect(() => {
     fetchApplications();
   }, [status]);
 
-  // Refresh when screen comes into focus
+  // Refresh when screen comes into focus (only when online — avoids a
+  // guaranteed-to-fail request every time the user switches tabs offline)
   useFocusEffect(
     useCallback(() => {
+      if (!isOnline) return;
       fetchApplications(true);
-    }, [fetchApplications]),
+    }, [fetchApplications, isOnline]),
   );
+
+  // Smart auto-refresh on reconnect (covers the case where the screen was
+  // already focused when connectivity returned, so the focus-effect above
+  // wouldn't otherwise re-fire).
+  useRefetchOnReconnect(() => fetchApplications(true));
 
   // Get counts by status
   const getCounts = useCallback(() => {

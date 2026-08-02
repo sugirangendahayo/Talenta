@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface EmployerDocsInfo {
   businessLicenseUrl: string | null;
@@ -25,8 +28,22 @@ export function useEmployerDocuments() {
     verificationDocUrl: null,
     verificationDocUpdatedAt: null,
   });
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   const fetchDocuments = useCallback(async () => {
+    // Offline: don't attempt a request that would just fail/hang. Keep
+    // whatever document info is already loaded visible instead of hanging
+    // the spinner or clearing previously fetched data.
+    if (!isOnline) {
+      setLoading(false);
+      if (!hasLoadedOnceRef.current) {
+        toast.error("You're offline. Connect to the internet to load documents.");
+      }
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -56,15 +73,17 @@ export function useEmployerDocuments() {
           verificationDocUpdatedAt: data.verification_document_url ? data.updated_at : null,
         });
       }
+      hasLoadedOnceRef.current = true;
     } catch (err: any) {
       console.error("Error fetching documents:", err);
       toast.error(err.message || "Failed to load documents");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   const uploadBusinessLicense = useCallback(async () => {
+    if (!requireOnline()) return;
     try {
       setUploading((prev) => ({ ...prev, business: true }));
       // Placeholder for actual file picker and Supabase Storage upload
@@ -84,9 +103,10 @@ export function useEmployerDocuments() {
     } finally {
       setUploading((prev) => ({ ...prev, business: false }));
     }
-  }, []);
+  }, [requireOnline]);
 
   const uploadVerificationDoc = useCallback(async () => {
+    if (!requireOnline()) return;
     try {
       setUploading((prev) => ({ ...prev, verification: true }));
       // Placeholder for actual file picker and Supabase Storage upload
@@ -97,9 +117,10 @@ export function useEmployerDocuments() {
     } finally {
       setUploading((prev) => ({ ...prev, verification: false }));
     }
-  }, []);
+  }, [requireOnline]);
 
   const deleteBusinessLicense = useCallback(async () => {
+    if (!requireOnline()) return;
     try {
       setDeleting((prev) => ({ ...prev, business: true }));
       const {
@@ -123,9 +144,10 @@ export function useEmployerDocuments() {
     } finally {
       setDeleting((prev) => ({ ...prev, business: false }));
     }
-  }, [fetchDocuments]);
+  }, [fetchDocuments, requireOnline]);
 
   const deleteVerificationDoc = useCallback(async () => {
+    if (!requireOnline()) return;
     try {
       setDeleting((prev) => ({ ...prev, verification: true }));
       const {
@@ -149,11 +171,15 @@ export function useEmployerDocuments() {
     } finally {
       setDeleting((prev) => ({ ...prev, verification: false }));
     }
-  }, [fetchDocuments]);
+  }, [fetchDocuments, requireOnline]);
 
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh the
+  // document info if this screen is active.
+  useRefetchOnReconnect(() => fetchDocuments());
 
   return {
     loading,

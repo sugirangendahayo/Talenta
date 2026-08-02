@@ -2,6 +2,9 @@
 import UserAvatar from "@/components/common/UserAvatar";
 import BusinessVerificationBadge from "@/components/employer/BusinessVerificationBadge";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import {
   bulkBanUsers,
   bulkRejectEmployers,
@@ -259,8 +262,18 @@ export default function AdminEmployers() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const select = useMultiSelect();
   const [actionsVisible, setActionsVisible] = useState(false);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
 
   const load = useCallback(async () => {
+    // Offline: skip the request and keep whatever employers are already
+    // loaded (previously loaded content) visible instead of clearing them.
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       const data = await getEmployers();
       setEmployers(data);
@@ -276,13 +289,18 @@ export default function AdminEmployers() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's the active tab.
+  useRefetchOnReconnect(() => load());
+
   const onRefresh = () => {
+    if (!requireOnline("You're offline. Reconnect to refresh employers.")) return;
     setRefreshing(true);
     load();
   };
@@ -297,6 +315,7 @@ export default function AdminEmployers() {
   };
 
   const handleVerify = (id: string) => {
+    if (!requireOnline()) return;
     Alert.alert(
       t("employers.verifyTitle", { defaultValue: "Verify Employer" }),
       t("employers.verifyConfirm", {
@@ -343,6 +362,7 @@ export default function AdminEmployers() {
   };
 
   const handleReject = async (id: string, reason: string) => {
+    if (!requireOnline()) return;
     setActionLoading(id);
     try {
       await rejectEmployerWithReason(id, reason);
@@ -382,6 +402,7 @@ export default function AdminEmployers() {
   const allSelected = selectableIds.length > 0 && selectableIds.every(select.isSelected);
 
   const runBulkAction = async (action: string, reason = "", duration?: number) => {
+    if (!requireOnline()) return;
     try {
       const ids = select.selectedList;
       const result = action === "verify" ? await bulkVerifyEmployers(ids)

@@ -1,4 +1,7 @@
 // app/(admin-tabs)/admin/Reports.tsx
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { getReports, updateReportStatus } from "@/lib/adminService";
 import type { AdminReport, ReportStatus } from "@/types/admin.types";
 import { Ionicons } from "@expo/vector-icons";
@@ -220,7 +223,18 @@ export default function AdminReports() {
     submitStyle: "default",
   });
 
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+
   const load = useCallback(async () => {
+    // Offline: skip the request and keep whatever reports are already
+    // loaded (previously loaded content) visible instead of clearing them.
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       const data = await getReports(filter);
       setReports(data);
@@ -233,14 +247,19 @@ export default function AdminReports() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filter]);
+  }, [filter, isOnline]);
 
   useEffect(() => {
     setLoading(true);
     load();
   }, [filter]);
 
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's the active tab.
+  useRefetchOnReconnect(() => load());
+
   const onRefresh = () => {
+    if (!requireOnline("You're offline. Reconnect to refresh reports.")) return;
     setRefreshing(true);
     load();
   };
@@ -277,6 +296,7 @@ export default function AdminReports() {
   };
 
   const showActionSheet = (report: AdminReport) => {
+    if (!requireOnline()) return;
     Alert.alert(
       "Update Report Ticket",
       `Updating this ticket DOES NOT punish the user.\nTo punish the user (Suspend/Ban), click "Moderate User".\n\nTicket Reason: ${REASON_LABELS[report.reason] ?? report.reason}`,

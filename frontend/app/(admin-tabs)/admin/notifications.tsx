@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { TextInput } from "react-native";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export default function NotificationsScreen() {
   const {
@@ -27,11 +28,13 @@ export default function NotificationsScreen() {
     refetch,
   } = useNotifications();
   const { t } = useTranslation(["common", "jobs"]);
+  const { requireOnline } = useRequireOnline();
 
   const [refreshing, setRefreshing] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
 
   const onRefresh = async () => {
+    if (!requireOnline("You're offline. Reconnect to refresh notifications.")) return;
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
@@ -206,7 +209,10 @@ export default function NotificationsScreen() {
             {error}
           </Text>
           <TouchableOpacity
-            onPress={refetch}
+            onPress={() => {
+              if (!requireOnline()) return;
+              refetch();
+            }}
             className="px-6 py-3 bg-cyan-700 dark:bg-cyan-800 rounded-xl"
           >
             <Text className="font-quicksandBold text-white">{t("common:buttons.retry", { defaultValue: "Try Again" })}</Text>

@@ -1,6 +1,9 @@
 // app/(admin-tabs)/admin/Dashboard.tsx
 import { useAuth } from "@/contexts/AuthContext";
+import { useNetwork } from "@/contexts/NetworkContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import {
   getAdminStats,
   getPendingReportCount,
@@ -119,8 +122,18 @@ export default function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingReports, setPendingReports] = useState(0);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
 
   const load = useCallback(async () => {
+    // Offline: don't attempt requests that would just fail. Keep whatever
+    // is already loaded (previously loaded content) visible as-is.
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       setError(null);
       const [s, a, rCount] = await Promise.all([
@@ -142,12 +155,18 @@ export default function AdminDashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh the
+  // dashboard if this tab is active.
+  useRefetchOnReconnect(() => load());
+
   const onRefresh = () => {
+    if (!requireOnline("You're offline. Reconnect to refresh your dashboard.")) return;
     setRefreshing(true);
     load();
   };

@@ -73,7 +73,10 @@ export default function AttentionSection({
   if (applicants.length === 0) return null;
 
   return (
-    <View className="mx-4 my-2">
+    // See ActiveJobsSection for why `collapsable={false}` matters here —
+    // this section also mounts/unmounts conditionally between the stats
+    // cards and the sections below it.
+    <View collapsable={false} className="mx-4 my-2">
       <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-100 dark:border-[#222]">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-1">

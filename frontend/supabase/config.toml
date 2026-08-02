@@ -20,3 +20,30 @@ enabled = true
 verify_jwt = false
 entrypoint = "./functions/auth-precheck/index.ts"
 # Called anonymously before a user is signed in, so it must not require a JWT.
+
+[functions.create-checkout-session]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/create-checkout-session/index.ts"
+# Verifies the caller's Supabase JWT manually (see index.ts) rather than via
+# the platform gateway, matching this project's existing Edge Function pattern.
+
+[functions.confirm-checkout-session]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/confirm-checkout-session/index.ts"
+
+[functions.stripe-webhook]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/stripe-webhook/index.ts"
+# Called directly by Stripe (no Supabase JWT). Authenticity is verified via
+# the Stripe-Signature header against STRIPE_WEBHOOK_SECRET instead.
+
+[functions.payment-redirect]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/payment-redirect/index.ts"
+# Public https bounce page Stripe redirects to (success_url/cancel_url can't
+# be a custom URL scheme) — hands off to the app's talenta:// deep link.
+# No auth, no DB access, no secrets — just forwards status/session_id.

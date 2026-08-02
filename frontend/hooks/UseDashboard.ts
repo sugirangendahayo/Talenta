@@ -1,6 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
+import { useJobsRefresh } from "@/contexts/JobsRefreshContext";
 
 export interface DashboardStats {
   activeJobs: number;
@@ -63,6 +67,9 @@ export function useDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   // Calculate match score based on skills, experience, etc.
   const calculateMatchScore = (application: any): number => {
@@ -286,6 +293,18 @@ export function useDashboard() {
       return;
     }
 
+    // Offline: skip the request entirely instead of letting every query in
+    // the Promise.all fail individually. Keep whatever is already on screen
+    // (previously loaded content) exactly as-is.
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      if (!hasLoadedOnceRef.current) {
+        setError("You're offline. Connect to the internet to load your dashboard.");
+      }
+      return;
+    }
+
     try {
       if (isRefresh) {
         setRefreshing(true);
@@ -300,6 +319,7 @@ export function useDashboard() {
         fetchActiveJobs(),
         fetchRecentContacts(),
       ]);
+      hasLoadedOnceRef.current = true;
     } catch (err: any) {
       console.error("Error fetching dashboard data:", err);
       setError(err.message || "Failed to load dashboard");
@@ -307,17 +327,39 @@ export function useDashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user, fetchStats, fetchHighPriorityApplicants, fetchActiveJobs, fetchRecentContacts]);
+  }, [user, isOnline, fetchStats, fetchHighPriorityApplicants, fetchActiveJobs, fetchRecentContacts]);
 
-  // Refresh function
+  // Refresh function (pull-to-refresh / manual retry)
   const refresh = useCallback(() => {
+    if (!requireOnline("You're offline. Reconnect to refresh your dashboard.")) return;
     fetchDashboardData(true);
-  }, [fetchDashboardData]);
+  }, [fetchDashboardData, requireOnline]);
 
   // Initial fetch
   useEffect(() => {
     fetchDashboardData();
   }, [user]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh the
+  // dashboard if this tab is active. Debounced/deduped internally so a
+  // flaky connection can't trigger repeated backend calls.
+  useRefetchOnReconnect(() => fetchDashboardData(true));
+
+  // Silently refetch the moment a job is posted/edited anywhere in the app
+  // (e.g. via the tab bar's "+" button on a different tab), so the new
+  // active job and updated stats show up immediately instead of requiring
+  // a manual pull-to-refresh. `refreshKey` starts at 0, which we treat as
+  // "nothing posted yet" so this doesn't double-fetch on mount.
+  const { refreshKey } = useJobsRefresh();
+  const isFirstRefreshKeyRef = useRef(true);
+  useEffect(() => {
+    if (isFirstRefreshKeyRef.current) {
+      isFirstRefreshKeyRef.current = false;
+      return;
+    }
+    fetchDashboardData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   return {
     stats,

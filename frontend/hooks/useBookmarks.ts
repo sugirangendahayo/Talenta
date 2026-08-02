@@ -2,6 +2,9 @@
 import { supabase } from "@/lib/supabase";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface BookmarkedJob {
   id: string; // bookmark id
@@ -35,6 +38,7 @@ export function useJobBookmark(jobId: string) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
+  const { requireOnline } = useRequireOnline();
 
   const fetchStatus = useCallback(async () => {
     if (!jobId) return;
@@ -65,6 +69,7 @@ export function useJobBookmark(jobId: string) {
 
   const toggle = useCallback(async () => {
     if (toggling) return;
+    if (!requireOnline("You're offline. Reconnect to save this job.")) return;
     setToggling(true);
     try {
       const {
@@ -91,7 +96,7 @@ export function useJobBookmark(jobId: string) {
     } finally {
       setToggling(false);
     }
-  }, [jobId, isBookmarked, toggling]);
+  }, [jobId, isBookmarked, toggling, requireOnline]);
 
   return { isBookmarked, loading, toggling, toggle, refetch: fetchStatus };
 }
@@ -100,8 +105,14 @@ export function useJobBookmark(jobId: string) {
 export function useBookmarkSet() {
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
 
   const fetchAll = useCallback(async () => {
+    if (!isOnline) {
+      setLoading(false);
+      return; // keep whatever bookmark state is already cached in memory
+    }
     try {
       const {
         data: { user },
@@ -119,7 +130,7 @@ export function useBookmarkSet() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useFocusEffect(
     useCallback(() => {
@@ -127,8 +138,11 @@ export function useBookmarkSet() {
     }, [fetchAll])
   );
 
+  useRefetchOnReconnect(fetchAll);
+
   const toggleInSet = useCallback(
     async (jobId: string) => {
+      if (!requireOnline("You're offline. Reconnect to save this job.")) return;
       try {
         const {
           data: { user },
@@ -161,7 +175,7 @@ export function useBookmarkSet() {
         console.error("Error toggling bookmark:", err);
       }
     },
-    [bookmarkedIds]
+    [bookmarkedIds, requireOnline]
   );
 
   return { bookmarkedIds, loading, toggleInSet, refetch: fetchAll };
@@ -171,8 +185,13 @@ export function useBookmarkSet() {
 export function useAppliedSet() {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const { isOnline } = useNetwork();
 
   const fetchAll = useCallback(async () => {
+    if (!isOnline) {
+      setLoading(false);
+      return;
+    }
     try {
       const {
         data: { user },
@@ -190,13 +209,15 @@ export function useAppliedSet() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useFocusEffect(
     useCallback(() => {
       fetchAll();
     }, [fetchAll])
   );
+
+  useRefetchOnReconnect(fetchAll);
 
   return { appliedIds, loading, refetch: fetchAll };
 }
@@ -206,8 +227,15 @@ export function useBookmarksList() {
   const [bookmarks, setBookmarks] = useState<BookmarkedJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
 
   const fetchBookmarks = useCallback(async (isRefresh = false) => {
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      return; // keep the previously loaded saved-jobs list visible
+    }
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
@@ -258,7 +286,7 @@ export function useBookmarksList() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useFocusEffect(
     useCallback(() => {
@@ -266,8 +294,11 @@ export function useBookmarksList() {
     }, [fetchBookmarks])
   );
 
+  useRefetchOnReconnect(() => fetchBookmarks(true));
+
   const removeBookmark = useCallback(
     async (jobId: string) => {
+      if (!requireOnline("You're offline. Reconnect to remove this saved job.")) return;
       try {
         const {
           data: { user },
@@ -285,14 +316,19 @@ export function useBookmarksList() {
         console.error("Error removing bookmark:", err);
       }
     },
-    []
+    [requireOnline]
   );
+
+  const refresh = useCallback(() => {
+    if (!requireOnline("You're offline. Reconnect to refresh saved jobs.")) return;
+    fetchBookmarks(true);
+  }, [fetchBookmarks, requireOnline]);
 
   return {
     bookmarks,
     loading,
     refreshing,
-    refresh: () => fetchBookmarks(true),
+    refresh,
     removeBookmark,
   };
 }

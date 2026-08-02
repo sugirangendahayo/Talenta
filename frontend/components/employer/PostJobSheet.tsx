@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -194,6 +195,8 @@ function StyledInput({
   style,
   onFocus,
   editable = true,
+  onSubmitEditing,
+  returnKeyType,
 }: {
   value: string;
   onChangeText: (v: string) => void;
@@ -204,6 +207,8 @@ function StyledInput({
   style?: object;
   onFocus?: () => void;
   editable?: boolean;
+  onSubmitEditing?: () => void;
+  returnKeyType?: "done" | "next" | "go" | "search" | "send";
 }) {
   return (
     <TextInput
@@ -217,7 +222,9 @@ function StyledInput({
       textAlignVertical={multiline ? "top" : "center"}
       onFocus={onFocus}
       editable={editable}
-      className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-xl px-4 py-3 text-sm font-quicksandMedium text-gray-800 dark:text-gray-100"
+      onSubmitEditing={onSubmitEditing}
+      returnKeyType={returnKeyType}
+      className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#2a2a2a] rounded-xl px-4 py-3.5 text-base font-quicksandMedium text-gray-800 dark:text-gray-100"
       style={[style, !editable && { opacity: 0.5 }]}
     />
   );
@@ -236,14 +243,14 @@ function SelectChip({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      className={`px-4 py-2 rounded-full border mr-2 mb-2 ${
+      className={`px-4 py-2.5 rounded-full border mr-2 mb-2 ${
         selected
           ? "bg-cyan-700 border-cyan-700"
           : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
       }`}
     >
       <Text
-        className={`text-xs font-quicksandSemiBold ${
+        className={`text-sm font-quicksandSemiBold ${
           selected ? "text-white" : "text-gray-500 dark:text-gray-400"
         }`}
       >
@@ -256,8 +263,8 @@ function SelectChip({
 function Tag({ label, onRemove }: { label: string; onRemove: () => void }) {
   const { isDark } = useTheme();
   return (
-    <View className="flex-row items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full pl-3 pr-2 py-1 mr-2 mb-2">
-      <Text className="text-xs font-quicksandSemiBold text-gray-700 dark:text-gray-200 mr-1">
+    <View className="flex-row items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full pl-3.5 pr-2.5 py-1.5 mr-2 mb-2">
+      <Text className="text-sm font-quicksandSemiBold text-gray-700 dark:text-gray-200 mr-1.5">
         {label}
       </Text>
       <TouchableOpacity
@@ -267,7 +274,7 @@ function Tag({ label, onRemove }: { label: string; onRemove: () => void }) {
       >
         <Ionicons
           name="close"
-          size={12}
+          size={13}
           color={isDark ? "#9CA3AF" : "#6B7280"}
         />
       </TouchableOpacity>
@@ -337,6 +344,8 @@ function TagInput({
   onFocus?: () => void;
 }) {
   const [text, setText] = useState("");
+  const { isDark } = useTheme();
+  const canAdd = !disabled && text.trim().length > 0;
 
   const commit = () => {
     const trimmed = text.trim();
@@ -348,29 +357,46 @@ function TagInput({
 
   return (
     <FieldWrap>
-      <FieldLabel required={required && !disabled}>{label}</FieldLabel>
-      <StyledInput
-        value={text}
-        onChangeText={setText}
-        placeholder={placeholder}
-        editable={!disabled}
-        onFocus={onFocus}
-      />
-      {/* Hint to confirm with Return key */}
-      {!disabled && text.trim().length > 0 && (
-        <View className="flex-row mt-2">
-          <TouchableOpacity
-            onPress={commit}
-            activeOpacity={0.7}
-            className="flex-row items-center gap-1"
-          >
-            <Ionicons name="return-down-back" size={13} color="#0E7490" />
-            <Text className="text-xs font-quicksandSemiBold text-cyan-700 dark:text-cyan-400">
-              Add
-            </Text>
-          </TouchableOpacity>
+      {!!label && <FieldLabel required={required && !disabled}>{label}</FieldLabel>}
+      {/* "Add" is a real button next to the input, not a hint tucked below it —
+          it needs to be obvious at a glance that typing + tapping this adds a
+          tag, without relying on the employer to discover the Return key. */}
+      <View className="flex-row items-center gap-2">
+        <View className="flex-1">
+          <StyledInput
+            value={text}
+            onChangeText={setText}
+            placeholder={placeholder}
+            editable={!disabled}
+            onFocus={onFocus}
+            onSubmitEditing={commit}
+            returnKeyType="done"
+          />
         </View>
-      )}
+        <TouchableOpacity
+          onPress={commit}
+          activeOpacity={0.75}
+          disabled={!canAdd}
+          accessibilityRole="button"
+          accessibilityLabel="Add"
+          className={`h-[50px] px-4 rounded-xl items-center justify-center flex-row gap-1 ${
+            canAdd ? "bg-cyan-700" : "bg-gray-100 dark:bg-[#1e1e1e]"
+          }`}
+        >
+          <Ionicons
+            name="add"
+            size={20}
+            color={canAdd ? "#fff" : isDark ? "#4B5563" : "#9CA3AF"}
+          />
+          <Text
+            className={`text-sm font-quicksandBold ${
+              canAdd ? "text-white" : "text-gray-400 dark:text-gray-500"
+            }`}
+          >
+            Add
+          </Text>
+        </TouchableOpacity>
+      </View>
       {!disabled && tags.length > 0 && (
         <View className="flex-row flex-wrap mt-3">
           {tags.map((tag, i) => (
@@ -412,6 +438,7 @@ export default function PostJobSheet({
   const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
   const { isDark } = useTheme();
+  const { requireOnline } = useRequireOnline();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
 
   const employerProfile = profile as EmployerProfile | null;
@@ -536,6 +563,7 @@ export default function PostJobSheet({
   const isEditing = !!editingJob;
 
   const handleSubmit = async (asDraft = false) => {
+    if (!requireOnline("You're offline. Reconnect to post this job.")) return;
     if (!asDraft) {
       const err = validateStep();
       if (err) {
@@ -724,14 +752,14 @@ export default function PostJobSheet({
                 key={days}
                 onPress={() => updateField("expiresAt", target)}
                 activeOpacity={0.7}
-                className={`flex-1 py-2.5 rounded-xl border items-center ${
+                className={`flex-1 py-3 rounded-xl border items-center ${
                   selected
                     ? "bg-cyan-700 border-cyan-700"
                     : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                 }`}
               >
                 <Text
-                  className={`text-xs font-quicksandBold ${
+                  className={`text-sm font-quicksandBold ${
                     selected ? "text-white" : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
@@ -968,10 +996,10 @@ export default function PostJobSheet({
                   </Text>
                 </View>
               )}
-              <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100">
+              <Text className="text-2xl font-quicksandBold text-gray-800 dark:text-gray-100">
                 {STEP_META[step].title}
               </Text>
-              <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5">
+              <Text className="text-sm font-quicksandMedium text-gray-400 dark:text-gray-500 mt-0.5">
                 {STEP_META[step].subtitle}
               </Text>
             </View>
@@ -986,7 +1014,7 @@ export default function PostJobSheet({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 className="mr-2 px-2 py-1.5"
               >
-                <Text className="text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400">
+                <Text className="text-sm font-quicksandBold text-cyan-700 dark:text-cyan-400">
                   {isEditing
                     ? t("postJob.updateDraft", { defaultValue: "Update draft" })
                     : t("postJob.saveDraft", { defaultValue: "Save draft" })}
@@ -1025,9 +1053,9 @@ export default function PostJobSheet({
                   onPress={() => handleSubmit(true)}
                   disabled={submitting}
                   activeOpacity={0.7}
-                  className="flex-1 py-3.5 rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
+                  className="flex-1 py-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
                 >
-                  <Text className="text-sm font-quicksandBold text-gray-500 dark:text-gray-400">
+                  <Text className="text-base font-quicksandBold text-gray-500 dark:text-gray-400">
                     {isEditing
                       ? t("postJob.updateDraft", { defaultValue: "Update draft" })
                       : t("postJob.saveDraft", { defaultValue: "Save draft" })}
@@ -1038,9 +1066,9 @@ export default function PostJobSheet({
                   onPress={handleBack}
                   disabled={submitting}
                   activeOpacity={0.7}
-                  className="w-14 h-12 rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
+                  className="w-14 h-[52px] rounded-xl border border-gray-200 dark:border-[#2a2a2a] items-center justify-center"
                 >
-                  <Ionicons name="arrow-back" size={18} color={iconColor} />
+                  <Ionicons name="arrow-back" size={19} color={iconColor} />
                 </TouchableOpacity>
               )}
 
@@ -1051,22 +1079,22 @@ export default function PostJobSheet({
                 }
                 disabled={submitting}
                 activeOpacity={0.85}
-                className="flex-1 py-3.5 rounded-xl bg-cyan-700 flex-row items-center justify-center gap-2"
+                className="flex-1 py-4 rounded-xl bg-cyan-700 flex-row items-center justify-center gap-2"
                 style={{ opacity: submitting ? 0.65 : 1 }}
               >
                 {submitting ? (
                   <ActivityIndicator color="#fff" size="small" />
                 ) : step < STEPS - 1 ? (
                   <>
-                    <Text className="text-sm font-quicksandBold text-white">
+                    <Text className="text-base font-quicksandBold text-white">
                       {t("postJob.continue", { defaultValue: "Continue" })}
                     </Text>
-                    <Ionicons name="arrow-forward" size={15} color="#fff" />
+                    <Ionicons name="arrow-forward" size={16} color="#fff" />
                   </>
                 ) : (
                   <>
-                    <Ionicons name="checkmark-circle" size={16} color="#fff" />
-                    <Text className="text-sm font-quicksandBold text-white">
+                    <Ionicons name="checkmark-circle" size={17} color="#fff" />
+                    <Text className="text-base font-quicksandBold text-white">
                       {isEditing
                         ? t("postJob.publishDraft", { defaultValue: "Publish job" })
                         : t("postJob.publish", { defaultValue: "Post job" })}

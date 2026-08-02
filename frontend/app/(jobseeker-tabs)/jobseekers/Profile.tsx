@@ -2,6 +2,7 @@ import UserAvatar from "@/components/common/UserAvatar";
 import LanguageSelector from "@/components/modal/LanguageSelector";
 import LogoutSheet from "@/components/modal/LogoutSheet";
 import QRCodeModal from "@/components/modal/QRCodeModal";
+import { LINKS } from "@/constants/links";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useProfileImage } from "@/hooks/useProfileImage";
@@ -9,6 +10,7 @@ import {
   JobseekerProfile as JobseekerProfileType,
   supabase,
 } from "@/lib/supabase";
+import { openWebPage } from "@/utils/openWebPage";
 import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -211,32 +213,45 @@ export default function JobseekerProfile() {
       ],
     },
     {
-      title: t("sections.support.title", { defaultValue: "Support & Legal" }),
+      title: t("sections.support.title", { defaultValue: "Help & Legal" }),
       icon: "help-outline",
+      isExternal: true,
       items: [
         {
           icon: "support-agent",
           label: t("sections.support.contactSupport", {
             defaultValue: "Contact Support",
           }),
+          value: undefined,
           type: "link",
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.support),
+        },
+        {
+          icon: "shield",
+          label: t("sections.support.privacy", {
+            defaultValue: "Privacy Policy",
+          }),
+          value: undefined,
+          type: "link",
+          onPress: () => openWebPage(LINKS.privacy),
         },
         {
           icon: "description",
           label: t("sections.support.terms", {
-            defaultValue: "Terms & Conditions",
+            defaultValue: "Terms of Service",
           }),
+          value: undefined,
           type: "link",
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.terms),
         },
         {
-          icon: "privacy-tip",
-          label: t("sections.support.privacy", {
-            defaultValue: "Privacy Policy",
+          icon: "info-outline",
+          label: t("sections.support.about", {
+            defaultValue: "About Talenta",
           }),
+          value: undefined,
           type: "link",
-          onPress: undefined,
+          onPress: () => openWebPage(LINKS.about),
         },
       ],
     },
@@ -405,6 +420,9 @@ export default function JobseekerProfile() {
                 }
                 disabled={item.type !== "link"}
                 activeOpacity={0.7}
+                accessibilityRole={section.isExternal ? "link" : "button"}
+                accessibilityLabel={item.label}
+                accessibilityHint={section.isExternal ? "Opens in your browser" : undefined}
               >
                 <View className="flex-row items-center flex-1">
                   <MaterialIcons

@@ -31,7 +31,7 @@ const PLANS = [
   {
     id: "professional" as JobseekerPremiumPlan,
     name: "Professional",
-    price: "5,000 RWF",
+    price: "$5",
     period: "/month",
     description: "Stand out to employers.",
     features: [
@@ -194,25 +194,23 @@ export default function JobseekerPremiumUpgradeScreen() {
                 ))}
               </View>
 
-              {!isCurrent && (
+              {plan.id !== "free" && !isCurrent && (
                 <TouchableOpacity
                 onPress={() => handleSubscribe(plan.id)}
-                disabled={isCurrent || activating || (!isProfileComplete && plan.id !== "free")}
+                disabled={activating || !isProfileComplete}
                 className={`w-full py-4 rounded-xl items-center justify-center ${
-                  isCurrent
-                    ? "bg-gray-100 dark:bg-[#2a2a2a]"
-                    : (!isProfileComplete && plan.id !== "free")
+                  !isProfileComplete
                     ? "bg-gray-200 dark:bg-[#1a1a1a]"
                     : "bg-cyan-700 dark:bg-cyan-600"
                 }`}
                 activeOpacity={0.85}
               >
-                {activating && plan.id !== "free" ? (
+                {activating ? (
                   <ActivityIndicator color="white" size="small" />
                 ) : (
                   <Text
                     className={`font-quicksandBold text-base ${
-                      isCurrent || (!isProfileComplete && plan.id !== "free")
+                      !isProfileComplete
                         ? "text-gray-400 dark:text-gray-500"
                         : "text-white"
                     }`}

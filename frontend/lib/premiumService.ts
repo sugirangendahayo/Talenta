@@ -1,51 +1,57 @@
 import { supabase } from "@/lib/supabase";
 import { EmployerCertificate, PremiumPlan } from "@/types/verification.types";
-import * as Crypto from "expo-crypto";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
-export const simulatePaymentAndActivate = async (
-  userId: string,
-  plan: PremiumPlan
-): Promise<void> => {
-  if (plan === "free") return;
+export interface CheckoutSessionResult {
+  url: string;
+  sessionId: string;
+}
 
-  // Fake payment delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+export type CheckoutConfirmationStatus = "completed" | "pending" | "expired";
 
-  const issuedAt = new Date().toISOString();
-  // 1 year expiration
-  const expiresAt = new Date();
-  expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-  const expiresAtStr = expiresAt.toISOString();
+export interface ConfirmCheckoutResult {
+  status: CheckoutConfirmationStatus;
+  plan?: PremiumPlan;
+}
 
-  // Update profile
-  const { error: profileError } = await supabase
-    .from("employer_profiles")
-    .update({
-      premium_plan: plan,
-      premium_activated_at: issuedAt,
-      premium_expires_at: expiresAtStr,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", userId);
+/**
+ * Starts a real Stripe Checkout session for the given employer plan.
+ *
+ * Replaces the old `simulatePaymentAndActivate()` fake-payment flow. This
+ * never grants premium itself — it only asks the `create-checkout-session`
+ * Edge Function (which owns the Stripe secret key) to open a real payment
+ * page. The plan is only ever activated server-side after payment succeeds.
+ */
+export const createEmployerCheckoutSession = async (
+  plan: PremiumPlan,
+  redirectUrl: string,
+): Promise<CheckoutSessionResult> => {
+  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+    body: { plan, redirectUrl },
+  });
 
-  if (profileError) throw profileError;
+  if (error) throw new Error(await extractFunctionErrorMessage(error));
+  if (!data?.url || !data?.sessionId) throw new Error("Failed to start checkout");
 
-  // Generate certificate number
-  const certNumber = `TALENTA-CERT-${Crypto.randomUUID().split("-")[0].toUpperCase()}`;
+  return data as CheckoutSessionResult;
+};
 
-  // Insert certificate
-  const { error: certError } = await supabase
-    .from("employer_certificates")
-    .insert({
-      employer_id: userId,
-      certificate_number: certNumber,
-      plan: plan,
-      issued_at: issuedAt,
-      expires_at: expiresAtStr,
-      status: "active",
-    });
+/**
+ * Confirms a checkout session immediately after the user returns from the
+ * Stripe payment page, so the UI can reflect success/failure right away.
+ * Safe to call even if the `stripe-webhook` has already processed (or will
+ * shortly process) the same session — finalization is fully idempotent.
+ */
+export const confirmEmployerCheckoutSession = async (
+  sessionId: string,
+): Promise<ConfirmCheckoutResult> => {
+  const { data, error } = await supabase.functions.invoke("confirm-checkout-session", {
+    body: { sessionId },
+  });
 
-  if (certError) throw certError;
+  if (error) throw new Error(await extractFunctionErrorMessage(error));
+
+  return data as ConfirmCheckoutResult;
 };
 
 export const getEmployerPremiumStatus = async (
@@ -82,3 +88,15 @@ export const getEmployerPremiumStatus = async (
     certificate: certData as EmployerCertificate | null,
   };
 };
+
+async function extractFunctionErrorMessage(error: unknown): Promise<string> {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const body = await error.context.json();
+      if (body?.error) return body.error as string;
+    } catch {
+      // fall through to generic message below
+    }
+  }
+  return error instanceof Error ? error.message : "Payment request failed";
+}
