@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface EmployerProfileFormData {
   company_name: string;
@@ -78,6 +81,10 @@ export function useEmployerProfileCompletion() {
   const profileImageUrlRef = useRef(profileImageUrl);
   profileImageUrlRef.current = profileImageUrl;
 
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
+
   // ─── Reactive completion ───────────────────────────────────────────────────
   useEffect(() => {
     const status = computeCompletion({
@@ -89,6 +96,16 @@ export function useEmployerProfileCompletion() {
 
   // Fetch existing profile data
   const fetchProfile = useCallback(async () => {
+    // Offline: don't attempt a request that would just fail/hang. Keep
+    // whatever profile data is already loaded visible.
+    if (!isOnline) {
+      setLoading(false);
+      if (!hasLoadedOnceRef.current) {
+        toast.error("You're offline. Connect to the internet to load your profile.");
+      }
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -124,13 +141,14 @@ export function useEmployerProfileCompletion() {
         setBusinessLicenseUrl(data.business_license_url || null);
         // completion is recalculated by the useEffect above
       }
+      hasLoadedOnceRef.current = true;
     } catch (err: any) {
       console.error("Error fetching employer profile:", err);
       toast.error(err.message || "Failed to load profile");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   // Update form field
   const updateField = useCallback(
@@ -149,6 +167,7 @@ export function useEmployerProfileCompletion() {
 
   // Save profile
   const saveProfile = useCallback(async (): Promise<boolean> => {
+    if (!requireOnline()) return false;
     try {
       setSaving(true);
 
@@ -198,12 +217,16 @@ export function useEmployerProfileCompletion() {
     } finally {
       setSaving(false);
     }
-  }, [formData, fetchProfile]);
+  }, [formData, fetchProfile, requireOnline]);
 
   // Load profile on mount
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh the
+  // profile if this screen is active.
+  useRefetchOnReconnect(() => fetchProfile());
 
   return {
     loading,
