@@ -84,7 +84,14 @@ export default function StatCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <View className="flex flex-row flex-wrap px-3 py-4">
+    // `collapsable={false}` keeps this as a real native view group on
+    // Android instead of letting the view-flattening optimizer merge it
+    // into its parent. Sibling sections below this one mount/unmount
+    // conditionally (attention list, active jobs, recent contacts), and
+    // without this, a stale flattening decision could leave a newly
+    // mounted section rendered on top of these cards after a refresh
+    // until the app fully restarts and rebuilds the native tree.
+    <View collapsable={false} className="flex flex-row flex-wrap px-3 py-4">
       {statCards.map((stat, index) => (
         <View className={`${index === 2 ? "w-full" : "w-1/2"} mb-3`} key={index}>
           <StatCard {...stat} />

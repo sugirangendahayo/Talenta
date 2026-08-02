@@ -201,7 +201,9 @@ export default function RecentContactsSection({
   if (contacts.length === 0) return null;
 
   return (
-    <View className="mx-4 my-2 mb-4">
+    // See ActiveJobsSection for why `collapsable={false}` matters here —
+    // this section also mounts/unmounts conditionally.
+    <View collapsable={false} className="mx-4 my-2 mb-4">
       <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-100 dark:border-[#222]">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-3">
