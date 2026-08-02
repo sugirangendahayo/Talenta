@@ -1,5 +1,8 @@
 // app/(admin-tabs)/admin/Jobseekers.tsx
 import { useTheme } from "@/contexts/ThemeContext";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { bulkBanUsers, bulkSetUnderReview, bulkSuspendUsers, bulkUnbanUsers, bulkUnsuspendUsers, getJobseekers } from "@/lib/adminService";
 import type { AdminJobseeker } from "@/types/admin.types";
 import UserAvatar from "@/components/common/UserAvatar";
@@ -273,8 +276,18 @@ export default function AdminJobseekers() {
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const select = useMultiSelect();
   const [actionsVisible, setActionsVisible] = useState(false);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
 
   const load = useCallback(async () => {
+    // Offline: skip the request and keep whatever jobseekers are already
+    // loaded (previously loaded content) visible instead of clearing them.
+    if (!isOnline) {
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
     try {
       const data = await getJobseekers();
       setJobseekers(data);
@@ -290,13 +303,18 @@ export default function AdminJobseekers() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // Smart auto-refresh: when connectivity returns, silently refresh this
+  // screen's data if it's the active tab.
+  useRefetchOnReconnect(() => load());
+
   const onRefresh = () => {
+    if (!requireOnline("You're offline. Reconnect to refresh jobseekers.")) return;
     setRefreshing(true);
     load();
   };
@@ -334,6 +352,7 @@ export default function AdminJobseekers() {
   const allSelected = selectableIds.length > 0 && selectableIds.every(select.isSelected);
 
   const runBulkAction = async (action: string, reason = "", duration?: number) => {
+    if (!requireOnline()) return;
     try {
       const ids = select.selectedList;
       const result = action === "suspend" ? await bulkSuspendUsers(ids, reason, duration ?? 24)
