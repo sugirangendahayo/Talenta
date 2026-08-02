@@ -1,6 +1,8 @@
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { NetworkProvider } from "@/contexts/NetworkContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ThemeProvider, ThemeSync, useTheme } from "@/contexts/ThemeContext";
+import OfflineBanner from "@/components/common/OfflineBanner";
 import "@/i18n/config"; // Import i18n configuration
 import {
   Quicksand_400Regular,
@@ -333,17 +335,20 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <KeyboardProvider>
           <SafeAreaProvider>
-            <AuthProvider>
-              <NotificationProvider>
-                <RootLayoutNav />
-                <Toaster
-                  position="top-center"
-                  duration={2000}
-                  richColors
-                  visibleToasts={2}
-                />
-              </NotificationProvider>
-            </AuthProvider>
+            <NetworkProvider>
+              <AuthProvider>
+                <NotificationProvider>
+                  <RootLayoutNav />
+                  <OfflineBanner />
+                  <Toaster
+                    position="top-center"
+                    duration={2000}
+                    richColors
+                    visibleToasts={2}
+                  />
+                </NotificationProvider>
+              </AuthProvider>
+            </NetworkProvider>
           </SafeAreaProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>
