@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { LayoutAnimation, Platform, UIManager } from "react-native";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNetwork } from "@/contexts/NetworkContext";
 import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
 import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { useJobsRefresh } from "@/contexts/JobsRefreshContext";
+
+// Android needs this opted in explicitly before LayoutAnimation does
+// anything; iOS has it enabled by default. Safe to call unconditionally/
+// repeatedly (PostJobSheet.tsx also does this at module scope).
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export interface DashboardStats {
   activeJobs: number;
@@ -189,6 +197,14 @@ export function useDashboard() {
         .filter(app => app.match_score >= 75) // Only show 75%+ matches
         .slice(0, 3); // Top 3
 
+      // This section mounts/unmounts based on whether there are any matches.
+      // On Android, that kind of structural change landing all at once (no
+      // animation) can leave the screen showing stale pixels for the
+      // sections below it — the new content is actually laid out correctly,
+      // but the screen isn't repainted until something else (e.g. a tap)
+      // forces a redraw. Explicitly animating the transition forces Android
+      // to repaint frame-by-frame instead of jumping straight there.
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setHighPriorityApplicants(topMatches);
     } catch (err: any) {
       console.error("Error fetching high priority applicants:", err);
@@ -225,6 +241,10 @@ export function useDashboard() {
         })
       );
 
+      // See the comment in fetchHighPriorityApplicants above — same fix,
+      // same reason. This is the section that showed the reported bug
+      // (a freshly active job rendering on top of the stats cards).
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setActiveJobs(jobsWithCounts);
     } catch (err: any) {
       console.error("Error fetching active jobs:", err);
@@ -279,6 +299,7 @@ export function useDashboard() {
         };
       });
 
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setRecentContacts(contacts);
     } catch (err: any) {
       console.error("Error fetching recent contacts:", err);
