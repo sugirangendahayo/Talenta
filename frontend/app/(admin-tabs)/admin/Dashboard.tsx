@@ -241,14 +241,14 @@ export default function AdminDashboard() {
       icon: <Ionicons name="briefcase-outline" size={15} color="#6B7280" />,
       onPress: () => router.push("/(admin-tabs)/admin/Jobs"),
     },
-    {
-      title: t("actions.usersOverview", { defaultValue: "Users Overview" }),
-      subtitle: t("actions.usersOverviewDesc", {
-        defaultValue: "All users by role",
-      }),
-      icon: <Ionicons name="people-circle-outline" size={15} color="#6B7280" />,
-      onPress: () => router.push("/admin/Users"),
-    },
+    // {
+    //   title: t("actions.usersOverview", { defaultValue: "Users Overview" }),
+    //   subtitle: t("actions.usersOverviewDesc", {
+    //     defaultValue: "All users by role",
+    //   }),
+    //   icon: <Ionicons name="people-circle-outline" size={15} color="#6B7280" />,
+    //   onPress: () => router.push("/admin/Users"),
+    // },
     {
       title: t("actions.reportsInbox", { defaultValue: "Reports Inbox" }),
       subtitle: t("actions.reportsInboxDesc", {

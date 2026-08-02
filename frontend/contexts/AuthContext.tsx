@@ -75,6 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Use ref to prevent race conditions
   const isMounted = useRef(true);
   const fetchingProfile = useRef(false);
+  const authChangeVersion = useRef(0);
+  const authenticatedUserId = useRef<string | null>(null);
 
   // NEW: Load onboarding status on mount
   useEffect(() => {
@@ -232,89 +234,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, role, fetchProfile]);
 
-  // Initialize auth state
+  // Initialize auth state.
+  //
+  // `onAuthStateChange` emits INITIAL_SESSION after it has restored persisted
+  // storage. Calling getSession() at the same time as that restore (or a
+  // TOKEN_REFRESHED event) can contend for Supabase's internal auth lock on
+  // React Native. In that case getSession never settles and the timeout below
+  // reports an error despite the user having a valid refreshed token.
+  //
+  // Keep the state-change callback synchronous, as required by Supabase, and
+  // defer all database/profile work until after it returns. This also prevents
+  // a role lookup from blocking future token refreshes.
   useEffect(() => {
     isMounted.current = true;
-
-    const initAuth = async () => {
-      try {
-        // Get initial session
-        const {
-          data: { session: initialSession },
-        } = await withTimeout(
-          supabase.auth.getSession(),
-          AUTH_TIMEOUT_MS,
-          "getSession()",
-        );
-
-        if (!isMounted.current) return;
-
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
-        if (initialSession?.user) {
-          // Fetch role from profiles table
-          const { data: profileData, error } = await withTimeout(
-            supabase
-              .from("profiles")
-              .select("role")
-              .eq("id", initialSession.user.id)
-              .single(),
-            AUTH_TIMEOUT_MS,
-            "profile role lookup",
-          );
-
-          if (!isMounted.current) return;
-
-          if (!error && profileData) {
-            const userRole = profileData.role as Role;
-            setRole(userRole);
-            await withTimeout(
-              fetchProfile(initialSession.user, userRole),
-              AUTH_TIMEOUT_MS,
-              "fetchProfile",
-            );
-            // Apply this user's saved language preference (local-only, no network)
-            await applyUserLanguage(initialSession.user.id);
-          }
-        }
-      } catch (error) {
-        // Includes timeouts from withTimeout() above — we don't want a stalled
-        // network call to leave the splash screen up forever, so we log and
-        // fall through to releasing `loading` in the finally block below.
-        console.error("Error initializing auth:", error);
-      } finally {
-        if (isMounted.current) {
-          setLoading(false);
-        }
-      }
-    };
-
-    
-    initAuth();
-
-    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+    } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!isMounted.current) return;
 
       console.log("Auth state changed:", event);
 
-      // When signing in, hold loading=true so _layout doesn't prematurely
-      // redirect to complete-oauth-profile before the role has been fetched.
-      if (event === "SIGNED_IN") {
-        setLoading(true);
-      }
-
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
-      try {
-        if (newSession?.user) {
+      const version = ++authChangeVersion.current;
+      const nextUserId = newSession?.user.id ?? null;
+      if (authenticatedUserId.current !== nextUserId) {
+        // Never expose the previous account's role/profile while a new
+        // session is being hydrated (including account switches).
+        authenticatedUserId.current = nextUserId;
+        setRole(null);
+        setProfile(null);
+      }
+
+      // A signed-out initial session is fully resolved without any network
+      // calls. Clear stale role/profile state left from a previous user.
+      if (!newSession?.user) {
+        setRole(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      // Hold routing until this session's role is known. The timeout in the
+      // deferred task guarantees this is always released on a bad connection.
+      setLoading(true);
+
+      const hydrateSession = async () => {
+        try {
           // Fetch role and profile — guarded with a timeout so a stalled
-          // connection (e.g. right after a TOKEN_REFRESHED on app resume)
-          // can't leave `loading` stuck at `true` forever.
+          // connection cannot leave the splash screen up forever.
           const { data: profileData, error } = await withTimeout(
             supabase
               .from("profiles")
@@ -325,7 +294,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             "profile role lookup",
           );
 
-          if (!isMounted.current) return;
+          if (!isMounted.current || version !== authChangeVersion.current) return;
 
           if (!error && profileData) {
             const userRole = profileData.role as Role;
@@ -338,17 +307,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Apply this user's saved language preference (local-only, no network)
             await applyUserLanguage(newSession.user.id);
           }
-        } else {
-          setRole(null);
-          setProfile(null);
+        } catch (error) {
+          console.error("Error hydrating authenticated user:", error);
+        } finally {
+          if (isMounted.current && version === authChangeVersion.current) {
+            setLoading(false);
+          }
         }
-      } catch (error) {
-        console.error("Error handling auth state change:", error);
-      }
+      };
 
-      if (isMounted.current) {
-        setLoading(false);
-      }
+      // Do not await Supabase work within onAuthStateChange. Deferring gives
+      // Supabase a chance to release its auth lock before profile requests run.
+      setTimeout(() => {
+        void hydrateSession();
+      }, 0);
     });
 
     return () => {
