@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 /**
  * Returns helpers for picking and uploading a profile photo.
@@ -18,8 +19,11 @@ export function useProfileImage(
   onSuccess?: (url: string) => void
 ) {
   const [uploading, setUploading] = useState(false);
+  const { requireOnline } = useRequireOnline();
 
   const pickAndUpload = useCallback(async () => {
+    if (!requireOnline("You're offline. Reconnect to upload a photo.")) return null;
+
     try {
       // 1. Request media library permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -95,7 +99,7 @@ export function useProfileImage(
     } finally {
       setUploading(false);
     }
-  }, [userId, table, onSuccess]);
+  }, [userId, table, onSuccess, requireOnline]);
 
   return { pickAndUpload, uploading };
 }
