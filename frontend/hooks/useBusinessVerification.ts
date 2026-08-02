@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   getEmployerVerificationStatus,
@@ -8,6 +8,9 @@ import {
 } from "@/lib/verificationService";
 import { BusinessVerificationStatus } from "@/types/verification.types";
 import { toast } from "sonner-native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export function useBusinessVerification() {
   const [loading, setLoading] = useState(true);
@@ -17,8 +20,21 @@ export function useBusinessVerification() {
   const [status, setStatus] = useState<BusinessVerificationStatus>("not_submitted");
   const [docs, setDocs] = useState<string[]>([]);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
+  const hasLoadedOnceRef = useRef(false);
 
   const fetchStatus = useCallback(async () => {
+    // Offline: don't attempt a request that would just fail/hang. Keep
+    // whatever status/docs are already loaded visible.
+    if (!isOnline) {
+      setLoading(false);
+      if (!hasLoadedOnceRef.current) {
+        toast.error("You're offline. Connect to the internet to load verification status.");
+      }
+      return;
+    }
+
     try {
       setLoading(true);
       const {
@@ -32,15 +48,17 @@ export function useBusinessVerification() {
       setStatus(data.status);
       setDocs(data.docs);
       setRejectionReason(data.rejectionReason);
+      hasLoadedOnceRef.current = true;
     } catch (error: any) {
       console.error("Error fetching verification status:", error);
       toast.error(error.message || "Failed to load verification status");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   const handleUploadDoc = useCallback(async () => {
+    if (!requireOnline()) return;
     try {
       setUploading(true);
       const {
@@ -59,10 +77,11 @@ export function useBusinessVerification() {
     } finally {
       setUploading(false);
     }
-  }, [docs]);
+  }, [docs, requireOnline]);
 
   const handleRemoveDoc = useCallback(
     async (urlToRemove: string) => {
+      if (!requireOnline()) return;
       try {
         setUploading(true);
         const {
@@ -80,10 +99,11 @@ export function useBusinessVerification() {
         setUploading(false);
       }
     },
-    [docs]
+    [docs, requireOnline]
   );
 
   const handleSubmit = useCallback(async () => {
+    if (!requireOnline()) return;
     try {
       setSubmitting(true);
       const {
@@ -104,11 +124,15 @@ export function useBusinessVerification() {
     } finally {
       setSubmitting(false);
     }
-  }, [docs]);
+  }, [docs, requireOnline]);
 
   useEffect(() => {
     fetchStatus();
   }, [fetchStatus]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh the
+  // verification status if this screen is active.
+  useRefetchOnReconnect(() => fetchStatus());
 
   return {
     loading,
