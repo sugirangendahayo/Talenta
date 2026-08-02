@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner-native";
+import { useNetwork } from "@/contexts/NetworkContext";
+import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 
 export interface ProfileFormData {
   full_name: string;
@@ -64,6 +67,8 @@ function computeCompletion(data: Record<string, any>): ProfileCompletionStatus {
 }
 
 export function useProfileCompletion() {
+  const { isOnline } = useNetwork();
+  const { requireOnline } = useRequireOnline();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
@@ -105,6 +110,11 @@ export function useProfileCompletion() {
 
   // Fetch existing profile data
   const fetchProfile = useCallback(async () => {
+    if (!isOnline) {
+      setLoading(false);
+      return; // keep whatever profile data is already cached in memory
+    }
+
     try {
       setLoading(true);
 
@@ -149,7 +159,7 @@ export function useProfileCompletion() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isOnline]);
 
   // Update form field
   const updateField = useCallback((field: keyof ProfileFormData, value: any) => {
@@ -180,6 +190,8 @@ export function useProfileCompletion() {
 
   // Save profile
   const saveProfile = useCallback(async (): Promise<boolean> => {
+    if (!requireOnline("You're offline. Reconnect to save your profile.")) return false;
+
     try {
       setSaving(true);
 
@@ -229,7 +241,7 @@ export function useProfileCompletion() {
     } finally {
       setSaving(false);
     }
-  }, [formData, fetchProfile]);
+  }, [formData, fetchProfile, requireOnline]);
 
   // Upload CV (placeholder)
   const uploadCV = useCallback(async (_fileUri: string): Promise<boolean> => {
@@ -246,6 +258,10 @@ export function useProfileCompletion() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  // Smart auto-refresh: when connectivity returns, silently refresh profile
+  // data if this screen is focused.
+  useRefetchOnReconnect(() => fetchProfile());
 
   return {
     loading,
