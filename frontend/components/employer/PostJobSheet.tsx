@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useRequireOnline } from "@/hooks/useRequireOnline";
 import { EmployerProfile } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -412,6 +413,7 @@ export default function PostJobSheet({
   const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
   const { isDark } = useTheme();
+  const { requireOnline } = useRequireOnline();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
 
   const employerProfile = profile as EmployerProfile | null;
@@ -536,6 +538,7 @@ export default function PostJobSheet({
   const isEditing = !!editingJob;
 
   const handleSubmit = async (asDraft = false) => {
+    if (!requireOnline("You're offline. Reconnect to post this job.")) return;
     if (!asDraft) {
       const err = validateStep();
       if (err) {
