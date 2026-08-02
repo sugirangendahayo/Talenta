@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNetwork } from "@/contexts/NetworkContext";
 import { useRefetchOnReconnect } from "@/hooks/useRefetchOnReconnect";
 import { useRequireOnline } from "@/hooks/useRequireOnline";
+import { useJobsRefresh } from "@/contexts/JobsRefreshContext";
 
 export interface DashboardStats {
   activeJobs: number;
@@ -343,6 +344,22 @@ export function useDashboard() {
   // dashboard if this tab is active. Debounced/deduped internally so a
   // flaky connection can't trigger repeated backend calls.
   useRefetchOnReconnect(() => fetchDashboardData(true));
+
+  // Silently refetch the moment a job is posted/edited anywhere in the app
+  // (e.g. via the tab bar's "+" button on a different tab), so the new
+  // active job and updated stats show up immediately instead of requiring
+  // a manual pull-to-refresh. `refreshKey` starts at 0, which we treat as
+  // "nothing posted yet" so this doesn't double-fetch on mount.
+  const { refreshKey } = useJobsRefresh();
+  const isFirstRefreshKeyRef = useRef(true);
+  useEffect(() => {
+    if (isFirstRefreshKeyRef.current) {
+      isFirstRefreshKeyRef.current = false;
+      return;
+    }
+    fetchDashboardData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
   return {
     stats,

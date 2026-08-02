@@ -20,6 +20,7 @@ import {
 import PostJobSheet from "@/components/employer/PostJobSheet";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useJobsRefresh } from "@/contexts/JobsRefreshContext";
 
 // ─── Spring configs ───────────────────────────────────────────────────────────
 const TAB_SPRING = {
@@ -225,6 +226,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const { profile } = useAuth();
   const router = useRouter();
   const employerProfile = profile as EmployerProfile | null;
+  const { notifyJobPosted } = useJobsRefresh();
 
   const handlePostJobPress = () => {
     if (!employerProfile?.profile_completed) {
@@ -352,7 +354,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
       </Animated.View>
 
       <PostJobFAB slideY={slideY} onPress={handlePostJobPress} />
-      <PostJobSheet visible={sheetVisible} onClose={() => setSheetVisible(false)} onSuccess={() => {}} />
+      <PostJobSheet
+        visible={sheetVisible}
+        onClose={() => setSheetVisible(false)}
+        onSuccess={notifyJobPosted}
+      />
     </>
   );
 }

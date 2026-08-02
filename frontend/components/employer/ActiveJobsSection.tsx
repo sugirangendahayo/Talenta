@@ -176,7 +176,13 @@ export default function ActiveJobsSection({
   if (jobs.length === 0) return null;
 
   return (
-    <View className="mx-4 my-2">
+    // `collapsable={false}`: this section mounts/unmounts based on whether
+    // there are active jobs, right below the always-present stats cards.
+    // Without it, Android can flatten this view into its parent and then
+    // fail to correctly re-layout it when it's inserted during a
+    // pull-to-refresh, making the new job card appear to render on top of
+    // the stats above it until the app is restarted.
+    <View collapsable={false} className="mx-4 my-2">
       <View className="bg-white dark:bg-[#080A08] rounded-2xl p-4 border border-gray-100 dark:border-[#222]">
         {/* Header */}
         <View className="flex-row items-center justify-between mb-3">

@@ -1,6 +1,8 @@
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { NotificationsDataProvider } from "@/contexts/NotificationsDataContext";
+import { JobsRefreshProvider } from "@/contexts/JobsRefreshContext";
 import { ThemeProvider, ThemeSync, useTheme } from "@/contexts/ThemeContext";
 import OfflineBanner from "@/components/common/OfflineBanner";
 import "@/i18n/config"; // Import i18n configuration
@@ -337,16 +339,20 @@ export default function RootLayout() {
           <SafeAreaProvider>
             <NetworkProvider>
               <AuthProvider>
-                <NotificationProvider>
-                  <RootLayoutNav />
-                  <OfflineBanner />
-                  <Toaster
-                    position="top-center"
-                    duration={2000}
-                    richColors
-                    visibleToasts={2}
-                  />
-                </NotificationProvider>
+                <NotificationsDataProvider>
+                  <NotificationProvider>
+                    <JobsRefreshProvider>
+                      <RootLayoutNav />
+                      <OfflineBanner />
+                      <Toaster
+                        position="top-center"
+                        duration={2000}
+                        richColors
+                        visibleToasts={2}
+                      />
+                    </JobsRefreshProvider>
+                  </NotificationProvider>
+                </NotificationsDataProvider>
               </AuthProvider>
             </NetworkProvider>
           </SafeAreaProvider>
