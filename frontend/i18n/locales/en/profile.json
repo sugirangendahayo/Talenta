@@ -42,11 +42,12 @@
       "upgrade": "Upgrade"
     },
     "support": {
-      "title": "Support",
+      "title": "Help & Legal",
       "contactSupport": "Contact Support",
       "resources": "Resources",
       "terms": "Terms of Service",
-      "privacy": "Privacy Policy"
+      "privacy": "Privacy Policy",
+      "about": "About Talenta"
     }
   },
   "quickActions": {
