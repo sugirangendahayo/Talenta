@@ -41,7 +41,7 @@ const SLIDES: BannerSlide[] = [
   {
     id: "2",
     image: {
-      uri: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80",
+      uri: "https://i.pinimg.com/1200x/c4/4b/16/c44b16590b3b4bacaf85c4d42d6dfa30.jpg",
     },
     titleKey: "banner.slide2.title",
     subtitleKey: "banner.slide2.subtitle",
