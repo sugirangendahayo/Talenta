@@ -8,6 +8,7 @@ import dashboard from './dashboard.json';
 import errors from './errors.json';
 import home from './home.json';
 import jobs from './jobs.json';
+import premium from './premium.json';
 import profile from './profile.json';
 import welcome from './welcome.json';
 
@@ -22,6 +23,7 @@ export default {
     errors,
     home,
     jobs,
+    premium,
     profile,
     welcome,
   },

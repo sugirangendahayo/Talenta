@@ -78,13 +78,20 @@ export function useProfileImage(
         data: { publicUrl },
       } = supabase.storage.from("profiles").getPublicUrl(filePath);
 
-      // Add cache-bust so React Native Image refreshes immediately
+      // Add cache-bust so React Native Image refreshes immediately. This must
+      // also be what's PERSISTED to the DB, not just returned locally — the
+      // storage path is always the same (`profile.<ext>`, upserted), so the
+      // bare public URL is byte-for-byte identical across re-uploads. Any
+      // screen that re-fetches the profile from the DB (e.g. via
+      // refreshProfile()) would otherwise get that same unchanged URL string
+      // and React Native's Image cache — keyed by URI — would keep showing
+      // the old cached photo, even though the new file uploaded successfully.
       const urlWithBust = `${publicUrl}?t=${Date.now()}`;
 
-      // 7. Persist URL to the profile table
+      // 7. Persist the cache-busted URL to the profile table
       const { error: updateError } = await supabase
         .from(table)
-        .update({ profile_image_url: publicUrl })
+        .update({ profile_image_url: urlWithBust })
         .eq("id", userId);
 
       if (updateError) throw updateError;

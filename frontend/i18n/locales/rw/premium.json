@@ -1,0 +1,106 @@
+{
+  "employer": {
+    "header": "Talenta Premium",
+    "hero": {
+      "title": "Nagura Uburyo bwo Gushaka Abakozi",
+      "subtitle": "Bona Ikimenyetso cya Talenta Cyemejwe, fungura amashusho yo gutoranya arambuye, kandi ugere ku bakandida beza vuba."
+    },
+    "gating": {
+      "title": "Kwemeza Ubucuruzi Birakenewe",
+      "description": "Ugomba kuba ufite iyandikisha ry'ubucuruzi ryemejwe kugira ngo wiyandikishe muri gahunda za Premium kandi ubone ikimenyetso cyo Kwemezwa.",
+      "cta": "Emeza Ubucuruzi Nonaha"
+    },
+    "popularBadge": "Bikunzwe",
+    "currentBadge": "Iriho",
+    "buttons": {
+      "contactSales": "Vugana n'Abacuruzi",
+      "verificationRequired": "Kwemezwa Birakenewe",
+      "subscribeNow": "Iyandikishe Nonaha"
+    },
+    "plans": {
+      "free": {
+        "name": "Isanzwe",
+        "description": "Uburenganzira busanzwe ku bucuruzi buto.",
+        "features": [
+          "Kwamamaza akazi kagera ku 2 ku kwezi",
+          "Gutoranya abasaba akazi mu buryo busanzwe",
+          "Ubufasha busanzwe"
+        ]
+      },
+      "professional": {
+        "name": "Umwuga",
+        "description": "Byiza ku matsinda arimo gukura.",
+        "features": [
+          "Kwamamaza akazi kagera ku 10 ku kwezi",
+          "Gutoranya abasaba akazi mu buryo burambuye",
+          "Ikimenyetso cya Talenta Cyemejwe",
+          "Ubufasha bwa mbere"
+        ]
+      },
+      "business": {
+        "name": "Ubucuruzi",
+        "description": "Ku bigo byubatswe neza.",
+        "features": [
+          "Kwamamaza akazi kutagira umupaka",
+          "Guhuza abasaba akazi ukoresheje AI",
+          "Ikimenyetso cya Talenta Cyemejwe",
+          "Umuyobozi w'ikonti wihariye"
+        ]
+      },
+      "enterprise": {
+        "name": "Ikigo Kinini",
+        "description": "Ibisubizo byihariye ku bigo binini.",
+        "features": [
+          "Guhuza porogaramu zihariye",
+          "Kwinjira muri API",
+          "Ikimenyetso cya Talenta Cyemejwe",
+          "Ubufasha bwa Premium 24/7"
+        ]
+      }
+    }
+  },
+  "jobseeker": {
+    "header": "Talenta Premium",
+    "hero": {
+      "title": "Igaragare mu Bandi Bose",
+      "subtitle": "Menyekana ku bakoresha beza kandi wongere amahirwe yo kuboneka akazi."
+    },
+    "gating": {
+      "title": "Umwirondoro Ntabwo Wuzuye",
+      "description": "Ugomba kuzuza umwirondoro wawe w'ushaka akazi mbere yo kwiyongera muri Premium no kubona ikimenyetso cyo Kwemezwa.",
+      "cta": "Uzuza Umwirondoro"
+    },
+    "popularBadge": "Ikunzwe Cyane",
+    "currentBadge": "Gahunda Iriho",
+    "buttons": {
+      "currentPlan": "Gahunda Iriho",
+      "upgradeTo": "Injira muri {{name}}"
+    },
+    "plans": {
+      "free": {
+        "name": "Isanzwe",
+        "description": "Uburenganzira busanzwe ku bashaka akazi.",
+        "features": [
+          "Reba no gushakisha akazi",
+          "Saba akazi gasanzwe",
+          "Bika akazi wifuza kureba nyuma"
+        ]
+      },
+      "professional": {
+        "name": "Umwuga",
+        "description": "Igaragare ku bakoresha.",
+        "features": [
+          "Ikimenyetso cya Talenta Cyemejwe",
+          "Kuba ku isonga ry'abasaba akazi",
+          "Reba abareba umwirondoro wawe",
+          "Gutunganya ubusabe bwawe mbere y'abandi"
+        ]
+      }
+    }
+  },
+  "successModal": {
+    "title": "Nibyiza cyane!",
+    "message": "Murakaza neza kuri Talenta Premium.\nUbwiyandikishe bwawe bwatangijwe neza.",
+    "continueButton": "Komeza"
+  }
+}
