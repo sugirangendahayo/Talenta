@@ -607,11 +607,16 @@ serve(async (req) => {
       throw new Error("Missing required profile data");
     }
 
-    // ✅ FIX 6: Validate Resend API key exists
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    
-    if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY not configured. Set it with: supabase secrets set RESEND_API_KEY=your_key");
+    // ✅ FIX 6: Validate Brevo API key and sender identity exist
+    const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
+    const BREVO_SENDER_EMAIL = Deno.env.get("BREVO_SENDER_EMAIL");
+    const BREVO_SENDER_NAME = Deno.env.get("BREVO_SENDER_NAME") || "Talenta";
+
+    if (!BREVO_API_KEY) {
+      throw new Error("BREVO_API_KEY not configured. Set it with: supabase secrets set BREVO_API_KEY=your_key");
+    }
+    if (!BREVO_SENDER_EMAIL) {
+      throw new Error("BREVO_SENDER_EMAIL not configured. Set it with: supabase secrets set BREVO_SENDER_EMAIL=your_verified_sender@example.com");
     }
 
     // Generate appropriate email based on status
@@ -655,31 +660,33 @@ serve(async (req) => {
       emailSubject = `Congratulations! Job Offer: ${job.title} at ${employerProfile.company_name}`;
     }
 
-    // Send email using Resend API — to the actual applicant, not a test inbox
+    // Send email using Brevo's transactional email API — to the actual
+    // applicant, not a sandbox inbox (unlike the old Resend sandbox sender).
     const recipientEmail = jobseekerProfile.email;
     if (!recipientEmail) {
       throw new Error("Jobseeker has no email on file");
     }
     console.log("📧 Sending email to:", recipientEmail);
 
-    const emailResponse = await fetch("https://api.resend.com/emails", {
+    const emailResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        accept: "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json",
       },
       body: JSON.stringify({
-        from: "Talenta <onboarding@resend.dev>",
-        to: [recipientEmail],
+        sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+        to: [{ email: recipientEmail, name: jobseekerProfile.full_name || "Candidate" }],
         subject: emailSubject,
-        html: emailHtml,
+        htmlContent: emailHtml,
       }),
     });
 
-    //  FIX 7: Properly capture Resend errors
+    //  FIX 7: Properly capture Brevo errors
     if (!emailResponse.ok) {
       const errorText = await emailResponse.text();
-      console.error("❌ Resend API error:", errorText);
+      console.error("❌ Brevo API error:", errorText);
       throw new Error(`Email sending failed: ${errorText}`);
     }
 
@@ -703,7 +710,7 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         message: `${status} email sent successfully`,
-        emailId: emailResult.id,
+        emailId: emailResult.messageId,
         sentTo: recipientEmail,
       }),
       {
