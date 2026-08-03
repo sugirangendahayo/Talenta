@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 // Reuse the same success modal we have for employers, but we can just mock the UI locally if we want, or create a specific one. Let's create a simple inline success view or modal logic here.
 import PremiumSuccessModal from "@/components/employer/PremiumSuccessModal";
@@ -52,6 +53,7 @@ export default function JobseekerPremiumUpgradeScreen() {
     activatePlan,
   } = useJobseekerPremiumStatus();
   
+  const { t } = useTranslation("premium");
   const { profile, refreshProfile } = useAuth();
   const isProfileComplete = profile?.profile_completed ?? false;
 
@@ -92,7 +94,7 @@ export default function JobseekerPremiumUpgradeScreen() {
           <Ionicons name="arrow-back" size={20} color="#374151" />
         </TouchableOpacity>
         <Text className="flex-1 text-center mr-10 text-lg font-quicksandBold text-gray-900 dark:text-white">
-          Talenta Premium
+          {t("jobseeker.header", { defaultValue: "Talenta Premium" })}
         </Text>
       </View>
 
@@ -102,10 +104,13 @@ export default function JobseekerPremiumUpgradeScreen() {
             <MaterialIcons name="verified" size={32} color="#D97706" />
           </View>
           <Text className="text-2xl font-quicksandBold text-gray-900 dark:text-white text-center mb-2">
-            Stand out from the crowd
+            {t("jobseeker.hero.title", { defaultValue: "Stand out from the crowd" })}
           </Text>
           <Text className="text-base font-quicksandMedium text-gray-500 dark:text-gray-400 text-center px-4">
-            Get noticed by top employers and increase your chances of getting hired.
+            {t("jobseeker.hero.subtitle", {
+              defaultValue:
+                "Get noticed by top employers and increase your chances of getting hired.",
+            })}
           </Text>
         </View>
 
@@ -114,17 +119,20 @@ export default function JobseekerPremiumUpgradeScreen() {
             <Ionicons name="information-circle" size={20} color="#D97706" style={{ marginTop: 2 }} />
             <View className="ml-3 flex-1">
               <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-sm mb-1">
-                Profile Incomplete
+                {t("jobseeker.gating.title", { defaultValue: "Profile Incomplete" })}
               </Text>
               <Text className="text-amber-700 dark:text-amber-600 font-quicksandMedium text-xs leading-4 mb-3">
-                You must complete your jobseeker profile before you can upgrade to Premium and receive the Verified badge.
+                {t("jobseeker.gating.description", {
+                  defaultValue:
+                    "You must complete your jobseeker profile before you can upgrade to Premium and receive the Verified badge.",
+                })}
               </Text>
               <TouchableOpacity
                 onPress={() => router.push("/jobseekers/complete-profile")}
                 className="bg-amber-100 dark:bg-amber-900/30 px-4 py-2 rounded-xl self-start"
               >
                 <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-xs">
-                  Complete Profile
+                  {t("jobseeker.gating.cta", { defaultValue: "Complete Profile" })}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -148,20 +156,20 @@ export default function JobseekerPremiumUpgradeScreen() {
               {plan.isPopular && !isCurrent && (
                 <View className="absolute -top-3.5 right-6 bg-amber-400 dark:bg-amber-500 px-3 py-1 rounded-full">
                   <Text className="text-amber-900 font-quicksandBold text-xs">
-                    Most Popular
+                    {t("jobseeker.popularBadge", { defaultValue: "Most Popular" })}
                   </Text>
                 </View>
               )}
               {isCurrent && (
                 <View className="absolute -top-3.5 right-6 bg-cyan-600 dark:bg-cyan-500 px-3 py-1 rounded-full">
                   <Text className="text-white font-quicksandBold text-xs">
-                    Current Plan
+                    {t("jobseeker.currentBadge", { defaultValue: "Current Plan" })}
                   </Text>
                 </View>
               )}
 
               <Text className="text-xl font-quicksandBold text-gray-900 dark:text-white mb-2">
-                {plan.name}
+                {t(`jobseeker.plans.${plan.id}.name`, { defaultValue: plan.name })}
               </Text>
               <View className="flex-row items-end gap-1 mb-3">
                 <Text className="text-3xl font-quicksandBold text-cyan-700 dark:text-cyan-400">
@@ -174,7 +182,9 @@ export default function JobseekerPremiumUpgradeScreen() {
                 )}
               </View>
               <Text className="text-sm font-quicksandMedium text-gray-500 dark:text-gray-400 mb-6">
-                {plan.description}
+                {t(`jobseeker.plans.${plan.id}.description`, {
+                  defaultValue: plan.description,
+                })}
               </Text>
 
               <View className="gap-3 mb-6">
@@ -188,7 +198,9 @@ export default function JobseekerPremiumUpgradeScreen() {
                       />
                     </View>
                     <Text className="text-sm font-quicksandMedium text-gray-700 dark:text-gray-300">
-                      {feature}
+                      {t(`jobseeker.plans.${plan.id}.features.${idx}`, {
+                        defaultValue: feature,
+                      })}
                     </Text>
                   </View>
                 ))}
@@ -215,7 +227,16 @@ export default function JobseekerPremiumUpgradeScreen() {
                         : "text-white"
                     }`}
                   >
-                    {isCurrent ? "Current Plan" : "Upgrade to " + plan.name}
+                    {isCurrent
+                      ? t("jobseeker.buttons.currentPlan", {
+                          defaultValue: "Current Plan",
+                        })
+                      : t("jobseeker.buttons.upgradeTo", {
+                          defaultValue: `Upgrade to ${plan.name}`,
+                          name: t(`jobseeker.plans.${plan.id}.name`, {
+                            defaultValue: plan.name,
+                          }),
+                        })}
                   </Text>
                 )}
               </TouchableOpacity>

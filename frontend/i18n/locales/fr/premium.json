@@ -1,0 +1,106 @@
+{
+  "employer": {
+    "header": "Talenta Premium",
+    "hero": {
+      "title": "Boostez votre recrutement",
+      "subtitle": "Obtenez le badge Vérifié Talenta, débloquez des filtres avancés et atteignez les meilleurs candidats plus rapidement."
+    },
+    "gating": {
+      "title": "Vérification d'entreprise requise",
+      "description": "Vous devez avoir un enregistrement d'entreprise approuvé pour souscrire aux offres Premium et recevoir le badge Vérifié.",
+      "cta": "Vérifier mon entreprise"
+    },
+    "popularBadge": "Populaire",
+    "currentBadge": "Actuel",
+    "buttons": {
+      "contactSales": "Contacter les ventes",
+      "verificationRequired": "Vérification requise",
+      "subscribeNow": "S'abonner maintenant"
+    },
+    "plans": {
+      "free": {
+        "name": "Basique",
+        "description": "Accès standard pour les petites entreprises.",
+        "features": [
+          "Publier jusqu'à 2 offres/mois",
+          "Filtrage basique des candidats",
+          "Support standard"
+        ]
+      },
+      "professional": {
+        "name": "Professionnel",
+        "description": "Idéal pour les équipes en croissance.",
+        "features": [
+          "Publier jusqu'à 10 offres/mois",
+          "Filtrage avancé des candidats",
+          "Badge Vérifié Talenta",
+          "Support prioritaire"
+        ]
+      },
+      "business": {
+        "name": "Entreprise",
+        "description": "Pour les entreprises établies.",
+        "features": [
+          "Offres d'emploi illimitées",
+          "Mise en correspondance IA des candidats",
+          "Badge Vérifié Talenta",
+          "Gestionnaire de compte dédié"
+        ]
+      },
+      "enterprise": {
+        "name": "Grand compte",
+        "description": "Solutions sur mesure pour les grandes organisations.",
+        "features": [
+          "Intégrations personnalisées",
+          "Accès API",
+          "Badge Vérifié Talenta",
+          "Support Premium 24/7"
+        ]
+      }
+    }
+  },
+  "jobseeker": {
+    "header": "Talenta Premium",
+    "hero": {
+      "title": "Démarquez-vous de la foule",
+      "subtitle": "Faites-vous remarquer par les meilleurs employeurs et augmentez vos chances d'être embauché."
+    },
+    "gating": {
+      "title": "Profil incomplet",
+      "description": "Vous devez compléter votre profil de candidat avant de pouvoir passer à Premium et recevoir le badge Vérifié.",
+      "cta": "Compléter le profil"
+    },
+    "popularBadge": "Le plus populaire",
+    "currentBadge": "Offre actuelle",
+    "buttons": {
+      "currentPlan": "Offre actuelle",
+      "upgradeTo": "Passer à {{name}}"
+    },
+    "plans": {
+      "free": {
+        "name": "Basique",
+        "description": "Accès standard pour les candidats.",
+        "features": [
+          "Parcourir et rechercher des offres",
+          "Postuler aux offres standard",
+          "Enregistrer des offres pour plus tard"
+        ]
+      },
+      "professional": {
+        "name": "Professionnel",
+        "description": "Démarquez-vous auprès des employeurs.",
+        "features": [
+          "Badge Vérifié Talenta",
+          "En tête des listes de candidats",
+          "Voir qui a consulté votre profil",
+          "Traitement prioritaire des candidatures"
+        ]
+      }
+    }
+  },
+  "successModal": {
+    "title": "Félicitations !",
+    "message": "Bienvenue sur Talenta Premium.\nVotre abonnement a été activé avec succès.",
+    "continueButton": "Continuer"
+  }
+}

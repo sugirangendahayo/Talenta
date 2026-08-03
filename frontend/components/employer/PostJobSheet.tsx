@@ -41,20 +41,49 @@ if (
 
 const STEPS = 3;
 
+// Sourced from the shared "categories" i18n namespace (categories.json),
+// which already has a much richer, fully-translated (en/fr/rw) list than
+// this sheet used to expose. Rendered as a horizontal scroll of icon chips
+// (see CategoryChip) instead of a wrapped grid so adding all of these
+// doesn't balloon the sheet's height — it stays a single, swipeable row
+// no matter how many categories exist, matching the pattern already used
+// by CategorySelector.tsx elsewhere in the app.
 const CATEGORIES = [
-  { id: "it", labelKey: "category.it" },
-  { id: "design", labelKey: "category.design" },
-  { id: "business", labelKey: "category.business" },
-  { id: "finance", labelKey: "category.finance" },
-  { id: "healthcare", labelKey: "category.healthcare" },
-  { id: "education", labelKey: "category.education" },
-  { id: "sales", labelKey: "category.sales" },
-  { id: "hospitality", labelKey: "category.hospitality" },
-  { id: "transport", labelKey: "category.transport" },
-  { id: "creative", labelKey: "category.creative" },
-  { id: "construction", labelKey: "category.construction" },
-  { id: "agriculture", labelKey: "category.agriculture" },
-  { id: "security", labelKey: "category.security" },
+  { id: "it", icon: "laptop-outline" },
+  { id: "design", icon: "color-palette-outline" },
+  { id: "business", icon: "briefcase-outline" },
+  { id: "finance", icon: "cash-outline" },
+  { id: "healthcare", icon: "medical-outline" },
+  { id: "education", icon: "school-outline" },
+  { id: "sales", icon: "trending-up-outline" },
+  { id: "hospitality", icon: "restaurant-outline" },
+  { id: "transport", icon: "car-outline" },
+  { id: "creative", icon: "bulb-outline" },
+  { id: "construction", icon: "hammer-outline" },
+  { id: "agriculture", icon: "leaf-outline" },
+  { id: "security", icon: "shield-checkmark-outline" },
+  { id: "engineering", icon: "construct-outline" },
+  { id: "media", icon: "megaphone-outline" },
+  { id: "retail", icon: "storefront-outline" },
+  { id: "manufacturing", icon: "layers-outline" },
+  { id: "nonprofit", icon: "heart-outline" },
+  { id: "government", icon: "business-outline" },
+  { id: "consulting", icon: "chatbubbles-outline" },
+  { id: "realEstate", icon: "home-outline" },
+  { id: "energy", icon: "flash-outline" },
+  { id: "automotive", icon: "car-sport-outline" },
+  { id: "aviation", icon: "airplane-outline" },
+  { id: "pharmaceutical", icon: "medkit-outline" },
+  { id: "telecommunications", icon: "call-outline" },
+  { id: "logistics", icon: "cube-outline" },
+  { id: "humanResources", icon: "people-outline" },
+  { id: "legal", icon: "document-text-outline" },
+  { id: "research", icon: "flask-outline" },
+  { id: "sports", icon: "football-outline" },
+  { id: "beauty", icon: "sparkles-outline" },
+  { id: "food", icon: "fast-food-outline" },
+  { id: "travel", icon: "earth-outline" },
+  { id: "entertainment", icon: "film-outline" },
 ];
 
 const JOB_TYPE_KEYS = [
@@ -174,7 +203,7 @@ function FieldLabel({
   required?: boolean;
 }) {
   return (
-    <Text className="text-xs font-quicksandSemiBold text-gray-500 dark:text-gray-400 mb-1.5 tracking-wide uppercase">
+    <Text className="text-xs font-quicksandSemibold text-gray-500 dark:text-gray-400 mb-1.5 tracking-wide uppercase">
       {children}
       {required && <Text className="text-cyan-700 dark:text-cyan-400"> *</Text>}
     </Text>
@@ -250,9 +279,51 @@ function SelectChip({
       }`}
     >
       <Text
-        className={`text-sm font-quicksandSemiBold ${
+        className={`text-sm font-quicksandSemibold ${
           selected ? "text-white" : "text-gray-500 dark:text-gray-400"
         }`}
+      >
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+// Compact icon-over-label chip used for the (long) category list, laid out
+// in a horizontal scroll rather than SelectChip's wrap layout — keeps the
+// sheet's height fixed no matter how many categories exist.
+function CategoryChip({
+  icon,
+  label,
+  selected,
+  onPress,
+}: {
+  icon: string;
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      className={`items-center justify-center px-3.5 py-3 rounded-xl border mr-2 ${
+        selected
+          ? "bg-cyan-700 border-cyan-700"
+          : "bg-white dark:bg-[#141414] border-gray-200 dark:border-[#2a2a2a]"
+      }`}
+      style={{ width: 78 }}
+    >
+      <Ionicons
+        name={icon as any}
+        size={20}
+        color={selected ? "#fff" : "#0E7490"}
+      />
+      <Text
+        className={`text-[10.5px] font-quicksandSemibold mt-1.5 text-center ${
+          selected ? "text-white" : "text-gray-600 dark:text-gray-300"
+        }`}
+        numberOfLines={2}
       >
         {label}
       </Text>
@@ -264,7 +335,7 @@ function Tag({ label, onRemove }: { label: string; onRemove: () => void }) {
   const { isDark } = useTheme();
   return (
     <View className="flex-row items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full pl-3.5 pr-2.5 py-1.5 mr-2 mb-2">
-      <Text className="text-sm font-quicksandSemiBold text-gray-700 dark:text-gray-200 mr-1.5">
+      <Text className="text-sm font-quicksandSemibold text-gray-700 dark:text-gray-200 mr-1.5">
         {label}
       </Text>
       <TouchableOpacity
@@ -304,7 +375,7 @@ function NoneToggle({
       }`}
     >
       <Text
-        className={`text-sm font-quicksandSemiBold flex-1 mr-3 ${
+        className={`text-sm font-quicksandSemibold flex-1 mr-3 ${
           value
             ? "text-cyan-800 dark:text-cyan-300"
             : "text-gray-600 dark:text-gray-300"
@@ -437,6 +508,7 @@ export default function PostJobSheet({
 }: PostJobSheetProps) {
   const { user, profile } = useAuth();
   const { t } = useTranslation("jobs");
+  const { t: tCat } = useTranslation("categories");
   const { isDark } = useTheme();
   const { requireOnline } = useRequireOnline();
   const iconColor = isDark ? "#9CA3AF" : "#6B7280";
@@ -779,16 +851,22 @@ export default function PostJobSheet({
         <FieldLabel required>
           {t("postJob.fields.category", { defaultValue: "Category" })}
         </FieldLabel>
-        <View className="flex-row flex-wrap mt-1">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingRight: 8 }}
+          className="mt-1"
+        >
           {CATEGORIES.map((cat) => (
-            <SelectChip
+            <CategoryChip
               key={cat.id}
-              label={t(cat.labelKey, { defaultValue: cat.id })}
+              icon={cat.icon}
+              label={tCat(`categories.${cat.id}`, { defaultValue: cat.id })}
               selected={form.category === cat.id}
               onPress={() => updateField("category", cat.id)}
             />
           ))}
-        </View>
+        </ScrollView>
       </FieldWrap>
 
       <FieldWrap>

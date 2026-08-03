@@ -284,6 +284,7 @@ export default function JobseekerProfile() {
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: 140 }}
       >
         {/* Profile Card */}
         <View
@@ -468,9 +469,9 @@ export default function JobseekerProfile() {
         </TouchableOpacity>
 
         {/* App Version */}
-        <View className="items-center pb-8">
-          <Text className="text-gray-400 font-quicksandMedium text-sm">
-            Talenta v1.0.0
+        <View className="items-center">
+          <Text className="text-gray-400 dark:text-gray-500 font-quicksandMedium text-xs">
+            {t("version", { defaultValue: "Talenta v1.0.0" })}
           </Text>
         </View>
       </ScrollView>

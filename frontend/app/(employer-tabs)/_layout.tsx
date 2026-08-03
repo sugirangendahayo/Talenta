@@ -228,6 +228,16 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const employerProfile = profile as EmployerProfile | null;
   const { notifyJobPosted } = useJobsRefresh();
 
+  // `employers/notifications` is registered below with `href: null` so it
+  // doesn't get its own tab button, but that alone doesn't stop this custom
+  // `tabBar` from rendering underneath it — `href: null` only removes the
+  // button from the row, since this component renders for every screen in
+  // the Tabs navigator regardless of which one is focused. It's meant to
+  // feel like a full-screen stack push (see the comment at its
+  // registration), so hide the entire floating bar + FAB while it's active.
+  const activeRouteName = state.routes[state.index]?.name;
+  const hideTabBar = activeRouteName === "employers/notifications";
+
   const handlePostJobPress = () => {
     if (!employerProfile?.profile_completed) {
       Alert.alert(
@@ -279,6 +289,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const glassMid = isDark ? DARK_MID : GLASS_MID;
   const glassBot = isDark ? DARK_BOT : GLASS_BOT;
   const glassSheen = isDark ? DARK_SHEEN : GLASS_SHEEN;
+
+  if (hideTabBar) return null;
 
   return (
     <>

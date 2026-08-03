@@ -1,0 +1,106 @@
+{
+  "employer": {
+    "header": "Talenta Premium",
+    "hero": {
+      "title": "Upgrade Your Hiring",
+      "subtitle": "Get the Talenta Verified Badge, unlock advanced filters, and reach the best candidates faster."
+    },
+    "gating": {
+      "title": "Business Verification Required",
+      "description": "You must have an approved business registration to subscribe to Premium plans and receive the Verified badge.",
+      "cta": "Verify Business Now"
+    },
+    "popularBadge": "Popular",
+    "currentBadge": "Current",
+    "buttons": {
+      "contactSales": "Contact Sales",
+      "verificationRequired": "Verification Required",
+      "subscribeNow": "Subscribe Now"
+    },
+    "plans": {
+      "free": {
+        "name": "Basic",
+        "description": "Standard access for small businesses.",
+        "features": [
+          "Post up to 2 jobs/month",
+          "Basic applicant filtering",
+          "Standard support"
+        ]
+      },
+      "professional": {
+        "name": "Professional",
+        "description": "Ideal for growing teams.",
+        "features": [
+          "Post up to 10 jobs/month",
+          "Advanced applicant filtering",
+          "Talenta Verified Badge",
+          "Priority support"
+        ]
+      },
+      "business": {
+        "name": "Business",
+        "description": "For established companies.",
+        "features": [
+          "Unlimited job posts",
+          "AI applicant matching",
+          "Talenta Verified Badge",
+          "Dedicated account manager"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "Tailored solutions for large organizations.",
+        "features": [
+          "Custom integrations",
+          "API access",
+          "Talenta Verified Badge",
+          "24/7 Premium support"
+        ]
+      }
+    }
+  },
+  "jobseeker": {
+    "header": "Talenta Premium",
+    "hero": {
+      "title": "Stand out from the crowd",
+      "subtitle": "Get noticed by top employers and increase your chances of getting hired."
+    },
+    "gating": {
+      "title": "Profile Incomplete",
+      "description": "You must complete your jobseeker profile before you can upgrade to Premium and receive the Verified badge.",
+      "cta": "Complete Profile"
+    },
+    "popularBadge": "Most Popular",
+    "currentBadge": "Current Plan",
+    "buttons": {
+      "currentPlan": "Current Plan",
+      "upgradeTo": "Upgrade to {{name}}"
+    },
+    "plans": {
+      "free": {
+        "name": "Basic",
+        "description": "Standard access for jobseekers.",
+        "features": [
+          "Browse and search jobs",
+          "Apply to standard jobs",
+          "Save jobs for later"
+        ]
+      },
+      "professional": {
+        "name": "Professional",
+        "description": "Stand out to employers.",
+        "features": [
+          "Talenta Verified Badge",
+          "Top of applicant lists",
+          "See who viewed your profile",
+          "Priority application processing"
+        ]
+      }
+    }
+  },
+  "successModal": {
+    "title": "Congratulations!",
+    "message": "Welcome to Talenta Premium.\nYour subscription has been activated successfully.",
+    "continueButton": "Continue"
+  }
+}

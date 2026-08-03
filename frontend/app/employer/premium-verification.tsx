@@ -6,6 +6,7 @@ import { PremiumPlan } from "@/types/verification.types";
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack } from "expo-router";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Linking,
@@ -70,6 +71,7 @@ const PLANS = [
 ];
 
 export default function PremiumVerificationScreen() {
+  const { t } = useTranslation("premium");
   const {
     loading: premiumLoading,
     activating,
@@ -114,7 +116,7 @@ export default function PremiumVerificationScreen() {
           <Ionicons name="arrow-back" size={20} color="#6B7280" />
         </TouchableOpacity>
         <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-100">
-          Talenta Premium
+          {t("employer.header", { defaultValue: "Talenta Premium" })}
         </Text>
       </View>
 
@@ -122,17 +124,19 @@ export default function PremiumVerificationScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 48 }}
       >
-        {/* ── Hero banner — kept exactly as-is, it was already good ──── */}
-        <View className="bg-cyan-700 dark:bg-cyan-900 px-6 py-10 items-center">
-          <View className="w-16 h-16 bg-white/20 rounded-full items-center justify-center mb-4">
-            <Ionicons name="star" size={32} color="#fff" />
+        {/* ── Hero intro ───────────────────────────────────────────── */}
+        <View className="px-6 pt-8 mb-2 items-center">
+          <View className="w-16 h-16 bg-cyan-50 dark:bg-cyan-900/20 rounded-full items-center justify-center mb-4">
+            <Ionicons name="star" size={32} color="#0E7490" />
           </View>
-          <Text className="text-2xl font-quicksandBold text-white text-center mb-2">
-            Upgrade Your Hiring
+          <Text className="text-2xl font-quicksandBold text-gray-900 dark:text-white text-center mb-2">
+            {t("employer.hero.title", { defaultValue: "Upgrade Your Hiring" })}
           </Text>
-          <Text className="text-sm font-quicksandMedium text-cyan-100 text-center leading-5 px-4">
-            Get the Talenta Verified Badge, unlock advanced filters, and reach
-            the best candidates faster.
+          <Text className="text-base font-quicksandMedium text-gray-500 dark:text-gray-400 text-center px-4">
+            {t("employer.hero.subtitle", {
+              defaultValue:
+                "Get the Talenta Verified Badge, unlock advanced filters, and reach the best candidates faster.",
+            })}
           </Text>
         </View>
 
@@ -148,11 +152,15 @@ export default function PremiumVerificationScreen() {
               />
               <View className="ml-3 flex-1">
                 <Text className="text-amber-800 dark:text-amber-500 font-quicksandBold text-sm mb-1">
-                  Business Verification Required
+                  {t("employer.gating.title", {
+                    defaultValue: "Business Verification Required",
+                  })}
                 </Text>
                 <Text className="text-amber-700 dark:text-amber-600 font-quicksandMedium text-xs leading-4">
-                  You must have an approved business registration to subscribe
-                  to Premium plans and receive the Verified badge.
+                  {t("employer.gating.description", {
+                    defaultValue:
+                      "You must have an approved business registration to subscribe to Premium plans and receive the Verified badge.",
+                  })}
                 </Text>
                 <TouchableOpacity
                   className="mt-3 bg-amber-600 rounded-xl py-2 px-4 self-start"
@@ -160,7 +168,9 @@ export default function PremiumVerificationScreen() {
                   onPress={() => router.push("/employer/business-verification")}
                 >
                   <Text className="text-white font-quicksandBold text-xs">
-                    Verify Business Now
+                    {t("employer.gating.cta", {
+                      defaultValue: "Verify Business Now",
+                    })}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -204,19 +214,25 @@ export default function PremiumVerificationScreen() {
                         style={{ gap: 8 }}
                       >
                         <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-100">
-                          {plan.name}
+                          {t(`employer.plans.${plan.id}.name`, {
+                            defaultValue: plan.name,
+                          })}
                         </Text>
                         {/* "Popular" — cyan chip, not blue */}
                         {plan.isPopular && (
                           <View className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 px-2 py-0.5 rounded-full">
                             <Text className="text-[10px] font-quicksandBold text-cyan-700 dark:text-cyan-400">
-                              Popular
+                              {t("employer.popularBadge", {
+                                defaultValue: "Popular",
+                              })}
                             </Text>
                           </View>
                         )}
                       </View>
                       <Text className="text-xs font-quicksandMedium text-gray-400 dark:text-gray-500 mt-1">
-                        {plan.description}
+                        {t(`employer.plans.${plan.id}.description`, {
+                          defaultValue: plan.description,
+                        })}
                       </Text>
                     </View>
 
@@ -225,7 +241,7 @@ export default function PremiumVerificationScreen() {
                       <View className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-100 dark:border-cyan-800 px-2.5 py-1 rounded-full flex-row items-center">
                         <Ionicons name="checkmark" size={11} color="#0E7490" />
                         <Text className="text-xs font-quicksandBold text-cyan-700 dark:text-cyan-400 ml-1">
-                          Current
+                          {t("employer.currentBadge", { defaultValue: "Current" })}
                         </Text>
                       </View>
                     )}
@@ -256,7 +272,9 @@ export default function PremiumVerificationScreen() {
                           color="#0E7490"
                         />
                         <Text className="text-sm font-quicksandMedium text-gray-600 dark:text-gray-300 ml-2.5 flex-1">
-                          {feature}
+                          {t(`employer.plans.${plan.id}.features.${i}`, {
+                            defaultValue: feature,
+                          })}
                         </Text>
                       </View>
                     ))}
@@ -291,10 +309,16 @@ export default function PremiumVerificationScreen() {
                           }`}
                         >
                           {isEnterprise
-                            ? "Contact Sales"
+                            ? t("employer.buttons.contactSales", {
+                                defaultValue: "Contact Sales",
+                              })
                             : bizStatus !== "approved"
-                              ? "Verification Required"
-                              : "Subscribe Now"}
+                              ? t("employer.buttons.verificationRequired", {
+                                  defaultValue: "Verification Required",
+                                })
+                              : t("employer.buttons.subscribeNow", {
+                                  defaultValue: "Subscribe Now",
+                                })}
                         </Text>
                       )}
                     </TouchableOpacity>

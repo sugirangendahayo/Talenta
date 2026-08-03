@@ -307,6 +307,7 @@ export default function EmployerProfile() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 140 }}
       >
         {/* ── Company profile card ────────────────────────────────────── */}
         <View
