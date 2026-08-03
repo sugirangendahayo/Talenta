@@ -47,3 +47,43 @@ entrypoint = "./functions/payment-redirect/index.ts"
 # Public https bounce page Stripe redirects to (success_url/cancel_url can't
 # be a custom URL scheme) — hands off to the app's talenta:// deep link.
 # No auth, no DB access, no secrets — just forwards status/session_id.
+
+# ---------------------------------------------------------------------------
+# OPTIONAL / NOT ACTIVE: declarative Auth SMTP + email templates.
+#
+# The Brevo SMTP relay (Part 1 of the email migration) is configured directly
+# in the Supabase Dashboard under Authentication -> Emails -> SMTP Settings,
+# which is the priority path and works on its own. The block below is left
+# here, commented out, purely as a reference for later if this project ever
+# wants that same config declared in source control instead.
+#
+# Do NOT uncomment this without understanding `supabase config push`:
+# - It only takes effect on the hosted project after running
+#   `supabase config push` (this file alone does nothing to the remote
+#   project — `supabase start`/`stop` only affect local dev).
+# - `config push` can also sync *other* [auth] settings from this file to
+#   the hosted project. Since this config.toml currently has no [auth]
+#   section at all, introducing one and pushing it may reset other
+#   Dashboard-configured auth settings to CLI defaults. Review the full
+#   `supabase config push --dry-run` diff before ever running it for real.
+# - Never hardcode the SMTP password here — env(...) reads it from an
+#   environment variable / `.env` at push time, keeping the secret out of
+#   git.
+#
+# [auth.email.smtp]
+# enabled = true
+# host = "smtp-relay.brevo.com"
+# port = 587
+# user = "env(BREVO_SMTP_LOGIN)"
+# pass = "env(BREVO_SMTP_KEY)"
+# admin_email = "env(BREVO_SENDER_EMAIL)"
+# sender_name = "Talenta"
+#
+# [auth.email.template.confirmation]
+# subject = "Confirm your Talenta account"
+# content_path = "./email-templates/confirm-signup.html"
+#
+# [auth.email.template.recovery]
+# subject = "Reset your Talenta password"
+# content_path = "./email-templates/reset-password.html"
+# ---------------------------------------------------------------------------
