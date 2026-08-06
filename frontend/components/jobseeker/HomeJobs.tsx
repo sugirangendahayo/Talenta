@@ -1,18 +1,18 @@
 // components/jobseeker/HomeJobs.tsx
-import { useJobs } from "@/hooks/useJobs";
-import { useSkillMatch } from "@/hooks/useSkillMatch";
-import { useBookmarkSet, useAppliedSet } from "@/hooks/useBookmarks";
+import SkillMatchBadge from "@/components/common/SkillMatchBadge";
+import UserAvatar from "@/components/common/UserAvatar";
 import { CompactJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
-import SkillMatchBadge from "@/components/common/SkillMatchBadge";
+import { useAppliedSet, useBookmarkSet } from "@/hooks/useBookmarks";
+import { useJobs } from "@/hooks/useJobs";
+import { useSkillMatch } from "@/hooks/useSkillMatch";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import { toast } from "sonner-native";
-import { useTranslation } from "react-i18next";
-import UserAvatar from "@/components/common/UserAvatar";
 
 interface HomeJobsProps {
   selectedCategory: string;
@@ -284,12 +284,13 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
         </View>
       )}
 
-      {/* View All */}
+      {/* View All jobs */}
       {sortedJobs.length > 0 && (
         <TouchableOpacity
           onPress={handleViewAll}
           className="mx-6 mt-4 bg-gray-50 dark:bg-[#080A08] rounded-2xl p-4 flex-row items-center justify-center gap-2"
           activeOpacity={0.8}
+          
         >
           <Text className="text-cyan-700 font-quicksandBold text-sm">
             {t("home:featuredJobs.viewAllJobs", { defaultValue: "View All Jobs" })}
