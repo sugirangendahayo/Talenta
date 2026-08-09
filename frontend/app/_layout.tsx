@@ -4,6 +4,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { NotificationsDataProvider } from "@/contexts/NotificationsDataContext";
 import { JobsRefreshProvider } from "@/contexts/JobsRefreshContext";
 import { ThemeProvider, ThemeSync, useTheme } from "@/contexts/ThemeContext";
+import AppLoadingScreen from "@/components/common/AppLoadingScreen";
 import OfflineBanner from "@/components/common/OfflineBanner";
 import "@/i18n/config"; // Import i18n configuration
 import {
@@ -13,7 +14,7 @@ import {
   Quicksand_700Bold,
   useFonts,
 } from "@expo-google-fonts/quicksand";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, usePathname, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, Text as RNText, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -35,6 +36,7 @@ function RootLayoutNav() {
   const { user, role, loading: authLoading, hasSeenOnboarding } = useAuth();
   const { loadThemeForUser, resetTheme } = useTheme();
   const segments = useSegments();
+  const pathname = usePathname();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
   const APP_BACKGROUND = useAppBackground();
@@ -75,9 +77,12 @@ function RootLayoutNav() {
     const inJobseekerTabs = segments[0] === "(jobseeker-tabs)";
     const inEmployerTabs = segments[0] === "(employer-tabs)";
     const inAdminTabs = segments[0] === "(admin-tabs)";
+    const atIndex = pathname === "/";
+    const inPublicUserProfile =
+      segments[0] === "(shared)" && segments[1] === "user" && !!segments[2];
 
     // PRIORITY 1: Show onboarding if user hasn't seen it (regardless of auth status)
-    if (hasSeenOnboarding === false && !inWelcomeGroup) {
+    if (hasSeenOnboarding === false && !inWelcomeGroup && !inPublicUserProfile) {
       console.log("→ Redirecting to onboarding");
       router.replace("/welcome/Step1");
       return;
@@ -88,7 +93,8 @@ function RootLayoutNav() {
       hasSeenOnboarding === true &&
       !user &&
       !inAuthGroup &&
-      !inWelcomeGroup
+      !inWelcomeGroup &&
+      !inPublicUserProfile
     ) {
       console.log(" Redirecting, to signin (not logged in)");
       router.replace("/auth/signin");
@@ -106,7 +112,7 @@ function RootLayoutNav() {
       // Redirect away from auth/welcome screens to role dashboard,
       // EXCEPT for the reset-password screen which needs to be accessible during recovery.
       if (user && role) {
-        if ((inAuthGroup && segments[1] !== "reset-password") || inWelcomeGroup) {
+        if ((inAuthGroup && segments[1] !== "reset-password") || inWelcomeGroup || atIndex) {
           console.log("→ Redirecting to dashboard (logged in, on auth screen)");
           if (role === "jobseeker") {
             router.replace("/(jobseeker-tabs)/jobseekers/Home");
@@ -141,55 +147,11 @@ function RootLayoutNav() {
           router.replace("/(admin-tabs)/admin/Dashboard");
         }
       }
-  }, [user, role, authLoading, segments, hasSeenOnboarding, isReady]);
+  }, [user, role, authLoading, authThemeReady, segments, pathname, hasSeenOnboarding, isReady, router]);
 
   // Show loading screen while checking initial state
   if (!isReady || authLoading || hasSeenOnboarding === null) {
-    // UPDATED: Add check for hasSeenOnboarding === null
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: APP_BACKGROUND,
-        }}
-      >
-        {/* Centered Image */}
-        {/* if background is black let's use the  the white background image of talenta otherwise we use that android-icon-foreground.png */}
-        {APP_BACKGROUND === "#080A08" ? (
-          <Image
-            source={require("../assets/images/android-icon-foreground-white-removebg.png")}
-            style={{
-              width: 120,
-              height: 120,
-              resizeMode: "contain",
-            }}
-          />
-        ) : (
-          <Image
-            source={require("../assets/images/android-icon-foreground.png")}
-            style={{
-              width: 120,
-              height: 120,
-              resizeMode: "contain",
-            }}
-          />
-        )}
-
-        {/* Bottom Text */}
-        <RNText
-          className="text-black dark:text-white font-quicksandBold text-lg"
-          style={{
-            position: "absolute",
-            bottom: 40,
-            alignSelf: "center",
-          }}
-        >
-          Talenta
-        </RNText>
-      </View>
-    );
+    return <AppLoadingScreen />;
   }
 
   return (
