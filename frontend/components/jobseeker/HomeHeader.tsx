@@ -64,7 +64,7 @@ export default function HomeHeader({ onSearchChange }: HomeHeaderProps) {
               }}
             />
             <Text className="font-quicksandSemibold text-sm text-gray-500 dark:text-gray-400 leading-tight">
-              {t("greeting", { firstName: fullName })} haha
+              {t("greeting", { firstName: fullName })} 
             </Text>
           </View>
 

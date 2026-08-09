@@ -1,8 +1,7 @@
 // components/modal/QRCodeModal.tsx
 // Shows a scannable QR code that deep-links directly to the user's public
-// profile (`talenta://user/<id>`). Scanning it with a phone camera (or
-// another Talenta user scanning it in-app) opens the app straight to that
-// profile — handy for jobseekers/employers to share their profile quickly.
+// in-app profile (`talenta://user/<id>`). The profile route supports signed-out
+// visitors, so recipients do not need to be logged in to view public details.
 import React from "react";
 import {
   Modal,
@@ -122,7 +121,7 @@ export default function QRCodeModal({
           <Text className="text-center text-gray-400 dark:text-gray-500 font-quicksandMedium text-xs mt-4 leading-5">
             {t("qrCode.hint", {
               defaultValue:
-                "Anyone who scans this code will be taken straight to this profile in Talenta.",
+                "Anyone with Talenta can scan this code to view this public profile.",
             })}
           </Text>
 

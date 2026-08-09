@@ -161,10 +161,9 @@ export type UsernameColumn = "username" | "company_username";
 /**
  * Check whether a username is available in Supabase.
  *
- * The check is case-insensitive — we query where `LOWER(column) = LOWER(value)`.
- * Supabase PostgREST doesn't support calling custom SQL functions directly in
- * `.eq()`, so we use `.ilike()` with exact match (no wildcards) which is
- * case-insensitive.
+ * The check is case-insensitive and runs through a narrow database RPC. This
+ * is necessary during sign-up: anonymous users cannot read other profile rows
+ * under RLS, which would otherwise make every hidden username look available.
  *
  * @param username     The username string to test
  * @param table        "jobseeker_profiles" | "employer_profiles"
@@ -182,24 +181,18 @@ export async function checkUsernameAvailability(
   if (!username || validateUsernameFormat(username) !== null) return false;
 
   try {
-    let query = supabase
-      .from(table)
-      .select("id")
-      .ilike(column, username) // case-insensitive exact match
-      .limit(1);
-
-    if (excludeId) {
-      query = query.neq("id", excludeId);
-    }
-
-    const { data, error } = await query;
+    const { data, error } = await supabase.rpc("is_username_available", {
+      p_candidate: username.trim().toLowerCase(),
+      p_profile_table: table,
+      p_exclude_id: excludeId ?? null,
+    });
     if (error) throw error;
 
-    return !data || data.length === 0;
+    return data === true;
   } catch (err) {
     console.error("checkUsernameAvailability error:", err);
-    // On network error, optimistically return true and let DB constraint catch duplicates
-    return true;
+    // Never offer a username when its availability could not be verified.
+    return false;
   }
 }
 

@@ -12,7 +12,7 @@
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/bee08ab4-5574-4e25-b625-48b07d6260ce"
+      "url": "https://u.expo.dev/faf1ba08-e828-4439-a54a-30fd460eefc2"
     },
     "ios": {
       "supportsTablet": true
@@ -25,7 +25,11 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.salomonlegend.talenta",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",

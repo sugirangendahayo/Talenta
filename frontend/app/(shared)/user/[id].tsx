@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { supabase } from "@/lib/supabase";
@@ -15,7 +16,7 @@ import { ReportModal } from "@/components/moderation/ReportModal";
 import { ModerationPanel } from "@/components/admin/ModerationPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import UserAvatar from "@/components/common/UserAvatar";
-import { useTranslation } from "react-i18next";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // ── Status presentation — same pattern as ApplicationCard / EmployerJobsList ──
 const ACCOUNT_STATUS_META: Record<
@@ -49,11 +50,84 @@ const ACCOUNT_STATUS_META: Record<
 };
 const DEFAULT_STATUS_META = ACCOUNT_STATUS_META.active;
 
+type CompanyInfoRowProps = {
+  icon: React.ComponentProps<typeof Ionicons>["name"];
+  value: string;
+  accessibilityLabel: string;
+  accessibilityHint: string;
+  iconColor: string;
+  onPress: () => void;
+};
+
+function CompanyInfoRow({
+  icon,
+  value,
+  accessibilityLabel,
+  accessibilityHint,
+  iconColor,
+  onPress,
+}: CompanyInfoRowProps) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      accessibilityRole="link"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      className="flex-row items-center py-1"
+    >
+      <Ionicons name={icon} size={17} color={iconColor} />
+      <Text
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        className="flex-1 ml-3 text-gray-700 dark:text-gray-300 font-quicksandMedium text-sm"
+      >
+        {value}
+      </Text>
+      <Ionicons name="chevron-forward-outline" size={16} color={iconColor} />
+    </TouchableOpacity>
+  );
+}
+
+function getTextValue(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmedValue = value.trim();
+  return trimmedValue || null;
+}
+
+function getWebsiteUrl(website: string): string | null {
+  if (/^https?:\/\//i.test(website)) return website;
+  if (/^[a-z][a-z\d+.-]*:/i.test(website)) return null;
+  return `https://${website}`;
+}
+
+function getPhoneUrl(phone: string): string | null {
+  const dialableNumber = phone.replace(/[^\d+*#]/g, "");
+  return dialableNumber ? `tel:${dialableNumber}` : null;
+}
+
+function getEmailUrl(email: string): string | null {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+  return `mailto:${encodeURIComponent(email)}`;
+}
+
+async function openExternalUrl(url: string | null) {
+  if (!url) return;
+
+  try {
+    if (await Linking.canOpenURL(url)) {
+      await Linking.openURL(url);
+    }
+  } catch (error) {
+    console.warn("Could not open company contact link:", error);
+  }
+}
+
 export default function UserProfileScreen() {
   const { id, role } = useLocalSearchParams<{ id: string; role?: string }>();
-  const { t } = useTranslation("profile");
   const router = useRouter();
-  const { user: currentUser, profile: currentProfile, role: currentRole } = useAuth();
+  const { isDark } = useTheme();
+  const { user: currentUser, role: currentRole } = useAuth();
 
   const [profileData, setProfileData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -64,12 +138,28 @@ export default function UserProfileScreen() {
 
   useEffect(() => {
     fetchProfile();
-  }, [id]);
+    // fetchProfile intentionally stays local to this screen; rerun when the
+    // viewer's role changes so admins retain their moderation view.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, role, currentRole]);
 
   const fetchProfile = async () => {
     if (!id) return;
     setLoading(true);
     try {
+      // Other users' profile rows are protected by RLS. This RPC returns only
+      // the public fields shown on this screen and also works before sign-in.
+      if (currentRole !== "admin") {
+        const { data, error } = await supabase.rpc("get_public_user_profile", {
+          p_user_id: id,
+        });
+        if (error) throw error;
+
+        setProfileData(data ?? null);
+        setAccountStatus("active");
+        return;
+      }
+
       let targetRole = role;
       let status = "active";
 
@@ -187,11 +277,16 @@ export default function UserProfileScreen() {
     : profileData.username;
 
   const isOwnProfile = currentUser?.id === id;
-  const isAdmin = currentRole === "admin" || currentProfile?.role === "admin";
-  const showReportBlock = !isAdmin && !isOwnProfile;
+  const isAdmin = currentRole === "admin";
+  const showReportBlock = !!currentUser && !isAdmin && !isOwnProfile;
 
   const statusMeta = ACCOUNT_STATUS_META[accountStatus] ?? DEFAULT_STATUS_META;
   const statusLabel = accountStatus.replace("_", " ");
+  const companyInfoIconColor = isDark ? "#9CA3AF" : "#6B7280";
+  const companyWebsite = getTextValue(profileData.company_website);
+  const companyAddress = getTextValue(profileData.company_address);
+  const companyPhone = getTextValue(profileData.phone);
+  const companyEmail = getTextValue(profileData.email);
 
   return (
     <View className="flex-1 bg-gray-50 dark:bg-[#080A08]">
@@ -315,37 +410,51 @@ export default function UserProfileScreen() {
 
           {isEmployer ? (
             <View style={{ gap: 12 }}>
-              {profileData.company_website ? (
-                <View className="flex-row items-center gap-3">
-                  <View className="w-8 h-8 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
-                    <Ionicons name="globe-outline" size={15} color="#0E7490" />
-                  </View>
-                  <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-sm flex-1">
-                    {profileData.company_website}
-                  </Text>
-                </View>
+              {companyWebsite ? (
+                <CompanyInfoRow
+                  icon="globe-outline"
+                  value={companyWebsite}
+                  iconColor={companyInfoIconColor}
+                  accessibilityLabel={`Open company website: ${companyWebsite}`}
+                  accessibilityHint="Opens the company website in your browser"
+                  onPress={() => void openExternalUrl(getWebsiteUrl(companyWebsite))}
+                />
               ) : null}
-              {profileData.company_address ? (
-                <View className="flex-row items-center gap-3">
-                  <View className="w-8 h-8 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
-                    <Ionicons name="business-outline" size={15} color="#0E7490" />
-                  </View>
-                  <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-sm flex-1">
-                    {profileData.company_address}
-                  </Text>
-                </View>
+              {companyAddress ? (
+                <CompanyInfoRow
+                  icon="location-outline"
+                  value={companyAddress}
+                  iconColor={companyInfoIconColor}
+                  accessibilityLabel={`Open company address in maps: ${companyAddress}`}
+                  accessibilityHint="Searches for the company address in maps"
+                  onPress={() =>
+                    void openExternalUrl(
+                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companyAddress)}`
+                    )
+                  }
+                />
               ) : null}
-              {profileData.phone ? (
-                <View className="flex-row items-center gap-3">
-                  <View className="w-8 h-8 rounded-xl bg-cyan-50 dark:bg-cyan-900/20 items-center justify-center">
-                    <Ionicons name="call-outline" size={15} color="#0E7490" />
-                  </View>
-                  <Text className="text-gray-600 dark:text-gray-400 font-quicksandMedium text-sm">
-                    {profileData.phone}
-                  </Text>
-                </View>
+              {companyPhone ? (
+                <CompanyInfoRow
+                  icon="call-outline"
+                  value={companyPhone}
+                  iconColor={companyInfoIconColor}
+                  accessibilityLabel={`Call company: ${companyPhone}`}
+                  accessibilityHint="Opens your phone app"
+                  onPress={() => void openExternalUrl(getPhoneUrl(companyPhone))}
+                />
               ) : null}
-              {!profileData.company_website && !profileData.company_address && !profileData.phone && (
+              {companyEmail ? (
+                <CompanyInfoRow
+                  icon="mail-outline"
+                  value={companyEmail}
+                  iconColor={companyInfoIconColor}
+                  accessibilityLabel={`Email company: ${companyEmail}`}
+                  accessibilityHint="Opens your mail app"
+                  onPress={() => void openExternalUrl(getEmailUrl(companyEmail))}
+                />
+              ) : null}
+              {!companyWebsite && !companyAddress && !companyPhone && !companyEmail && (
                 <Text className="text-gray-400 dark:text-gray-500 font-quicksandMedium text-sm">
                   No additional info provided.
                 </Text>
