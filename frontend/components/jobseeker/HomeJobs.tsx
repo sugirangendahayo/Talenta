@@ -3,6 +3,7 @@ import SkillMatchBadge from "@/components/common/SkillMatchBadge";
 import UserAvatar from "@/components/common/UserAvatar";
 import { CompactJobCardSkeleton } from "@/components/skeletons/JobCardSkeleton";
 import { SkeletonList } from "@/components/skeletons/SkeletonBase";
+import { useTabBarVisibility } from "@/contexts/TabBarVisibilityContext";
 import { useAppliedSet, useBookmarkSet } from "@/hooks/useBookmarks";
 import { useJobs } from "@/hooks/useJobs";
 import { useSkillMatch } from "@/hooks/useSkillMatch";
@@ -21,8 +22,12 @@ interface HomeJobsProps {
 
 const PREVIEW_COUNT = 4;
 
-const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) => {
+const HomeJobs: React.FC<HomeJobsProps> = ({
+  selectedCategory,
+  searchQuery,
+}) => {
   const router = useRouter();
+  const { setIsVisible } = useTabBarVisibility();
   const { t } = useTranslation(["home", "jobs"]);
 
   // ─── Skill matching (reads from AuthContext — no extra DB call) ────────────
@@ -39,40 +44,56 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
   });
 
   // Sort jobs by skill-match score (best first). Stable, memoised.
-  const sortedJobs = useMemo(() => sortJobsByMatch(jobs), [jobs, sortJobsByMatch]);
+  const sortedJobs = useMemo(
+    () => sortJobsByMatch(jobs),
+    [jobs, sortJobsByMatch],
+  );
 
   const handleJobPress = (jobId: string) => {
-    router.push({ pathname: "/jobseekers/job-details/[id]", params: { id: jobId } });
+    router.push({
+      pathname: "/jobseekers/job-details/[id]",
+      params: { id: jobId },
+    });
   };
 
   const handleViewAll = () => {
-    router.push("../../app/(jobseeker-tabs)/jobseekers/Jobs.tsx" as any);
+    // The bottom CTA is tapped after scrolling, when Home hides the tab bar.
+    // Make sure that hidden scroll state does not carry over to the Jobs tab.
+    setIsVisible(true);
+    router.push("/(jobseeker-tabs)/jobseekers/Jobs");
   };
 
   const formatSalary = (min: number, max: number) => {
-    const fmt = (n: number) => (n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`);
+    const fmt = (n: number) =>
+      n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
     return `${fmt(min)} - ${fmt(max)}`;
   };
 
   const getTimeAgo = (dateString: string) => {
-    const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+    const seconds = Math.floor(
+      (Date.now() - new Date(dateString).getTime()) / 1000,
+    );
     if (seconds < 60) return t("jobs:time.justNow");
-    if (seconds < 3600) return t("jobs:time.minutesAgo", { count: Math.floor(seconds / 60) });
-    if (seconds < 86400) return t("jobs:time.hoursAgo", { count: Math.floor(seconds / 3600) });
-    if (seconds < 604800) return t("jobs:time.daysAgo", { days: Math.floor(seconds / 86400) });
+    if (seconds < 3600)
+      return t("jobs:time.minutesAgo", { count: Math.floor(seconds / 60) });
+    if (seconds < 86400)
+      return t("jobs:time.hoursAgo", { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800)
+      return t("jobs:time.daysAgo", { days: Math.floor(seconds / 86400) });
     return t("jobs:time.weeksAgo", { weeks: Math.floor(seconds / 604800) });
   };
 
   const isRecommending =
-    hasSkills &&
-    !searchQuery &&
-    selectedCategory === "all";
+    hasSkills && !searchQuery && selectedCategory === "all";
 
   // ─── Section header ───────────────────────────────────────────────────────
   const SectionHeader = () => (
     <View className="flex-row items-start justify-between px-6 mb-4 gap-3">
       <View className="flex-1">
-        <Text className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200" numberOfLines={1}>
+        <Text
+          className="text-xl font-quicksandBold text-gray-800 dark:text-gray-200"
+          numberOfLines={1}
+        >
           {isRecommending
             ? t("home:recommended.title", { defaultValue: "Recommended" })
             : t("home:featuredJobs.title", { defaultValue: "Latest Jobs" })}
@@ -82,7 +103,9 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
             className="text-xs font-quicksandMedium text-gray-400 mt-0.5"
             numberOfLines={1}
           >
-            {t("home:recommended.basedOnSkills", { defaultValue: "Based on your skills" })}
+            {t("home:recommended.basedOnSkills", {
+              defaultValue: "Based on your skills",
+            })}
           </Text>
         )}
       </View>
@@ -105,7 +128,10 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
       <View className="mb-6">
         <SectionHeader />
         <View className="gap-3 px-6">
-          <SkeletonList count={PREVIEW_COUNT} renderItem={() => <CompactJobCardSkeleton />} />
+          <SkeletonList
+            count={PREVIEW_COUNT}
+            renderItem={() => <CompactJobCardSkeleton />}
+          />
         </View>
       </View>
     );
@@ -137,13 +163,16 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
         <View className="items-center py-12 px-8">
           <Ionicons name="search-outline" size={48} color="#D1D5DB" />
           <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-sm mt-3 text-center">
-            {t("home:search.noResults", { defaultValue: "No jobs found. Try a different search." })}
+            {t("home:search.noResults", {
+              defaultValue: "No jobs found. Try a different search.",
+            })}
           </Text>
         </View>
       ) : (
         <View className="gap-3 px-6">
           {sortedJobs.slice(0, PREVIEW_COUNT).map((item: any) => {
-            const companyName = item.employer_profiles?.company_name || "Company";
+            const companyName =
+              item.employer_profiles?.company_name || "Company";
             const salary = formatSalary(item.salary_min, item.salary_max);
             const timeAgo = getTimeAgo(item.created_at);
             const jobTypes = item.job_type
@@ -152,7 +181,8 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
             const isBookmarked = bookmarkedIds.has(item.id);
             const isApplied = appliedIds.has(item.id);
             const isEmployerVerified =
-              item.employer_profiles?.business_verification_status === "approved" &&
+              item.employer_profiles?.business_verification_status ===
+                "approved" &&
               item.employer_profiles?.premium_plan !== "free" &&
               !!item.employer_profiles?.premium_plan;
 
@@ -167,34 +197,48 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                 activeOpacity={0.8}
               >
                 <View className="flex-row items-start justify-between mb-3">
-                  <TouchableOpacity 
-                    onPress={() => router.push({
-                      pathname: "/(shared)/user/[id]",
-                      params: { id: item.employer_id, role: 'employer' }
-                    })}
+                  <TouchableOpacity
+                    onPress={() => handleJobPress(item.id)}
                     activeOpacity={0.75}
                     className="flex-row items-center flex-1 mr-3"
                   >
                     {/* Company avatar */}
-                    <UserAvatar 
-                      imageUrl={item.employer_profiles?.profile_image_url} 
-                      name={companyName} 
-                      size={48} 
-                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(shared)/user/[id]",
+                          params: { id: item.employer_id, role: "employer" },
+                        })
+                      }
+                    >
+                      <UserAvatar
+                        imageUrl={item.employer_profiles?.profile_image_url}
+                        name={companyName}
+                        size={48}
+                      />
+                    </TouchableOpacity>
                     <View className="flex-1 ml-3">
                       <View className="flex-row items-center gap-1">
                         <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs">
                           {companyName}
                         </Text>
                         {isEmployerVerified && (
-                          <MaterialIcons name="verified" size={12} color="#0E7490" />
+                          <MaterialIcons
+                            name="verified"
+                            size={12}
+                            color="#0E7490"
+                          />
                         )}
                       </View>
                       <Text className="text-base font-quicksandBold text-gray-800 dark:text-gray-200 mt-0.5">
                         {item.title}
                       </Text>
                       <View className="flex-row items-center gap-1 mt-0.5">
-                        <Ionicons name="location-sharp" size={11} color="#0E7490" />
+                        <Ionicons
+                          name="location-sharp"
+                          size={11}
+                          color="#0E7490"
+                        />
                         <Text className="text-gray-500 dark:text-gray-400 font-quicksandMedium text-xs">
                           {item.location}
                         </Text>
@@ -208,9 +252,17 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                       const wasSaved = bookmarkedIds.has(item.id);
                       await toggleInSet(item.id);
                       if (wasSaved) {
-                        toast(t("home:featuredJobs.removedFromSaved", { defaultValue: "Removed from saved jobs" }));
+                        toast(
+                          t("home:featuredJobs.removedFromSaved", {
+                            defaultValue: "Removed from saved jobs",
+                          }),
+                        );
                       } else {
-                        toast.success(t("home:featuredJobs.savedJob", { defaultValue: "Job saved!" }));
+                        toast.success(
+                          t("home:featuredJobs.savedJob", {
+                            defaultValue: "Job saved!",
+                          }),
+                        );
                       }
                     }}
                     activeOpacity={0.7}
@@ -219,11 +271,17 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                     accessibilityState={{ selected: isBookmarked }}
                     accessibilityLabel={
                       isBookmarked
-                        ? t("home:featuredJobs.unsave", { defaultValue: "Remove from saved jobs" })
-                        : t("home:featuredJobs.save", { defaultValue: "Save job" })
+                        ? t("home:featuredJobs.unsave", {
+                            defaultValue: "Remove from saved jobs",
+                          })
+                        : t("home:featuredJobs.save", {
+                            defaultValue: "Save job",
+                          })
                     }
                     className={`w-10 h-10 rounded-full items-center justify-center ${
-                      isBookmarked ? "bg-cyan-700 dark:bg-cyan-800" : "bg-gray-100 dark:bg-[#141414]"
+                      isBookmarked
+                        ? "bg-cyan-700 dark:bg-cyan-800"
+                        : "bg-gray-100 dark:bg-[#141414]"
                     }`}
                   >
                     <Ionicons
@@ -237,12 +295,19 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                 {/* Tags row — includes skill match badge */}
                 <View className="flex-row flex-wrap gap-2 mb-3">
                   {jobTypes.slice(0, 2).map((type: string, index: number) => (
-                    <View key={index} className="bg-gray-100 dark:bg-[#141414] px-3 py-1 rounded-full">
-                      <Text className="text-gray-600 dark:text-gray-400 text-xs font-quicksandMedium">{type}</Text>
+                    <View
+                      key={index}
+                      className="bg-gray-100 dark:bg-[#141414] px-3 py-1 rounded-full"
+                    >
+                      <Text className="text-gray-600 dark:text-gray-400 text-xs font-quicksandMedium">
+                        {type}
+                      </Text>
                     </View>
                   ))}
                   <View className="bg-gray-50 dark:bg-[#080A08] px-3 py-1 rounded-full border border-gray-100 dark:border-[#222]">
-                    <Text className="text-gray-400 text-xs font-quicksandMedium">{timeAgo}</Text>
+                    <Text className="text-gray-400 text-xs font-quicksandMedium">
+                      {timeAgo}
+                    </Text>
                   </View>
                   {/* Skill match badge */}
                   <SkillMatchBadge match={hasSkills ? match : null} />
@@ -250,17 +315,27 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
 
                 {/* Footer */}
                 <View className="flex-row items-center justify-between pt-3 border-t border-gray-100 dark:border-[#222]">
-                  <Text className="text-cyan-700 text-sm font-quicksandBold">{salary}</Text>
+                  <Text className="text-cyan-700 text-sm font-quicksandBold">
+                    {salary}
+                  </Text>
 
                   {isApplied ? (
                     <View
                       accessible
-                      accessibilityLabel={t("home:featuredJobs.applied", { defaultValue: "Applied" })}
+                      accessibilityLabel={t("home:featuredJobs.applied", {
+                        defaultValue: "Applied",
+                      })}
                       className="flex-row items-center gap-1.5 bg-emerald-50 border border-emerald-100 px-3 py-2 rounded-full"
                     >
-                      <Ionicons name="checkmark-circle" size={13} color="#059669" />
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={13}
+                        color="#059669"
+                      />
                       <Text className="text-emerald-700 text-xs font-quicksandBold">
-                        {t("home:featuredJobs.applied", { defaultValue: "Applied" })}
+                        {t("home:featuredJobs.applied", {
+                          defaultValue: "Applied",
+                        })}
                       </Text>
                     </View>
                   ) : (
@@ -272,9 +347,13 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
                       accessibilityLabel={t("home:featuredJobs.applyTo", {
                         defaultValue: `Apply to ${item.title}`,
                       })}
-                       className="bg-cyan-700 dark:bg-cyan-800 w-10 h-10 rounded-full items-center justify-center"
+                      className="bg-cyan-700 dark:bg-cyan-800 w-10 h-10 rounded-full items-center justify-center"
                     >
-                       <MaterialIcons name="arrow-outward" size={18} color="#fff" />
+                      <MaterialIcons
+                        name="arrow-outward"
+                        size={18}
+                        color="#fff"
+                      />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -290,10 +369,11 @@ const HomeJobs: React.FC<HomeJobsProps> = ({ selectedCategory, searchQuery }) =>
           onPress={handleViewAll}
           className="mx-6 mt-4 bg-gray-50 dark:bg-[#080A08] rounded-2xl p-4 flex-row items-center justify-center gap-2"
           activeOpacity={0.8}
-          
         >
           <Text className="text-cyan-700 font-quicksandBold text-sm">
-            {t("home:featuredJobs.viewAllJobs", { defaultValue: "View All Jobs" })}
+            {t("home:featuredJobs.viewAllJobs", {
+              defaultValue: "View All Jobs",
+            })}
           </Text>
           <Ionicons name="arrow-forward" size={16} color="#0E7490" />
         </TouchableOpacity>
