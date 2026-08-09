@@ -6,21 +6,15 @@ import {
 
 // Mock Supabase
 jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn(() => ({
-      select: jest.fn(() => ({
-        ilike: jest.fn(() => ({
-          limit: jest.fn(() => ({
-            neq: jest.fn(() => ({
-              then: jest.fn(callback => callback({ data: [], error: null })),
-            })),
-            then: jest.fn(callback => callback({ data: [], error: null })),
-          })),kkkk
-        })),
-      })),
-    })),
-  },
+  supabase: { rpc: jest.fn() },
 }));
+
+const { supabase } = require('@/lib/supabase');
+
+beforeEach(() => {
+  supabase.rpc.mockReset();
+  supabase.rpc.mockResolvedValue({ data: true, error: null });
+});
 
 describe('Username Validation', () => {
   describe('validateUsernameFormat', () => {
@@ -84,6 +78,19 @@ describe('Username Validation', () => {
     it('should return true for available username', async () => {
       const result = await checkUsernameAvailability('john', 'jobseeker_profiles', 'username');
       expect(result).toBe(true);
+      expect(supabase.rpc).toHaveBeenCalledWith('is_username_available', {
+        p_candidate: 'john',
+        p_profile_table: 'jobseeker_profiles',
+        p_exclude_id: null,
+      });
+    });
+
+    it('should return false for an existing username', async () => {
+      supabase.rpc.mockResolvedValueOnce({ data: false, error: null });
+
+      const result = await checkUsernameAvailability('salomonelisha', 'jobseeker_profiles', 'username');
+
+      expect(result).toBe(false);
     });
 
     it('should return false for invalid username format', async () => {
@@ -97,20 +104,10 @@ describe('Username Validation', () => {
     });
 
     it('should handle network errors gracefully', async () => {
-      // Mock a network error
-      const { supabase } = require('@/lib/supabase');
-      supabase.from.mockImplementationOnce(() => ({
-        select: jest.fn(() => ({
-          ilike: jest.fn(() => ({
-            limit: jest.fn(() => ({
-              then: jest.fn(callback => callback({ data: null, error: new Error('Network error') })),
-            })),
-          })),
-        })),
-      }));
+      supabase.rpc.mockResolvedValueOnce({ data: null, error: new Error('Network error') });
 
       const result = await checkUsernameAvailability('john', 'jobseeker_profiles', 'username');
-      expect(result).toBe(true); // Optimistically return true on network error
+      expect(result).toBe(false);
     });
   });
 });
